@@ -1,0 +1,21 @@
+On Error Resume Next
+
+Set excel = CreateObject("Excel.Application")
+Set workbook = excel.Workbooks.Open(Wscript.Arguments(0))
+excel.Application.DisplayAlerts = False
+excel.Visible = False
+
+excel.Run(Wscript.Arguments(1))
+
+If Err.Number <> 0 Then
+	workbook.Close False
+	excel.Application.Quit
+	WScript.Echo "Error #" & Err.Number & " " & Err.Description
+	WScript.Quit Err.Number
+End If
+
+workbook.Save
+workbook.Close True
+excel.Application.Quit
+WScript.Echo "SUCCESS"
+WScript.Quit
