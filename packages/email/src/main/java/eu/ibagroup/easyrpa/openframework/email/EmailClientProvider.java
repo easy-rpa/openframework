@@ -1,6 +1,6 @@
 package eu.ibagroup.easyrpa.openframework.email;
 
-import eu.ibagroup.easyrpa.openframework.core.config.IConfigurationProvider;
+import eu.ibagroup.easyrpa.openframework.core.sevices.RPAServicesProvider;
 import eu.ibagroup.easyrpa.openframework.email.exception.EmailMessagingException;
 import eu.ibagroup.easyrpa.openframework.email.service.EmailClient;
 import eu.ibagroup.easyrpa.openframework.email.service.ews.EwsEmailsClient;
@@ -31,14 +31,14 @@ public class EmailClientProvider {
     private String emailExchangeDomain;
     private String emailExchangeVersion;
 
-    private IConfigurationProvider cfg;
+    private RPAServicesProvider cfg;
 
     private String userName;
 
     private String password;
 
     @Inject
-    public EmailClientProvider(IConfigurationProvider cfg, String userName, String password) {
+    public EmailClientProvider(RPAServicesProvider cfg, String userName, String password) {
         this.cfg = cfg;
         this.userName = userName;
         this.password = password;
@@ -166,7 +166,7 @@ public class EmailClientProvider {
         return this;
     }
 
-    public IConfigurationProvider getCfg() {
+    public RPAServicesProvider getCfg() {
         return cfg;
     }
 

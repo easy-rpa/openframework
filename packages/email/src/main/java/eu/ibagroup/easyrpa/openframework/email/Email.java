@@ -1,6 +1,7 @@
 package eu.ibagroup.easyrpa.openframework.email;
 
-import eu.ibagroup.easyrpa.openframework.core.config.IConfigurationProvider;
+import eu.ibagroup.easyrpa.openframework.core.model.RPASecretCredentials;
+import eu.ibagroup.easyrpa.openframework.core.sevices.RPAServicesProvider;
 import eu.ibagroup.easyrpa.openframework.email.core.templates.FreeMarkerTemplate;
 import eu.ibagroup.easyrpa.openframework.email.exception.EmailMessagingException;
 import eu.ibagroup.easyrpa.openframework.email.message.EmailAddress;
@@ -12,37 +13,37 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
 import java.util.*;
 
-public class RobotEmail {
+public class Email {
 
     private static final String DEFAULT_EMAIL_TYPE_NAME = "email";
     private static final String DEFAULT_EMAIL_SERVICE_PROTOCOL = "smtp";
     private static final String DEFAULT_EMAIL_SUBJECT = "Robot Email";
 
-    private static final String SERVICE_CFG_NAME_TPL = "%s_service";
-    private static final String SERVICE_PROTOCOL_CFG_NAME_TPL = "%s_service_protocol";
-    private static final String SENDER_CFG_NAME_TPL = "%s_sender";
-    private static final String SENDER_NAME_CFG_NAME_TPL = "%s_sender_name";
-    private static final String RECIPIENTS_CFG_NAME_TPL = "%s_recipients";
-    private static final String CC_RECIPIENTS_CFG_NAME_TPL = "%s_cc_recipients";
-    private static final String BCC_RECIPIENTS_CFG_NAME_TPL = "%s_bcc_recipients";
-    private static final String SUBJECT_CFG_NAME_TPL = "%s_subject";
-    private static final String BODY_TEMPLATE_CFG_NAME_TPL = "%s_body_tpl";
-    private static final String CHARSET_CFG_NAME_TPL = "%s_charset";
+    private static final String SERVICE_CFG_NAME_TPL = "%s.service";
+    private static final String SERVICE_PROTOCOL_CFG_NAME_TPL = "%s.service.protocol";
+    private static final String SERVICE_CREDENTIALS_CFG_NAME_TPL = "%s.service.credentials";
+    private static final String SENDER_CFG_NAME_TPL = "%s.sender";
+    private static final String SENDER_NAME_CFG_NAME_TPL = "%s.sender.name";
+    private static final String RECIPIENTS_CFG_NAME_TPL = "%s.recipients";
+    private static final String CC_RECIPIENTS_CFG_NAME_TPL = "%s.cc.recipients";
+    private static final String BCC_RECIPIENTS_CFG_NAME_TPL = "%s.bcc.recipients";
+    private static final String SUBJECT_CFG_NAME_TPL = "%s.subject";
+    private static final String BODY_TEMPLATE_CFG_NAME_TPL = "%s.body.tpl";
+    private static final String CHARSET_CFG_NAME_TPL = "%s.charset";
 
-    private IConfigurationProvider cfg;
-
-    private String userName;
-
-    private String password;
+    private RPAServicesProvider rpaServices;
 
     private String typeName = DEFAULT_EMAIL_TYPE_NAME;
 
     private String emailService;
 
     private String emailServiceProtocol;
+
+    private RPASecretCredentials credentials;
 
     private String subject;
 
@@ -66,17 +67,38 @@ public class RobotEmail {
 
     private HashMap<String, Object> root;
 
-    public RobotEmail() {
+    public Email() {
     }
 
-    public RobotEmail(IConfigurationProvider cfg) {
-        this.cfg = cfg;
+    public Email(String typeName) {
+        this.typeName = typeName;
     }
 
-    public RobotEmail(IConfigurationProvider cfg, String userName, String password) {
-        this.cfg = cfg;
-        this.userName = userName;
-        this.password = password;
+    public Email(RPAServicesProvider rpaServices) {
+        this.rpaServices = rpaServices;
+    }
+
+    public Email(String typeName, RPAServicesProvider rpaServices) {
+        this.typeName = typeName;
+        this.rpaServices = rpaServices;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends Email> T create() {
+        try {
+            return (T) MethodHandles.lookup().lookupClass().getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            throw new EmailMessagingException("Email class instantiation has failed.");
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends Email> T create(RPAServicesProvider rpaServices) {
+        try {
+            return (T) MethodHandles.lookup().lookupClass().getDeclaredConstructor(RPAServicesProvider.class).newInstance(rpaServices);
+        } catch (Exception e) {
+            throw new EmailMessagingException("Email class instantiation has failed.");
+        }
     }
 
     public String getTypeName() {
@@ -102,7 +124,7 @@ public class RobotEmail {
         this.emailService = emailServiceHostAndPort;
     }
 
-    public RobotEmail service(String emailServiceHostAndPort) {
+    public Email service(String emailServiceHostAndPort) {
         setEmailService(emailServiceHostAndPort);
         return this;
     }
@@ -118,22 +140,27 @@ public class RobotEmail {
         this.emailServiceProtocol = emailServiceProtocol;
     }
 
-    public RobotEmail serviceProtocol(String emailServiceProtocol) {
+    public Email serviceProtocol(String emailServiceProtocol) {
         setEmailServiceProtocol(emailServiceProtocol);
         return this;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public RPASecretCredentials getCredentials() {
+        if (credentials == null) {
+            String secretAlias = getParam(SERVICE_CREDENTIALS_CFG_NAME_TPL);
+            if (secretAlias != null) {
+                credentials = rpaServices.getCredentials(secretAlias);
+            }
+        }
+        return credentials;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setCredentials(RPASecretCredentials credentials) {
+        this.credentials = credentials;
     }
 
-    public RobotEmail credentials(String username, String password) {
-        setUserName(username);
-        setPassword(password);
+    public Email credentials(String username, String password) {
+        setCredentials(new RPASecretCredentials(username, password));
         return this;
     }
 
@@ -148,7 +175,7 @@ public class RobotEmail {
         this.subject = subject;
     }
 
-    public RobotEmail subject(String subject) {
+    public Email subject(String subject) {
         setSubject(subject);
         return this;
     }
@@ -158,10 +185,6 @@ public class RobotEmail {
             String senderAddress = getParam(SENDER_CFG_NAME_TPL);
             sender = senderAddress != null ? EmailAddress.of(senderAddress) : null;
         }
-
-        if (sender == null) {
-            throw new EmailMessagingException("Email sender is null. Setup sender using set method or configuration.");
-        }
         return sender;
     }
 
@@ -169,7 +192,7 @@ public class RobotEmail {
         this.sender = senderAddress != null ? EmailAddress.of(senderAddress) : null;
     }
 
-    public RobotEmail sender(String senderAddress) {
+    public Email sender(String senderAddress) {
         setSender(senderAddress);
         return this;
     }
@@ -185,7 +208,7 @@ public class RobotEmail {
         this.senderName = senderName;
     }
 
-    public RobotEmail senderName(String senderName) {
+    public Email senderName(String senderName) {
         setSenderName(senderName);
         return this;
     }
@@ -217,7 +240,7 @@ public class RobotEmail {
         }
     }
 
-    public RobotEmail recipients(String... recipientsSequence) {
+    public Email recipients(String... recipientsSequence) {
         setRecipients(Arrays.asList(recipientsSequence));
         return this;
     }
@@ -246,7 +269,7 @@ public class RobotEmail {
         }
     }
 
-    public RobotEmail ccRecipients(String... recipientsSequence) {
+    public Email ccRecipients(String... recipientsSequence) {
         setCcRecipients(Arrays.asList(recipientsSequence));
         return this;
     }
@@ -275,7 +298,7 @@ public class RobotEmail {
         }
     }
 
-    public RobotEmail bccRecipients(String... recipientsSequence) {
+    public Email bccRecipients(String... recipientsSequence) {
         setBccRecipients(Arrays.asList(recipientsSequence));
         return this;
     }
@@ -292,7 +315,7 @@ public class RobotEmail {
         this.body = getFtlFileContent(body);
     }
 
-    public RobotEmail body(String body) {
+    public Email body(String body) {
         setBody(body);
         return this;
     }
@@ -309,7 +332,7 @@ public class RobotEmail {
         this.charset = charset;
     }
 
-    public RobotEmail charset(String charset) {
+    public Email charset(String charset) {
         this.charset = charset;
         return this;
     }
@@ -322,7 +345,7 @@ public class RobotEmail {
         this.bodyProperties = bodyProperties;
     }
 
-    public RobotEmail property(String key, Object value) {
+    public Email property(String key, Object value) {
         bodyProperties.put(key, value);
         return this;
     }
@@ -335,7 +358,7 @@ public class RobotEmail {
         this.root = root;
     }
 
-    public RobotEmail root(HashMap<String, Object> root) {
+    public Email root(HashMap<String, Object> root) {
         this.root = root;
         return this;
     }
@@ -376,12 +399,13 @@ public class RobotEmail {
             }
 
             EmailAddress from = getSender();
-            if (from == null && userName != null) {
-                from = EmailAddress.of(userName);
+            RPASecretCredentials credentials = getCredentials();
+            if (from == null && credentials != null) {
+                from = EmailAddress.of(credentials.getUser());
             }
 
             if (from == null) {
-                throw new EmailMessagingException("Email sender should be defined first.");
+                throw new EmailMessagingException("Email sender or credentials should be defined. Setup them using set method or configuration.");
             }
 
             String senderName = getSenderName();
@@ -418,8 +442,8 @@ public class RobotEmail {
             String[] hostAndPort = emailService.split(":");
             String host = hostAndPort[0];
             String port = hostAndPort.length > 1 ? hostAndPort[1] : "";
-            String user = userName != null ? userName : "";
-            String pass = password != null ? password : "";
+            String user = credentials != null ? credentials.getUser() : "";
+            String pass = credentials != null ? credentials.getPassword() : "";
 
             SMTPEmailSender service = new SMTPEmailSender(protocol, host, port, user, pass);
             service.sendEmail(message);
@@ -435,8 +459,8 @@ public class RobotEmail {
         // do some preparations here for subclasses
     }
 
-    protected IConfigurationProvider getCfg() {
-        return cfg;
+    protected RPAServicesProvider getRpaServices() {
+        return rpaServices;
     }
 
     private String getFtlFileContent(String ftlFilePath) {
@@ -453,19 +477,19 @@ public class RobotEmail {
     private String getParam(String template) {
         String result = null;
 
-        if (cfg == null) {
+        if (rpaServices == null) {
             return null;
         }
 
         try {
-            result = cfg.getParam(String.format(template, typeName));
+            result = rpaServices.getParam(String.format(template, typeName));
         } catch (Exception e) {
             //do nothing
         }
 
         if (result == null && !DEFAULT_EMAIL_TYPE_NAME.equals(typeName)) {
             try {
-                result = cfg.getParam(String.format(template, DEFAULT_EMAIL_TYPE_NAME));
+                result = rpaServices.getParam(String.format(template, DEFAULT_EMAIL_TYPE_NAME));
             } catch (Exception e) {
                 //do nothing
             }
