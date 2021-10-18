@@ -3,7 +3,7 @@ package eu.ibagroup.easyrpa.examples.send_simple_email.task;
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
-import eu.ibagroup.easyrpa.openframework.core.sevices.RPAServicesProvider;
+import eu.ibagroup.easyrpa.openframework.core.sevices.RPAServicesAccessor;
 import eu.ibagroup.easyrpa.openframework.email.Email;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,11 +23,11 @@ public class SendEmailMessage extends ApTask {
     private String simpleEmailRecipients;
 
     @Inject
-    private RPAServicesProvider serviceProvider;
+    private RPAServicesAccessor rpaServices;
 
     @Override
     public void execute() {
         log.info("Send simple email to '{}' from email box specified at '{}' alias in secret vault.", simpleEmailRecipients, emailServiceCredentials);
-        Email.create(serviceProvider).subject(SUBJECT).body(BODY).send();
+        Email.create(rpaServices).subject(SUBJECT).body(BODY).send();
     }
 }

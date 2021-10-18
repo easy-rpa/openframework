@@ -1,6 +1,6 @@
 package eu.ibagroup.easyrpa.openframework.email;
 
-import eu.ibagroup.easyrpa.openframework.core.sevices.RPAServicesProvider;
+import eu.ibagroup.easyrpa.openframework.core.sevices.RPAServicesAccessor;
 import eu.ibagroup.easyrpa.openframework.email.exception.EmailMessagingException;
 import eu.ibagroup.easyrpa.openframework.email.service.EmailClient;
 import eu.ibagroup.easyrpa.openframework.email.service.ews.EwsEmailsClient;
@@ -31,14 +31,14 @@ public class EmailClientProvider {
     private String emailExchangeDomain;
     private String emailExchangeVersion;
 
-    private RPAServicesProvider cfg;
+    private RPAServicesAccessor cfg;
 
     private String userName;
 
     private String password;
 
     @Inject
-    public EmailClientProvider(RPAServicesProvider cfg, String userName, String password) {
+    public EmailClientProvider(RPAServicesAccessor cfg, String userName, String password) {
         this.cfg = cfg;
         this.userName = userName;
         this.password = password;
@@ -82,9 +82,9 @@ public class EmailClientProvider {
 
     public String getEmailService() {
         if (emailService == null) {
-            emailService = cfg.getParam(String.format(SERVICE_CFG_NAME_TPL, typeName));
+            emailService = cfg.getConfigParam(String.format(SERVICE_CFG_NAME_TPL, typeName));
             if (emailService == null && !DEFAULT_EMAIL_TYPE_NAME.equals(typeName)) {
-                emailService = cfg.getParam(String.format(SERVICE_CFG_NAME_TPL, DEFAULT_EMAIL_TYPE_NAME));
+                emailService = cfg.getConfigParam(String.format(SERVICE_CFG_NAME_TPL, DEFAULT_EMAIL_TYPE_NAME));
             }
         }
         return emailService;
@@ -166,7 +166,7 @@ public class EmailClientProvider {
         return this;
     }
 
-    public RPAServicesProvider getCfg() {
+    public RPAServicesAccessor getCfg() {
         return cfg;
     }
 
@@ -190,14 +190,14 @@ public class EmailClientProvider {
         }
 
         try {
-            result = cfg.getParam(String.format(template, typeName));
+            result = cfg.getConfigParam(String.format(template, typeName));
         } catch (Exception e) {
             //do nothing
         }
 
         if (result == null && !DEFAULT_EMAIL_TYPE_NAME.equals(typeName)) {
             try {
-                result = cfg.getParam(String.format(template, DEFAULT_EMAIL_TYPE_NAME));
+                result = cfg.getConfigParam(String.format(template, DEFAULT_EMAIL_TYPE_NAME));
             } catch (Exception e) {
                 //do nothing
             }

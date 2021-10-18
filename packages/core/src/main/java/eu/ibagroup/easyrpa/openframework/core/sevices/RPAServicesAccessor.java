@@ -2,9 +2,9 @@ package eu.ibagroup.easyrpa.openframework.core.sevices;
 
 import eu.ibagroup.easyrpa.openframework.core.model.RPASecretCredentials;
 
-public interface RPAServicesProvider {
+public interface RPAServicesAccessor {
 
-    String getParam(String key);
+    String getConfigParam(String key);
 
     <T> T getSecret(String alias, Class<T> cls);
 

@@ -1,7 +1,7 @@
 package eu.ibagroup.easyrpa.openframework.email;
 
 import eu.ibagroup.easyrpa.openframework.core.model.RPASecretCredentials;
-import eu.ibagroup.easyrpa.openframework.core.sevices.RPAServicesProvider;
+import eu.ibagroup.easyrpa.openframework.core.sevices.RPAServicesAccessor;
 import eu.ibagroup.easyrpa.openframework.email.core.templates.FreeMarkerTemplate;
 import eu.ibagroup.easyrpa.openframework.email.exception.EmailMessagingException;
 import eu.ibagroup.easyrpa.openframework.email.message.EmailAddress;
@@ -35,7 +35,7 @@ public class Email {
     private static final String BODY_TEMPLATE_CFG_NAME_TPL = "%s.body.tpl";
     private static final String CHARSET_CFG_NAME_TPL = "%s.charset";
 
-    private RPAServicesProvider rpaServices;
+    private RPAServicesAccessor rpaServices;
 
     private String typeName = DEFAULT_EMAIL_TYPE_NAME;
 
@@ -74,11 +74,11 @@ public class Email {
         this.typeName = typeName;
     }
 
-    public Email(RPAServicesProvider rpaServices) {
+    public Email(RPAServicesAccessor rpaServices) {
         this.rpaServices = rpaServices;
     }
 
-    public Email(String typeName, RPAServicesProvider rpaServices) {
+    public Email(String typeName, RPAServicesAccessor rpaServices) {
         this.typeName = typeName;
         this.rpaServices = rpaServices;
     }
@@ -93,9 +93,9 @@ public class Email {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends Email> T create(RPAServicesProvider rpaServices) {
+    public static <T extends Email> T create(RPAServicesAccessor rpaServices) {
         try {
-            return (T) MethodHandles.lookup().lookupClass().getDeclaredConstructor(RPAServicesProvider.class).newInstance(rpaServices);
+            return (T) MethodHandles.lookup().lookupClass().getDeclaredConstructor(RPAServicesAccessor.class).newInstance(rpaServices);
         } catch (Exception e) {
             throw new EmailMessagingException("Email class instantiation has failed.");
         }
@@ -459,7 +459,7 @@ public class Email {
         // do some preparations here for subclasses
     }
 
-    protected RPAServicesProvider getRpaServices() {
+    protected RPAServicesAccessor getRpaServices() {
         return rpaServices;
     }
 
@@ -482,14 +482,14 @@ public class Email {
         }
 
         try {
-            result = rpaServices.getParam(String.format(template, typeName));
+            result = rpaServices.getConfigParam(String.format(template, typeName));
         } catch (Exception e) {
             //do nothing
         }
 
         if (result == null && !DEFAULT_EMAIL_TYPE_NAME.equals(typeName)) {
             try {
-                result = rpaServices.getParam(String.format(template, DEFAULT_EMAIL_TYPE_NAME));
+                result = rpaServices.getConfigParam(String.format(template, DEFAULT_EMAIL_TYPE_NAME));
             } catch (Exception e) {
                 //do nothing
             }
