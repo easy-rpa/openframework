@@ -1,9 +1,9 @@
-package eu.ibagroup.easyrpa.examples.simple_message_sending;
+package eu.ibagroup.easyrpa.examples.email.simple_message_sending;
 
 import eu.ibagroup.easyrpa.engine.annotation.ApModuleEntry;
 import eu.ibagroup.easyrpa.engine.apflow.ApModule;
 import eu.ibagroup.easyrpa.engine.apflow.TaskOutput;
-import eu.ibagroup.easyrpa.examples.simple_message_sending.task.SendEmailMessage;
+import eu.ibagroup.easyrpa.examples.email.simple_message_sending.tasks.SendEmailMessage;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

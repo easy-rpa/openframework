@@ -11,9 +11,9 @@
 
 - [Sending of simple email message](email/simple-message-sending)
 
-- Sending of message with attachments (email/message-sending-with-attachments)
+- [Sending of message with attachments](email/message-sending-with-attachments)
 
-- Creating of message based on FreeMarker template (email/template-based-message-creating)
+- [Creating of message based on FreeMarker template](email/template-based-message-creating)
 
 - Reading messages from inbox (email/inbox-messages-listing)
 

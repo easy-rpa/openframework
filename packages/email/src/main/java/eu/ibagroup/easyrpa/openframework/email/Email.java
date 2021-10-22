@@ -11,6 +11,7 @@ import eu.ibagroup.easyrpa.openframework.email.service.javax.SMTPEmailSender;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
@@ -363,24 +364,34 @@ public class Email {
         return this;
     }
 
-    public void addAttachment(Path filePath) throws IOException {
+    public Email attach(File file) throws IOException {
+        attachments.add(new EmailAttachment(file.toPath()));
+        return this;
+    }
+
+    public Email attach(Path filePath) throws IOException {
         attachments.add(new EmailAttachment(filePath));
+        return this;
     }
 
-    public void addAttachment(String fileName, InputStream fileContent) {
+    public Email attach(String fileName, InputStream fileContent) {
         attachments.add(new EmailAttachment(fileName, fileContent));
+        return this;
     }
 
-    public void addAttachment(String fileName, byte[] fileContent) {
+    public Email attach(String fileName, byte[] fileContent) {
         attachments.add(new EmailAttachment(fileName, fileContent));
+        return this;
     }
 
-    public void addAttachment(String fileName, InputStream fileContent, String mimeType) {
+    public Email attach(String fileName, InputStream fileContent, String mimeType) {
         attachments.add(new EmailAttachment(fileName, fileContent, mimeType));
+        return this;
     }
 
-    public void addAttachment(String fileName, byte[] fileContent, String mimeType) {
+    public Email attach(String fileName, byte[] fileContent, String mimeType) {
         attachments.add(new EmailAttachment(fileName, fileContent, mimeType));
+        return this;
     }
 
     public void send() {

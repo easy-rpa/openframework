@@ -1,4 +1,4 @@
-package eu.ibagroup.easyrpa.examples.simple_message_sending.task;
+package eu.ibagroup.easyrpa.examples.email.simple_message_sending.tasks;
 
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Configuration;
@@ -40,6 +40,7 @@ public class SendEmailMessage extends ApTask {
 
         Email.create().service(emailService).serviceProtocol(emailServiceProtocol)
                 .credentials(emailUserCredentials.getUser(), emailUserCredentials.getPassword())
+                .recipients(simpleEmailRecipients)
                 .subject(SUBJECT).body(BODY).send();
 
         log.info("Send the same message using RPA services accessor.");
