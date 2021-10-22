@@ -1,7 +1,12 @@
 # EasyRPA Open Framework Examples
 
-[TOC]
-
+ [Email](#email)  
+ [Excel](#excel)  
+ [CSV](#csv)  
+ [Google Drive](#google-drive)  
+ [Google Sheets](#google-sheets)  
+ [Database](#database)  
+ 
 ## Email
 
 - [Sending of simple email message](email/simple-message-sending)
