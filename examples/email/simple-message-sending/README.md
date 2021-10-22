@@ -1,9 +1,9 @@
-# Sending of simple email
+# Sending of simple email message
 
-Example of process that sends simple email message. 
+Example of process that sends simple email message.  
 
-To run this example it's necessary to specify configuration for email service that is going to be used for 
-message sending. All necessary configuration files can be found in <code>src/main/resources</code> directory.
+##Configuration
+All necessary configuration files can be found in <code>src/main/resources</code> directory.
 
 **apm_run.properties**
 
@@ -19,3 +19,8 @@ message sending. All necessary configuration files can be found in <code>src/mai
 | Alias     | Value         |
 | ------------- |---------------|
 | <code>email.user</code> | Json with credentials in encoded with Base64. Example of json:<br>`{ "user": "sender@gmail.com", "password": "passphrase" }` |
+
+
+##Running
+
+Run `main()` method of `LocalRunner` class.
