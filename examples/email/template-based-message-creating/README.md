@@ -1,7 +1,10 @@
 # Creating of message based on FreeMarker template
 
-This example shows how properly to create complex email message with large body that depends on many inputs. In 
-such cases much more convenient to keep and edit text of the body in separate file. This can be achieved using 
+This example shows how properly to create complex email message with large body that depends on many inputs. 
+
+ ![Image](message_screenshot.png 'Complex message example')
+
+In such cases much more convenient to keep and edit text of the body in separate file. This can be achieved using 
 FreeMarker templates that are supported by Email component.
 
 For more details about possibilities of FreeMarker templates see
