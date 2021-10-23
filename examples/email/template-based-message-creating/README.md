@@ -10,8 +10,9 @@ FreeMarker templates that are supported by Email component.
 For more details about possibilities of FreeMarker templates see
  [FreeMarker Manual](https://freemarker.apache.org/docs/index.html)
  
+ 
+## Configuration
 
-##Configuration
 All necessary configuration files can be found in <code>src/main/resources</code> directory.
 
 **apm_run.properties**
@@ -30,6 +31,6 @@ All necessary configuration files can be found in <code>src/main/resources</code
 | `email.user` | Json with credentials in encoded with Base64. Example of json:<br>`{ "user": "sender@gmail.com", "password": "passphrase" }` |
 
 
-##Running
+## Running
 
 Run `main()` method of `LocalRunner` class.
