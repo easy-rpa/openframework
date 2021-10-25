@@ -111,11 +111,49 @@
     
 ## Google Drive
 
- - TODO
+ - Getting a list of all files in the selected directory (drive/getting-files)
+ - Files manipulations (drive/files-manipulations)
+   * Create file
+   * Delete file
+   * Upload file
+   * Rename file
+ - Moving file from one directory to another (drive/file-moving)
+ - Folders manipulations (drive/folders-manipulations)
+    * Create folder
+    * Rename folder
+    * Delete folder
+ - Getting information about selected file/directory (drive/file-dir-info)
+ - Creating Google Sheet (drive/google-sheet-creating)
 
 ## Google Sheets
 
- - TODO
+ - Downloading a spreadsheet as an XLSX or PDF file (sheets/spreadsheet-downloading)
+ - Sheet manipulations (sheets/sheet-manipulation)
+    * Create sheet
+    * Delete sheet
+    * Rename sheet
+    * Clone sheet
+    * Activate sheet
+    * Get list of all sheets
+ - Working with sheet rows (sheets/working-with-rows)
+     * Lookup and edit rows
+     * Add/insert new rows
+     * Delete rows
+ - Working with sheet columns (sheets/working-with-columns)
+   * Read column cells
+   * Add/insert new columns
+   * Move columns
+   * Delete columns
+   * Filter columns
+ - Working with cells (sheets/working-with-cells)
+    * Read cell formula
+    * Read cell value
+    * Change cell formula
+    * Recalculation cell formula
+ - Working with data range (sheets/working-with-data-range)
+    * Reading a range of data
+    * Adding data range on sheet
+    * Removing data range from sheet
  
 ## Database
  
