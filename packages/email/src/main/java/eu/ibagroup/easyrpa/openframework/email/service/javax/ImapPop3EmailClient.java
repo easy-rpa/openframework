@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class ImapPop3EmailClient implements EmailClient {
@@ -96,6 +97,12 @@ public class ImapPop3EmailClient implements EmailClient {
         } catch (NoSuchProviderException var4) {
             throw new EmailMessagingException(var4);
         }
+    }
+
+    @Override
+    public List<EmailMessage> fetchMessages(String folderName, Predicate<EmailMessage> isSatisfy) throws EmailMessagingException {
+        //TODO Implement this
+        return null;
     }
 
     public List<EmailMessage> fetchAllMessages(String folderName) {

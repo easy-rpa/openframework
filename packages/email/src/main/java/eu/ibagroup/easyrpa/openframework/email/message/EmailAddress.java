@@ -25,7 +25,7 @@ public class EmailAddress implements Serializable {
         try {
             internetAdress = new InternetAddress(address, name);
         } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException(e);
         }
 
         return new EmailAddress(internetAdress);
@@ -36,7 +36,7 @@ public class EmailAddress implements Serializable {
         try {
             internetAdress = new InternetAddress(address);
         } catch (AddressException e) {
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException(e);
         }
 
         return new EmailAddress(internetAdress);

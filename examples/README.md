@@ -15,13 +15,13 @@
 
 - [Creating of message based on FreeMarker template](email/template-based-message-creating)
 
-- Reading messages from inbox (email/inbox-messages-listing)
+- [In progress] [Reading messages from inbox](email/inbox-messages-listing)
 
-- Searching of messages based on specified condition (email/messages-searching)
+- [In progress] [Searching of messages based on specified condition](email/messages-searching)
 
-- Waiting of message based on specified condition (email/message-waiting)
+- [In progress] [Waiting of message based on specified condition](email/message-waiting)
 
-- Reading of attached files (email/attachments-reading)
+- [In progress] [Reading of attached files](email/attachments-reading)
 
 - Mailbox messages manipulating  (email/messages-manipulating) 
     * Forward message

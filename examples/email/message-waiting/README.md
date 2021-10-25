@@ -1,6 +1,7 @@
-# Sending of message with attachments
+# Waiting of message based on specified condition
 
-Example of process that sends email message with attached file.  
+Example of process that periodically looks up email messages with specific keywords in subject or body. Process ends 
+when email message with corresponding keywords is present or appears in mailbox.    
 
 ## Configuration
 All necessary configuration files can be found in `src/main/resources` directory.

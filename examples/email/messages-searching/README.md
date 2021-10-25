@@ -1,6 +1,6 @@
-# Sending of message with attachments
+# Searching of messages based on specified condition
 
-Example of process that sends email message with attached file.  
+Example of process that looks up email messages with specific keywords in subject or body.    
 
 ## Configuration
 All necessary configuration files can be found in `src/main/resources` directory.
