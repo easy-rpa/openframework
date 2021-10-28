@@ -36,6 +36,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class EwsEmailsClient implements EmailClient {
@@ -172,6 +173,12 @@ public class EwsEmailsClient implements EmailClient {
     @Override
     public EmailMessage moveMessage(EmailMessage message, String targetFolder) throws EmailMessagingException {
         return moveMessage(message.getId().orElse(null), targetFolder);
+    }
+
+    @Override
+    public List<EmailMessage> fetchMessages(String folderName, Predicate<EmailMessage> isSatisfy) throws EmailMessagingException {
+        //TODO Implement this
+        return null;
     }
 
     @Override

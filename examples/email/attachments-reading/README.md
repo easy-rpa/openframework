@@ -1,6 +1,6 @@
-# Sending of message with attachments
+# Reading of attached files
 
-Example of process that sends email message with attached file.  
+Example of process that looks up email with attachments and reads content of attached files.    
 
 ## Configuration
 All necessary configuration files can be found in `src/main/resources` directory.

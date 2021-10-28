@@ -37,7 +37,6 @@ public class EmailClientProvider {
 
     private String password;
 
-    @Inject
     public EmailClientProvider(RPAServicesAccessor cfg, String userName, String password) {
         this.cfg = cfg;
         this.userName = userName;

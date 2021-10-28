@@ -4,8 +4,11 @@ import eu.ibagroup.easyrpa.openframework.email.exception.EmailMessagingException
 import eu.ibagroup.easyrpa.openframework.email.message.EmailMessage;
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public interface EmailClient {
+
     default List<EmailMessage> fetchAllMessages() throws EmailMessagingException {
         return this.fetchAllMessages(this.getDefaultInboxFolder());
     }
@@ -13,6 +16,8 @@ public interface EmailClient {
     default List<EmailMessage> fetchUnreadMessages(boolean markRead) throws EmailMessagingException {
         return this.fetchUnreadMessages(this.getDefaultInboxFolder(), markRead);
     }
+
+    List<EmailMessage> fetchMessages(String folderName, Predicate<EmailMessage> isSatisfy) throws EmailMessagingException;
 
     List<EmailMessage> fetchAllMessages(String folderName) throws EmailMessagingException;
 
