@@ -4,8 +4,8 @@ import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.engine.model.SecretCredentials;
-import eu.ibagroup.easyrpa.openframework.core.sevices.RPAServicesAccessor;
-import eu.ibagroup.easyrpa.openframework.email.Email;
+import eu.ibagroup.easyrpa.openframework.email.EmailMessage;
+import eu.ibagroup.easyrpa.openframework.email.EmailSender;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
@@ -16,15 +16,20 @@ import java.io.IOException;
 @Slf4j
 public class SendMessageWithAttachment extends ApTask {
 
-    private static final String SUBJECT = "Test email with attachment";
-    private static final String BODY = "This message was sent by EasyRPA Bot and has attached file.";
+    private static final String ATTACHMENT_SUBJECT = "Test email with attachment";
+    private static final String ATTACHMENT_BODY = "This message was sent by EasyRPA Bot and has attached file.";
+
+    private static final String INLINE_ATTACHMENT_SUBJECT = "Test email with inline attachment";
+    private static final String INLINE_ATTACHMENT_BODY = "This message was sent by EasyRPA Bot and includes following file:";
+    private static final String ANOTHER_BODY_TEXT = "Some text in the end.";
+
     private static final String PATH_TO_FILE = "/Test.xlsx";
 
-    @Configuration(value = "email.service")
-    private String emailService;
+    @Configuration(value = "outbound.email.server")
+    private String outboundEmailServer;
 
-    @Configuration(value = "email.service.protocol")
-    private String emailServiceProtocol;
+    @Configuration(value = "outbound.email.protocol")
+    private String outboundEmailProtocol;
 
     @Configuration(value = "email.recipients")
     private String emailRecipients;
@@ -33,7 +38,7 @@ public class SendMessageWithAttachment extends ApTask {
     private SecretCredentials emailUserCredentials;
 
     @Inject
-    private RPAServicesAccessor rpaServices;
+    private EmailSender emailSender;
 
     @Override
     public void execute() throws IOException {
@@ -42,16 +47,17 @@ public class SendMessageWithAttachment extends ApTask {
         File testFile = readResourceFile(PATH_TO_FILE);
 
         log.info("Send email message to '{}' using service '{}', protocol '{}' and mailbox '{}'.",
-                emailRecipients, emailService, emailServiceProtocol, emailUserCredentials.getUser());
+                emailRecipients, outboundEmailServer, outboundEmailProtocol, emailUserCredentials.getUser());
 
-        Email.create().service(emailService).serviceProtocol(emailServiceProtocol)
-                .credentials(emailUserCredentials.getUser(), emailUserCredentials.getPassword())
-                .recipients(emailRecipients)
-                .subject(SUBJECT).body(BODY).attach(testFile).send();
+        log.info("Send message with attached file.");
+        new EmailMessage(emailSender).subject(ATTACHMENT_SUBJECT).body(ATTACHMENT_BODY).attach(testFile).send();
 
-        log.info("Send the same message using RPA services accessor.");
-
-        Email.create(rpaServices).subject(SUBJECT).body(BODY).attach(testFile).send();
+        log.info("Send message with attachment in the body.");
+        new EmailMessage(emailSender).subject(INLINE_ATTACHMENT_SUBJECT)
+                .body(INLINE_ATTACHMENT_BODY)
+                .inline(testFile)
+                .body(ANOTHER_BODY_TEXT)
+                .send();
 
         log.info("Messages have been sent successfully");
     }

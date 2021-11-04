@@ -1,31 +1,28 @@
-package eu.ibagroup.easyrpa.openframework.email.core.templates;
+package eu.ibagroup.easyrpa.openframework.email.message.templates;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import org.apache.commons.io.IOUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Map;
 
 public class FreeMarkerTemplate extends TextTemplate {
 
     private Template template;
 
     public FreeMarkerTemplate(InputStream inputStream) throws IOException {
-        this(IOUtils.toString(inputStream, StandardCharsets.UTF_8), new HashMap<String, Object>());
+        this(IOUtils.toString(inputStream, StandardCharsets.UTF_8), new HashMap<>());
     }
 
     public FreeMarkerTemplate(InputStream inputStream, String encoding) throws IOException {
-        this(IOUtils.toString(inputStream, encoding), new HashMap<String, Object>());
+        this(IOUtils.toString(inputStream, encoding), new HashMap<>());
     }
 
-    public FreeMarkerTemplate(String templateText, HashMap<String, Object> map) throws IOException {
+    public FreeMarkerTemplate(String templateText, Map<String, Object> map) throws IOException {
         super(map);
         init(templateText);
     }

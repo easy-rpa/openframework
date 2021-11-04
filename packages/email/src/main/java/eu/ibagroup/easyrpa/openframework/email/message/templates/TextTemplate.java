@@ -1,4 +1,4 @@
-package eu.ibagroup.easyrpa.openframework.email.core.templates;
+package eu.ibagroup.easyrpa.openframework.email.message.templates;
 
 import freemarker.template.TemplateException;
 
@@ -13,9 +13,9 @@ public abstract class TextTemplate {
 
     protected String templateName = "";
 
-    protected HashMap<String, Object> scopes;
+    protected Map<String, Object> scopes;
 
-    public TextTemplate(HashMap<String, Object> map) {
+    public TextTemplate(Map<String, Object> map) {
         if (map != null) {
             this.scopes = map;
         } else {
@@ -28,7 +28,7 @@ public abstract class TextTemplate {
     }
 
     public TextTemplate put(Map<String, Object> data) {
-        data.forEach((k, v) -> put(k, v));
+        data.forEach(this::put);
         return this;
     }
 
@@ -40,7 +40,7 @@ public abstract class TextTemplate {
             if (currentData instanceof List) {
                 list = (List<Object>) currentData;
             } else {
-                list = new ArrayList<Object>();
+                list = new ArrayList<>();
                 list.add(currentData);
                 scopes.put(scope, list);
             }

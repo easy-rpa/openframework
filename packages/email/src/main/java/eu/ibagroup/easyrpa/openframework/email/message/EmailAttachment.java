@@ -1,16 +1,15 @@
 package eu.ibagroup.easyrpa.openframework.email.message;
 
 import eu.ibagroup.easyrpa.openframework.email.utils.EmailUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class EmailAttachment implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class EmailAttachment implements EmailBodyPart {
 
     private final String fileName;
 
@@ -22,7 +21,7 @@ public class EmailAttachment implements Serializable {
         this.fileName = name;
 
         try {
-            this.content = EmailUtils.readAllBytes(contentSource);
+            this.content = IOUtils.toByteArray(contentSource);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -32,7 +31,7 @@ public class EmailAttachment implements Serializable {
 
     public EmailAttachment(String name, byte[] content, String mimeType) {
         this.fileName = name;
-        this.content = content != null ? (byte[]) content.clone() : new byte[0];
+        this.content = content != null ? content.clone() : new byte[0];
         this.mimeType = mimeType;
     }
 
@@ -69,8 +68,6 @@ public class EmailAttachment implements Serializable {
     }
 
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("EmailAttachment [name=").append(this.fileName).append(", content size=").append(this.content.length).append(", mimeType=").append(this.mimeType).append(']');
-        return builder.toString();
+        return "EmailAttachment [name=" + this.fileName + ", content size=" + this.content.length + ", mimeType=" + this.mimeType + ']';
     }
 }

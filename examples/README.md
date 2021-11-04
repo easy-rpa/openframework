@@ -9,26 +9,28 @@
  
 ## Email
 
+- [Ways of creating EmailMessage](email/ways-of-message-creating)
+
+- [Ways of creating EmailClient](email/ways-of-client-creating)
+
 - [Sending of simple email message](email/simple-message-sending)
 
-- [Sending of message with attachments](email/message-sending-with-attachments)
+- [In progress] [Sending of message with attachments](email/message-sending-with-attachments)
 
 - [Creating of message based on FreeMarker template](email/template-based-message-creating)
 
-- [In progress] [Reading messages from inbox](email/inbox-messages-listing)
+- [Reading messages from inbox](email/inbox-messages-listing)
 
-- [In progress] [Searching of messages based on specified condition](email/messages-searching)
+- [Searching of messages based on specified condition](email/messages-searching)
 
-- [In progress] [Waiting of message based on specified condition](email/message-waiting)
+- [Waiting of message based on specified condition](email/message-waiting)
 
-- [In progress] [Reading of attached files](email/attachments-reading)
+- [Reading of attached files](email/attachments-reading)
 
-- Mailbox messages manipulating  (email/messages-manipulating) 
+- [In progress] [Mailbox messages manipulating](email/messages-manipulating) 
     * Forward message
     * Reply on message
-    * Mark messages as Read/Unread
-    * Mark messages with flag
-    * Archive message
+    * Mark messages as Read/Unread    
     * Delete message   
     
 - Getting a list of existing mailbox folders (email/folders-listing)

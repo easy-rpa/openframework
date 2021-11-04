@@ -1,17 +1,17 @@
 package eu.ibagroup.easyrpa.examples.email.template_based_message_creating.emails;
 
 import eu.ibagroup.easyrpa.examples.email.template_based_message_creating.entities.Book;
-import eu.ibagroup.easyrpa.openframework.core.sevices.RPAServicesAccessor;
-import eu.ibagroup.easyrpa.openframework.email.Email;
+import eu.ibagroup.easyrpa.openframework.email.EmailMessage;
+import eu.ibagroup.easyrpa.openframework.email.EmailSender;
 
 import java.util.List;
 
 /**
  * Example of custom Email class that keeps information about available in stock books.
  *
- * @see Email
+ * @see EmailMessage
  */
-public class BooksInStockEmail extends Email {
+public class BooksInStockEmail extends EmailMessage {
 
     private static final String TYPE_NAME = "books.in.stock.email";
 
@@ -35,10 +35,10 @@ public class BooksInStockEmail extends Email {
     /**
      * Construct a new instance of this email.
      *
-     * @param rpaServices - accessor that provides access to process configuration parameters and secret vault.
+     * @param sender - email sender that used to provide some configuration parameters and send this email.
      */
-    public BooksInStockEmail(RPAServicesAccessor rpaServices) {
-        super(TYPE_NAME, rpaServices);
+    public BooksInStockEmail(EmailSender sender) {
+        super(TYPE_NAME, sender);
     }
 
     /**
@@ -58,12 +58,12 @@ public class BooksInStockEmail extends Email {
         // Here can be any logic based on which the subject can be changed.
         subject(SUBJECT);
 
-        // Path to corresponding FTL file as body.
-        body(TEMPLATE_FILE_PATH);
-
         // In case when FTL file has different from UTF-8 encoding here
         // corresponding encoding can be specified.
         charset("UTF-8");
+
+        // Path to corresponding FTL file as body.
+        body(TEMPLATE_FILE_PATH);
 
         // Specifying of properties that are used as inputs for FTL file.
         property("books", books);
