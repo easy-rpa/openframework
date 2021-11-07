@@ -12,11 +12,16 @@ public class MessagesManipulatingModule extends ApModule {
 
     // change ReadEmail.class to any of the two remaining task-classes
     public TaskOutput run() throws Exception {
-        return execute(getInput(), GetUnreadMessage.class)
-                .thenCompose(execute(MarkMessageAsRead.class))
-                .thenCompose(execute(ForwardMessage.class))
-                .thenCompose(execute(ReplyToMessage.class))
-                .thenCompose(execute(DeleteMessage.class))
-                .get();
+        TaskOutput taskOutput = execute(getInput(), GetUnreadMessage.class).get();
+
+        if (taskOutput.get("messageId") == null) {
+            return taskOutput;
+        } else {
+            return execute(taskOutput, MarkMessageAsRead.class)
+                    .thenCompose(execute(ForwardMessage.class))
+                    .thenCompose(execute(ReplyToMessage.class))
+                    .thenCompose(execute(DeleteMessage.class))
+                    .get();
+        }
     }
 }

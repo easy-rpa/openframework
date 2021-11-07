@@ -80,7 +80,7 @@ public class SmtpEmailService implements OutboundEmailService {
     @Override
     public void send(EmailMessage message) throws EmailMessagingException {
         if (message.getSender() == null) {
-            message.setSender(this.user);
+            message.sender(this.user).excludeFromRecipients(this.user).excludeFromCcRecipients(this.user);
         }
 
         Message nativeMessage = this.messageConverter.convertToNativeMessage(message);

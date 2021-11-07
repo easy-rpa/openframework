@@ -32,7 +32,7 @@ public class LookupMessagesWithKeywords extends ApTask {
         log.info("Fetch messages that contain any of '{}' keywords in subject or body.", LOOKUP_KEYWORDS);
         List<EmailMessage> messages = emailClient.fetchMessages(msg -> {
             boolean subjectContainsKeywords = LOOKUP_KEYWORDS.stream().anyMatch(msg.getSubject()::contains);
-            boolean bodyContainsKeywords = LOOKUP_KEYWORDS.stream().anyMatch(msg.getBody()::contains);
+            boolean bodyContainsKeywords = LOOKUP_KEYWORDS.stream().anyMatch(msg.getText()::contains);
             return subjectContainsKeywords || bodyContainsKeywords;
         });
 

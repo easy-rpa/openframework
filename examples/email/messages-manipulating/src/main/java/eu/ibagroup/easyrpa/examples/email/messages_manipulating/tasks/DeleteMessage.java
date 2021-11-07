@@ -16,26 +16,27 @@ public class DeleteMessage extends ApTask {
     @Inject
     private EmailClient emailClient;
 
-    @Input("message")
-    private EmailMessage msg;
+    @Input("messageId")
+    private String messageId;
 
     @Override
     public void execute() {
+        log.info("Deleting of message with id '{}'.", messageId);
+        EmailMessage message = emailClient.fetchMessage(messageId);
 
-        if (msg != null) {
-            log.info("Delete input message.");
-//            emailClient.deleteMessage(msg);
+        if (message != null) {
+            log.info("Delete message.");
+//            emailClient.deleteMessage(message);
 
-            msg = emailClient.fetchMessage(msg.getId());
-
-            if (msg == null) {
+            message = emailClient.fetchMessage(messageId);
+            if (message == null) {
                 log.info("Message has been deleted successfully.");
             } else {
                 log.warn("Something went wrong. Message is not deleted.");
             }
 
         } else {
-            log.info("Message is not provided. Skip deleting.");
+            log.error("Message with id '{}' is not found.", messageId);
         }
     }
 }

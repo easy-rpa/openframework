@@ -1,74 +1,94 @@
 package eu.ibagroup.easyrpa.openframework.email;
 
-import eu.ibagroup.easyrpa.openframework.email.message.*;
-import eu.ibagroup.easyrpa.openframework.email.message.templates.FreeMarkerTemplate;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.ibagroup.easyrpa.openframework.email.message.EmailAddress;
+import eu.ibagroup.easyrpa.openframework.email.message.EmailAttachment;
+import eu.ibagroup.easyrpa.openframework.email.message.EmailBodyPart;
 import eu.ibagroup.easyrpa.openframework.email.service.EmailConfigParam;
+import eu.ibagroup.easyrpa.openframework.email.utils.EmailUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class EmailMessage {
 
+    public static final String USED_DATE_TME_FORMAT_PATTERN = "MM/dd/yyyy hh:mm:ss a";
+
     private static final String DEFAULT_EMAIL_TYPE_NAME = "email";
 
-    private String typeName = DEFAULT_EMAIL_TYPE_NAME;
+    protected String typeName = DEFAULT_EMAIL_TYPE_NAME;
 
-    private String id;
+    protected String id;
 
-    private ZonedDateTime date;
+    @JsonFormat(pattern = USED_DATE_TME_FORMAT_PATTERN)
+    protected Date date;
 
-    private String parentFolder;
+    protected String parentFolder;
 
-    private String subject;
+    protected Map<String, String> headers;
 
-    private EmailAddress sender;
+    protected EmailAddress sender;
 
-    private String senderName;
+    @JsonIgnore
+    protected String senderName;
 
-    private EmailAddress from;
+    protected EmailAddress from;
 
-    private List<EmailAddress> recipients;
+    protected List<EmailAddress> recipients;
 
-    private List<EmailAddress> ccRecipients;
+    protected List<EmailAddress> ccRecipients;
 
-    private List<EmailAddress> bccRecipients;
+    protected List<EmailAddress> bccRecipients;
 
-    private List<EmailAddress> replyTo;
+    protected List<EmailAddress> replyTo;
 
-    private String charset;
+    protected String subject;
 
-    private List<EmailBodyPart> bodyParts = new ArrayList<>();
+    protected String charset;
 
-    private Map<String, Object> bodyProperties = new HashMap<>();
+    @JsonIgnore
+    protected String text;
 
-    private List<EmailAttachment> attachments = new ArrayList<>();
+    @JsonIgnore
+    protected String html;
 
-    private boolean isRead;
+    protected List<EmailBodyPart> bodyParts;
 
-    private EmailMessage previousMessage;
+    protected Map<String, Object> bodyProperties = new HashMap<>();
 
-    @Inject
-    private EmailSender emailSender;
+    protected List<EmailAttachment> attachments;
+
+    protected Boolean isRead;
+
+    @JsonIgnore
+    protected EmailMessage forwardedMessage;
+
+    @JsonIgnore
+    protected EmailMessage replyOnMessage;
+
+    @JsonIgnore
+    protected EmailSender emailSender;
 
     public EmailMessage() {
-    }
-
-    public EmailMessage(String id, String parentFolder, ZonedDateTime date) {
-        this.id = id;
-        this.parentFolder = parentFolder;
-        this.date = date;
     }
 
     public EmailMessage(String typeName) {
         this.typeName = typeName;
     }
 
+    @Inject
     public EmailMessage(EmailSender emailSender) {
         this.emailSender = emailSender;
     }
@@ -86,23 +106,31 @@ public class EmailMessage {
         return this.parentFolder;
     }
 
-    public ZonedDateTime getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public String getSubject() {
-        if (subject == null) {
-            subject = getConfigParam(EmailConfigParam.SUBJECT_TPL);
+    @JsonIgnore
+    public ZonedDateTime getDateTime() {
+        return getDate() != null ? ZonedDateTime.ofInstant(getDate().toInstant(), ZoneId.systemDefault()) : null;
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(Map<String, String> headers) {
+        this.headers = new HashMap<>();
+        if (headers != null) {
+            this.headers.putAll(headers);
         }
-        return subject != null ? subject : "";
     }
 
-    public void setSubject(String subject) {
-        this.subject = subject;
-    }
-
-    public EmailMessage subject(String subject) {
-        setSubject(subject);
+    public EmailMessage header(String key, String value) {
+        if (this.headers == null) {
+            this.headers = new HashMap<>();
+        }
+        this.headers.put(key, value);
         return this;
     }
 
@@ -118,6 +146,7 @@ public class EmailMessage {
         this.sender = senderAddress != null ? new EmailAddress(senderAddress, getSenderName()) : null;
     }
 
+    @JsonSetter
     public void setSender(EmailAddress sender) {
         this.sender = sender;
         this.senderName = sender != null ? sender.getPersonal() : null;
@@ -159,6 +188,7 @@ public class EmailMessage {
         this.from = fromAddress != null ? new EmailAddress(fromAddress) : null;
     }
 
+    @JsonSetter
     public void setFrom(EmailAddress from) {
         this.from = from;
     }
@@ -198,6 +228,17 @@ public class EmailMessage {
         return this;
     }
 
+    public EmailMessage excludeFromRecipients(String... recipientsSequence) {
+        if (recipients != null) {
+            for (String recipient : recipientsSequence) {
+                if (recipient != null && !recipient.trim().isEmpty() && recipients.size() > 1) {
+                    recipients.remove(new EmailAddress(recipient));
+                }
+            }
+        }
+        return this;
+    }
+
     public List<EmailAddress> getCcRecipients() {
         if (ccRecipients == null) {
             ccRecipients = new ArrayList<>();
@@ -223,6 +264,17 @@ public class EmailMessage {
         for (String recipient : recipientsSequence) {
             if (recipient != null && !recipient.trim().isEmpty()) {
                 ccRecipients.add(new EmailAddress(recipient));
+            }
+        }
+        return this;
+    }
+
+    public EmailMessage excludeFromCcRecipients(String... recipientsSequence) {
+        if (ccRecipients != null) {
+            for (String recipient : recipientsSequence) {
+                if (recipient != null && !recipient.trim().isEmpty()) {
+                    ccRecipients.remove(new EmailAddress(recipient));
+                }
             }
         }
         return this;
@@ -288,6 +340,22 @@ public class EmailMessage {
         return this;
     }
 
+    public String getSubject() {
+        if (subject == null) {
+            subject = getConfigParam(EmailConfigParam.SUBJECT_TPL);
+        }
+        return subject != null ? subject : "";
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
+
+    public EmailMessage subject(String subject) {
+        setSubject(subject);
+        return this;
+    }
+
     public String getCharset() {
         if (charset == null) {
             charset = getConfigParam(EmailConfigParam.CHARSET_TPL);
@@ -300,48 +368,141 @@ public class EmailMessage {
     }
 
     public EmailMessage charset(String charset) {
-        this.charset = charset;
+        setCharset(charset);
         return this;
     }
 
     public List<EmailBodyPart> getBodyParts() {
         if (bodyParts == null) {
+            bodyParts = new ArrayList<>();
             String tpl = getConfigParam(EmailConfigParam.BODY_TEMPLATE_TPL);
             if (tpl != null) {
-                bodyParts.add(tpl.endsWith(".ftl") ? new EmailBodyTemplate(tpl) : new EmailBodyText(tpl));
+                bodyParts.add(new EmailBodyPart(tpl, EmailBodyPart.CONTENT_TYPE_TEXT_HTML));
             }
+            this.text = null;
+            this.html = null;
         }
         return bodyParts;
     }
 
     public void setBodyParts(List<EmailBodyPart> bodyParts) {
-        this.bodyParts = bodyParts;
+        this.bodyParts = new ArrayList<>();
+        if (bodyParts != null) {
+            this.bodyParts.addAll(bodyParts);
+        }
+        this.text = null;
+        this.html = null;
     }
 
-    public EmailMessage body(String body) {
-        if (body != null) {
-            bodyParts.add(body.endsWith(".ftl") ? new EmailBodyTemplate(body) : new EmailBodyText(body));
+    public EmailMessage text(String text) {
+        if (text != null) {
+            List<EmailBodyPart> parts = getBodyParts();
+            List<EmailBodyPart> textParts = parts.stream().filter(EmailBodyPart::isText).collect(Collectors.toList());
+            if (!textParts.isEmpty()) {
+                parts.removeAll(textParts);
+            }
+            parts.add(new EmailBodyPart(text, EmailBodyPart.CONTENT_TYPE_TEXT_PLAIN));
+            this.text = null;
+            this.html = null;
         }
         return this;
     }
 
-    public String getBody() {
-        return this.bodyParts.stream().map(part -> {
-            if (part instanceof EmailBodyText) {
-                return ((EmailBodyText) part).getContent();
+    public EmailMessage addText(String text) {
+        if (text != null) {
+            getBodyParts().add(new EmailBodyPart(text, EmailBodyPart.CONTENT_TYPE_TEXT_PLAIN));
+            this.text = null;
+            this.html = null;
+        }
+        return this;
+    }
+
+    public EmailMessage html(String html) {
+        if (html != null) {
+            List<EmailBodyPart> parts = getBodyParts();
+            List<EmailBodyPart> htmlParts = parts.stream().filter(EmailBodyPart::isHtml).collect(Collectors.toList());
+            if (!htmlParts.isEmpty()) {
+                parts.removeAll(htmlParts);
             }
-            if (part instanceof EmailBodyTemplate) {
-                try {
-                    return new FreeMarkerTemplate(((EmailBodyTemplate) part).getTemplateText(), bodyProperties).compile();
-                } catch (Exception e) {
-                    return String.format("[ftl_compile_error \"%s\"]", e.getMessage());
+            parts.add(new EmailBodyPart(html, EmailBodyPart.CONTENT_TYPE_TEXT_HTML));
+            this.text = null;
+            this.html = null;
+        }
+        return this;
+    }
+
+    public EmailMessage addHtml(String html) {
+        if (html != null) {
+            getBodyParts().add(new EmailBodyPart(html, EmailBodyPart.CONTENT_TYPE_TEXT_HTML));
+            this.text = null;
+            this.html = null;
+        }
+        return this;
+    }
+
+    public boolean hasHtml() {
+        return getBodyParts().stream().anyMatch(EmailBodyPart::isHtml);
+    }
+
+    public boolean hasText() {
+        return getBodyParts().stream().anyMatch(EmailBodyPart::isText);
+    }
+
+    public String getText() {
+        if (text == null) {
+            if (hasText()) {
+                text = getBodyParts().stream()
+                        .map(part -> part.isText() ? part.getContent(bodyProperties) : null)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.joining("\n")).trim();
+            } else if (hasHtml()) {
+                text = EmailUtils.htmlToText(getHtml());
+            }
+        }
+        return text;
+    }
+
+    public String getHtml() {
+        if (html == null) {
+            List<String> parts = new ArrayList<>();
+            if (hasHtml()) {
+                parts = getBodyParts().stream()
+                        .map(part -> part.isHtml() ? part.getContent(bodyProperties) : null)
+                        .filter(Objects::nonNull).collect(Collectors.toList());
+            } else if (hasText()) {
+                parts = getBodyParts().stream()
+                        .map(part -> part.isText() ? part.getContent(bodyProperties) : null)
+                        .filter(Objects::nonNull).collect(Collectors.toList());
+            }
+
+            String head = parts.stream().map(p -> {
+                if (p.contains("<head>")) {
+                    return StringUtils.substringBetween(p, "<head>", "</head>");
                 }
+                if (p.contains("<HEAD>")) {
+                    return StringUtils.substringBetween(p, "<HEAD>", "</HEAD>");
+                }
+                return null;
+            }).filter(Objects::nonNull).collect(Collectors.joining("\n"));
+            String body = parts.stream().map(p -> {
+                if (p.contains("<body>")) {
+                    return StringUtils.substringBetween(p, "<body>", "</body>");
+                }
+                if (p.contains("<BODY>")) {
+                    return StringUtils.substringBetween(p, "<BODY>", "</BODY>");
+                }
+                return p.startsWith("<") ? p : String.format("<div>%s</div>", p);
+            }).collect(Collectors.joining("\n"));
+
+            if (head.trim().length() > 0) {
+                html = String.format("<html><head>\n%s\n</head><body>\n%s\n</body></html>", head, body);
+            } else if (body.trim().length() > 0) {
+                html = String.format("<html><body>\n%s\n</body></html>", body);
+            } else {
+                html = "";
             }
-            if (part instanceof EmailAttachment) {
-                return String.format("[attachment \"%s\"]", ((EmailAttachment) part).getFileName());
-            }
-            return "";
-        }).collect(Collectors.joining("\n"));
+        }
+        return html;
     }
 
     public Map<String, Object> getBodyProperties() {
@@ -357,74 +518,45 @@ public class EmailMessage {
         return this;
     }
 
-    public EmailMessage inline(File file) throws IOException {
-        bodyParts.add(new EmailAttachment(file.toPath()));
-        return this;
-    }
-
-    public EmailMessage inline(Path filePath) throws IOException {
-        bodyParts.add(new EmailAttachment(filePath));
-        return this;
-    }
-
-    public EmailMessage inline(InputStream fileContent, String mimeType) {
-        bodyParts.add(new EmailAttachment(UUID.randomUUID().toString(), fileContent, mimeType));
-        return this;
-    }
-
-    public EmailMessage inline(byte[] fileContent, String mimeType) {
-        bodyParts.add(new EmailAttachment(UUID.randomUUID().toString(), fileContent, mimeType));
-        return this;
-    }
-
-    public EmailMessage inline(String fileName, InputStream fileContent, String mimeType) {
-        bodyParts.add(new EmailAttachment(fileName, fileContent, mimeType));
-        return this;
-    }
-
-    public EmailMessage inline(String fileName, byte[] fileContent, String mimeType) {
-        bodyParts.add(new EmailAttachment(fileName, fileContent, mimeType));
-        return this;
-    }
-
     public List<EmailAttachment> getAttachments() {
+        if (attachments == null) {
+            attachments = new ArrayList<>();
+        }
         return attachments;
     }
 
     public void setAttachments(List<EmailAttachment> attachments) {
-        this.attachments = attachments;
+        this.attachments = new ArrayList<>();
+        this.attachments.addAll(attachments);
     }
 
     public EmailMessage attach(File file) throws IOException {
-        attachments.add(new EmailAttachment(file.toPath()));
+        getAttachments().add(new EmailAttachment(file.toPath()));
         return this;
     }
 
     public EmailMessage attach(Path filePath) throws IOException {
-        attachments.add(new EmailAttachment(filePath));
+        getAttachments().add(new EmailAttachment(filePath));
         return this;
     }
 
     public EmailMessage attach(String fileName, InputStream fileContent, String mimeType) {
-        attachments.add(new EmailAttachment(fileName, fileContent, mimeType));
-        return this;
-    }
-
-    public EmailMessage attach(String fileName, byte[] fileContent, String mimeType) {
-        attachments.add(new EmailAttachment(fileName, fileContent, mimeType));
+        getAttachments().add(new EmailAttachment(fileName, fileContent, mimeType));
         return this;
     }
 
     public boolean hasAttachments() {
+        List<EmailAttachment> attachments = getAttachments();
         return attachments != null && !attachments.isEmpty();
     }
 
     public boolean isRead() {
-        return isRead;
+        return isRead != null && isRead;
     }
 
+    @JsonIgnore
     public boolean isUnread() {
-        return !isRead;
+        return isRead != null && !isRead;
     }
 
     public void setRead(boolean read) {
@@ -441,35 +573,52 @@ public class EmailMessage {
         return this;
     }
 
-    public void setPreviousMessage(EmailMessage previousMessage) {
-        this.previousMessage = previousMessage;
+    public EmailMessage getForwardedMessage() {
+        return forwardedMessage;
     }
 
-    public EmailMessage getPreviousMessage() {
-        return previousMessage;
+    public EmailMessage getReplyOnMessage() {
+        return replyOnMessage;
     }
 
-    public EmailMessage forwardMessage() {
+    public EmailMessage forwardMessage(boolean withAttachments) {
         EmailMessage msg = new EmailMessage();
-        msg.subject = "Fwd: " + subject;
-        msg.charset = charset;
-        msg.previousMessage = this;
+        msg.setSubject("Fwd: " + getSubject());
+        msg.setCharset(getCharset());
+        msg.forwardedMessage = this;
+        if (withAttachments) {
+            msg.setAttachments(getAttachments());
+        }
         return msg;
     }
 
-    public EmailMessage replyMessage() {
+    public EmailMessage replyMessage(boolean withAttachments) {
         EmailMessage msg = new EmailMessage();
-        msg.subject = "Re: " + getSubject();
-        msg.charset = charset;
-        msg.recipients = new ArrayList<>();
-        msg.recipients.add(getSender());
-        msg.previousMessage = this;
+        List<EmailAddress> recipients = getReplyTo();
+        if (recipients == null || recipients.isEmpty()) {
+            recipients = new ArrayList<>();
+            recipients.add(getFrom() != null ? getFrom() : getSender());
+        }
+        msg.setRecipients(recipients);
+        msg.setSubject("Re: " + getSubject());
+        msg.setCharset(getCharset());
+        msg.replyOnMessage = this;
+        if (withAttachments) {
+            msg.setAttachments(getAttachments());
+        }
         return msg;
     }
 
-    public EmailMessage replyAllMessage() {
-        EmailMessage msg = replyMessage();
-        msg.setCcRecipients(getCcRecipients());
+    public EmailMessage replyAllMessage(boolean withAttachments) {
+        EmailMessage msg = replyMessage(withAttachments);
+        List<EmailAddress> recipients = msg.getRecipients();
+        EmailAddress currentSender = msg.getSender();
+        recipients.addAll(getRecipients().stream()
+                .filter(r -> !r.equals(currentSender) && !recipients.contains(r))
+                .collect(Collectors.toList()));
+        msg.setCcRecipients(getCcRecipients().stream()
+                .filter(r -> !r.equals(currentSender) && !recipients.contains(r))
+                .collect(Collectors.toList()));
         return msg;
     }
 
@@ -486,11 +635,31 @@ public class EmailMessage {
         }
     }
 
+    @Override
+    public String toString() {
+        return "EmailMessage{" +
+                "id='" + id + '\'' +
+                ", senderName='" + senderName + '\'' +
+                ", subject='" + subject + '\'' +
+                ", bodyParts=" + bodyParts +
+                '}';
+    }
+
+    public String toJson(boolean isPrettyPrint) throws JsonProcessingException {
+        ObjectMapper om = new ObjectMapper();
+        return isPrettyPrint ? om.writerWithDefaultPrettyPrinter().writeValueAsString(this) : om.writeValueAsString(this);
+    }
+
+    public static EmailMessage fromJson(String json) throws JsonProcessingException {
+        ObjectMapper om = new ObjectMapper();
+        return om.readValue(json, EmailMessage.class);
+    }
+
     protected void beforeSend() {
         // do some preparations here for subclasses
     }
 
-    private String getConfigParam(String template) {
+    protected String getConfigParam(String template) {
         String result;
 
         if (emailSender == null) {

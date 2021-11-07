@@ -2,28 +2,25 @@ package eu.ibagroup.easyrpa.openframework.email.service.javax;
 
 import eu.ibagroup.easyrpa.openframework.email.EmailMessage;
 import eu.ibagroup.easyrpa.openframework.email.exception.EmailMessagingException;
-import eu.ibagroup.easyrpa.openframework.email.message.*;
-import eu.ibagroup.easyrpa.openframework.email.message.templates.FreeMarkerTemplate;
+import eu.ibagroup.easyrpa.openframework.email.message.EmailAddress;
+import eu.ibagroup.easyrpa.openframework.email.message.EmailAttachment;
 import eu.ibagroup.easyrpa.openframework.email.service.MessageConverter;
-import freemarker.template.TemplateException;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.mail.*;
 import javax.mail.internet.*;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class MimeMessageConverter extends MessageConverter<Message> {
 
-    private static final String MIME_MULTIPART = "multipart";
-    private static final String MIME_TEXT_PLAIN = "text/plain";
-    private static final String MIME_TEXT_HTML = "text/html";
-    private static final String MIME_MESSAGE = "message/rfc822";
+    private static final Pattern INLINE_IMAGE_NAME_RE = Pattern.compile("src=\"cid:([\\w.]+)\"");
+    private static final Pattern INLINE_FILE_NAME_RE = Pattern.compile("<i>\\(See attached file: ([\\w.]+)\\)</i>");
 
     private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
     private static final String HEADER_CONTENT_TRANSFER_ENCODING = "Content-Transfer-Encoding";
@@ -83,107 +80,159 @@ public class MimeMessageConverter extends MessageConverter<Message> {
                 message.setSentDate(Date.from(emailMessage.getDate().toInstant()));
             }
 
-            Multipart contentRoot = new MimeMultipart("alternative");
+            Multipart contentRoot = new MimeMultipart("mixed");
 
-            String charset = emailMessage.getCharset();
-            String charsetString = "; charset=" + (charset == null || charset.trim().isEmpty() ? StandardCharsets.UTF_8 : charset);
+            contentRoot.addBodyPart(createBodyPart(emailMessage));
 
-            for (EmailBodyPart part : emailMessage.getBodyParts()) {
-                MimeBodyPart mimeBodyPart = null;
-
-                if (part instanceof EmailBodyText) {
-                    mimeBodyPart = new MimeBodyPart();
-                    mimeBodyPart.setContent(((EmailBodyText) part).getContent(), MIME_TEXT_HTML + charsetString);
-
-                } else if (part instanceof EmailBodyTemplate) {
-                    FreeMarkerTemplate template = new FreeMarkerTemplate(((EmailBodyTemplate) part).getTemplateText(), emailMessage.getBodyProperties());
-                    mimeBodyPart = new MimeBodyPart();
-                    mimeBodyPart.setContent(template.compile(), MIME_TEXT_HTML + charsetString);
-
-                } else if (part instanceof EmailAttachment) {
-                    mimeBodyPart = createFilePart((EmailAttachment) part, Part.INLINE);
-                }
-
-                if (mimeBodyPart != null) {
-                    contentRoot.addBodyPart(mimeBodyPart);
-                }
-            }
-
+            Set<String> inlineFileName = getInlineFileNames(emailMessage);
             for (EmailAttachment attachment : emailMessage.getAttachments()) {
-                contentRoot.addBodyPart(createFilePart(attachment, Part.ATTACHMENT));
+                contentRoot.addBodyPart(createAttachmentPart(attachment,
+                        inlineFileName.contains(attachment.getFileName()) ? Part.INLINE : Part.ATTACHMENT));
             }
 
             if (emailMessage.isRead()) {
                 message.setFlags(new Flags(Flags.Flag.SEEN), true);
             }
 
-            if (emailMessage.getPreviousMessage() != null) {
-                MimeBodyPart messageBodyPart = new MimeBodyPart();
-                messageBodyPart.setContent(convertToNativeMessage(emailMessage.getPreviousMessage()), MIME_MESSAGE);
-            }
-
             message.setContent(contentRoot);
             message.saveChanges();
 
             return message;
-        } catch (MessagingException | IOException | TemplateException e) {
+        } catch (MessagingException e) {
             throw new EmailMessagingException(e);
         }
     }
 
     @Override
     public EmailMessage convertToEmailMessage(Message nativeMessage) {
+        return new MimeMessageWrapper((MimeMessage) nativeMessage);
+    }
+
+    private Set<String> getInlineFileNames(EmailMessage emailMessage) {
+        Set<String> result = new HashSet<>();
+        List<String> lookupParts = new ArrayList<>();
+        if (emailMessage.hasText()) {
+            lookupParts.add(emailMessage.getText());
+            if (emailMessage.getForwardedMessage() != null) {
+                lookupParts.add(emailMessage.getForwardedMessage().getText());
+            }
+            if (emailMessage.getReplyOnMessage() != null) {
+                lookupParts.add(emailMessage.getReplyOnMessage().getText());
+            }
+        }
+        if (emailMessage.hasHtml()) {
+            lookupParts.add(emailMessage.getHtml());
+            if (emailMessage.getForwardedMessage() != null) {
+                lookupParts.add(emailMessage.getForwardedMessage().getHtml());
+            }
+            if (emailMessage.getReplyOnMessage() != null) {
+                lookupParts.add(emailMessage.getReplyOnMessage().getHtml());
+            }
+        }
+
+        for (String part : lookupParts) {
+            if (part == null) {
+                continue;
+            }
+            Matcher matcher = EmailAttachment.INLINE_IMAGE_PLACEHOLDER_RE.matcher(part);
+            while (matcher.find()) {
+                result.add(matcher.group(1));
+            }
+            matcher = EmailAttachment.INLINE_ATTACHMENT_PLACEHOLDER_RE.matcher(part);
+            while (matcher.find()) {
+                result.add(matcher.group(1));
+            }
+            matcher = INLINE_IMAGE_NAME_RE.matcher(part);
+            while (matcher.find()) {
+                result.add(matcher.group(1));
+            }
+            matcher = INLINE_FILE_NAME_RE.matcher(part);
+            while (matcher.find()) {
+                result.add(matcher.group(1));
+            }
+        }
+
+        return result;
+    }
+
+    private MimeBodyPart createBodyPart(EmailMessage emailMessage) {
         try {
-            MimeMessage mimeMessage = (MimeMessage) nativeMessage;
+            MimeBodyPart mimeBodyPart = new MimeBodyPart();
+            mimeBodyPart.setDisposition(Part.INLINE);
 
-            String messageId = null;
-            String folderName = null;
-            ZonedDateTime dateTime = null;
+            String charset = emailMessage.getCharset();
+            charset = charset == null || charset.trim().isEmpty() ? StandardCharsets.UTF_8.name() : charset;
 
-            Folder folder = mimeMessage.getFolder();
-            if (folder != null) {
-                messageId = folder instanceof UIDFolder ? String.valueOf(((UIDFolder) folder).getUID(mimeMessage)) : null;
-                folderName = folder.getFullName();
-            }
-            Date date = mimeMessage.getReceivedDate();
-            if (date != null) {
-                dateTime = ZonedDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
-            } else {
-                date = mimeMessage.getSentDate();
-                if (date != null) {
-                    dateTime = ZonedDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+            if (emailMessage.hasHtml()) {
+                String html = emailMessage.getHtml();
+                html = html.replaceAll(EmailAttachment.INLINE_IMAGE_PLACEHOLDER_RE.pattern(),
+                        "<img src=\"cid:$1\" alt=\"$1\" width=\"$2\" height=\"$3\">")
+                        .replaceAll(EmailAttachment.INLINE_ATTACHMENT_PLACEHOLDER_RE.pattern(),
+                                "<i>(See attached file: $1)</i>");
+
+                String subMessageHeader = null;
+                String subMessageHead = null;
+                String subMessageBody = null;
+
+                if (emailMessage.getForwardedMessage() != null) {
+                    subMessageHeader = formatSubMessageHeader(emailMessage.getForwardedMessage(), true, true);
+                    subMessageBody = emailMessage.getForwardedMessage().getHtml();
+                    if (subMessageBody.contains("<head>")) {
+                        subMessageHead = StringUtils.substringBetween(subMessageBody, "<head>", "</head>");
+                    }
+                    if (subMessageBody.contains("<body>")) {
+                        subMessageBody = StringUtils.substringBetween(subMessageBody, "<body>", "</body>");
+                    }
+
+                } else if (emailMessage.getReplyOnMessage() != null) {
+                    subMessageHeader = formatSubMessageHeader(emailMessage.getReplyOnMessage(), true, false);
+                    subMessageBody = emailMessage.getReplyOnMessage().getHtml();
+                    if (subMessageBody.contains("<head>")) {
+                        subMessageHead = StringUtils.substringBetween(subMessageBody, "<head>", "</head>");
+                    }
+                    if (subMessageBody.contains("<body>")) {
+                        subMessageBody = StringUtils.substringBetween(subMessageBody, "<body>", "</body>");
+                    }
+                    String bq = "<blockquote style=\"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex\">%s</blockquote>";
+                    subMessageBody = String.format(bq, subMessageBody);
                 }
+
+                if (subMessageBody != null) {
+                    if (subMessageHead != null && html.contains("<head>")) {
+                        html = html.replaceAll("</head>", subMessageHead + "</head>");
+                    } else if (subMessageHead != null && !html.contains("<head>")) {
+                        html = html.replaceAll("<html>", "<html><head>" + subMessageHead + "</head>");
+                    }
+                    html = html.replaceAll("</body>", "<br><div>" + subMessageHeader + subMessageBody + "</div></body>");
+                }
+
+                mimeBodyPart.setText(html, charset, "html");
+
+            } else if (emailMessage.hasText()) {
+                String text = emailMessage.getText();
+
+                String subMessageBody = null;
+                if (emailMessage.getForwardedMessage() != null) {
+                    String subMessageHeader = formatSubMessageHeader(emailMessage.getForwardedMessage(), false, true);
+                    subMessageBody = subMessageHeader + emailMessage.getForwardedMessage().getText();
+                } else if (emailMessage.getReplyOnMessage() != null) {
+                    String subMessageHeader = formatSubMessageHeader(emailMessage.getReplyOnMessage(), false, false);
+                    subMessageBody = subMessageHeader + emailMessage.getReplyOnMessage().getText();
+                }
+                if (subMessageBody != null) {
+                    text += "\n\n\n" + subMessageBody;
+                }
+
+                mimeBodyPart.setText(text, charset, "plain");
             }
 
-            EmailMessage emailMessage = new EmailMessage(messageId, folderName, dateTime);
-
-            emailMessage.setSender(convertToEmailAddress(mimeMessage.getSender()));
-            List<EmailAddress> fromAddress = convertToEmailAddresses(mimeMessage.getFrom());
-            if (fromAddress.size() > 0) {
-                emailMessage.setFrom(fromAddress.get(0));
-            }
-            emailMessage.setRecipients(convertToEmailAddresses(mimeMessage.getRecipients(Message.RecipientType.TO)));
-            emailMessage.setCcRecipients(convertToEmailAddresses(mimeMessage.getRecipients(Message.RecipientType.CC)));
-            emailMessage.setBccRecipients(convertToEmailAddresses(mimeMessage.getRecipients(Message.RecipientType.BCC)));
-            emailMessage.setReplyTo(convertToEmailAddresses(mimeMessage.getReplyTo()));
-
-            //TODO extract charset
-
-            emailMessage.setSubject(mimeMessage.getSubject());
-            emailMessage.setBodyParts(extractBodyParts(mimeMessage));
-            emailMessage.setAttachments(extractAttachments(mimeMessage));
-            emailMessage.setPreviousMessage(extractPreviousMessage(mimeMessage));
-            emailMessage.setRead(mimeMessage.getFlags().contains(Flags.Flag.SEEN));
-
-            return emailMessage;
-
-        } catch (MessagingException | IOException e) {
+            return mimeBodyPart;
+        } catch (MessagingException e) {
             throw new EmailMessagingException(e);
         }
     }
 
-    private MimeBodyPart createFilePart(EmailAttachment attachment, String disposition) {
-        MimeBodyPart filePart;
+    private MimeBodyPart createAttachmentPart(EmailAttachment attachment, String disposition) {
         try {
             byte[] attachmentBytesBase64 = Base64.getEncoder().encode(attachment.getContent());
             InternetHeaders headers = new InternetHeaders();
@@ -191,7 +240,7 @@ public class MimeMessageConverter extends MessageConverter<Message> {
             headers.setHeader(HEADER_CONTENT_TYPE, this.formatContentType(attachment));
             headers.setHeader(HEADER_CONTENT_TRANSFER_ENCODING, "base64");
             headers.setHeader(HEADER_CONTENT_DISPOSITION, this.formatContentDisposition(attachment, disposition));
-            filePart = new MimeBodyPart(headers, attachmentBytesBase64);
+            MimeBodyPart filePart = new MimeBodyPart(headers, attachmentBytesBase64);
             filePart.setFileName(attachment.getFileName());
             filePart.setDisposition(disposition);
             return filePart;
@@ -212,113 +261,39 @@ public class MimeMessageConverter extends MessageConverter<Message> {
         return disposition.toLowerCase() + "; filename=\"" + attachment.getFileName() + "\"";
     }
 
-    private List<EmailAddress> convertToEmailAddresses(Address[] addresses) {
-        List<EmailAddress> emailAddresses = new ArrayList<>();
-        if (addresses != null) {
-            for (Address address : addresses) {
-                EmailAddress emailAddress = convertToEmailAddress(address);
-                if (emailAddress != null) {
-                    emailAddresses.add(emailAddress);
-                }
-            }
-        }
-        return emailAddresses;
-    }
-
-    private EmailAddress convertToEmailAddress(Address address) {
-        EmailAddress emailAddress = null;
-        if (address != null) {
-            if (address instanceof InternetAddress) {
-                InternetAddress iAddress = (InternetAddress) address;
-                emailAddress = new EmailAddress(iAddress.getAddress(), iAddress.getPersonal());
-            } else {
-                emailAddress = new EmailAddress(address.toString());
-            }
-        }
-        return emailAddress;
-    }
-
-    private List<EmailBodyPart> extractBodyParts(Part part) throws MessagingException, IOException {
-        List<EmailBodyPart> result = new ArrayList<>();
-        String mimeType = part.getContentType().toLowerCase();
-        String disposition = part.getDisposition();
-
-        if (mimeType.contains(MIME_MULTIPART)) {
-            Multipart multipart = (Multipart) part.getContent();
-
-            for (int i = 0; i < multipart.getCount(); ++i) {
-                BodyPart childPart = multipart.getBodyPart(i);
-                result.addAll(extractBodyParts(childPart));
-            }
-
-        } else if (mimeType.contains(MIME_TEXT_PLAIN) || mimeType.contains(MIME_TEXT_HTML)) {
-            Object content = part.getContent();
-            if (content instanceof String) {
-                result.add(new EmailBodyText((String) content));
-
-            } else if (content instanceof Part) {
-                result.addAll(this.extractBodyParts((Part) content));
-            }
-
-        } else if (Part.INLINE.equalsIgnoreCase(disposition)) {
-            if (mimeType.contains(";")) {
-                mimeType = mimeType.substring(0, mimeType.indexOf(";"));
-            }
-            result.add(new EmailAttachment(part.getFileName(), part.getInputStream(), mimeType));
+    private String formatSubMessageHeader(EmailMessage subMessage, boolean isHtml, boolean isForwardedMessage) {
+        List<String> header = new ArrayList<>();
+        if (isForwardedMessage) {
+            header.add("---------- Forwarded message ---------");
+        } else {
+            header.add("---------- Reply on ---------");
         }
 
-        return result;
-    }
+        EmailAddress from = subMessage.getFrom() != null ? subMessage.getFrom() : subMessage.getSender();
+        header.add(String.format("From: %s", isHtml ? from.toHtml() : from.toString()));
 
-    private List<EmailAttachment> extractAttachments(Part part) throws MessagingException, IOException {
-        List<EmailAttachment> result = new ArrayList<>();
-        String mimeType = part.getContentType().toLowerCase();
-        String disposition = part.getDisposition();
-
-        if (Part.ATTACHMENT.equalsIgnoreCase(disposition)) {
-            if (mimeType.contains(";")) {
-                mimeType = mimeType.substring(0, mimeType.indexOf(";"));
-            }
-            result.add(new EmailAttachment(part.getFileName(), part.getInputStream(), mimeType));
-
-        } else if (mimeType.contains(MIME_MULTIPART)) {
-            Multipart multipart = (Multipart) part.getContent();
-
-            for (int i = 0; i < multipart.getCount(); ++i) {
-                BodyPart childPart = multipart.getBodyPart(i);
-                result.addAll(extractAttachments(childPart));
-            }
-
-        } else if (part.getContent() instanceof Part) {
-            result.addAll(extractAttachments((Part) part.getContent()));
+        ZonedDateTime date = subMessage.getDateTime();
+        if (date != null) {
+            header.add(String.format("Date: %s", date.format(DateTimeFormatter.ofPattern(EmailMessage.USED_DATE_TME_FORMAT_PATTERN))));
         }
 
-        return result;
-    }
+        header.add(String.format("Subject: %s", subMessage.getSubject()));
 
+        String to = subMessage.getRecipients().stream()
+                .map(ea -> isHtml ? ea.toHtml() : ea.toString())
+                .collect(Collectors.joining(isHtml ? ",&nbsp;" : ", "));
+        header.add(String.format("To: %s", to));
 
-    private EmailMessage extractPreviousMessage(Part part) throws MessagingException, IOException {
-        EmailMessage result = null;
-        String mimeType = part.getContentType().toLowerCase();
-
-        if (mimeType.contains(MIME_MESSAGE) && part.getContent() instanceof MimeMessage) {
-            result = convertToEmailMessage((MimeMessage) part.getContent());
-
-        } else if (mimeType.contains(MIME_MULTIPART)) {
-            Multipart multipart = (Multipart) part.getContent();
-
-            for (int i = 0; i < multipart.getCount(); ++i) {
-                BodyPart childPart = multipart.getBodyPart(i);
-                result = extractPreviousMessage(childPart);
-                if (result != null) {
-                    break;
-                }
-            }
-
-        } else if (part.getContent() instanceof Part) {
-            result = extractPreviousMessage((Part) part.getContent());
+        if (subMessage.getCcRecipients() != null && !subMessage.getCcRecipients().isEmpty()) {
+            String cc = subMessage.getCcRecipients().stream()
+                    .map(ea -> isHtml ? ea.toHtml() : ea.toString())
+                    .collect(Collectors.joining(isHtml ? ",&nbsp;" : ", "));
+            header.add(String.format("Cc: %s", cc));
         }
 
-        return result;
+        header.add(isHtml ? "<br>" : "\n");
+        return isHtml ?
+                String.format("<div>%s</div>", String.join("\n<br>\n", header))
+                : String.join("\n", header);
     }
 }

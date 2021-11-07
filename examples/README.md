@@ -15,7 +15,7 @@
 
 - [Sending of simple email message](email/simple-message-sending)
 
-- [In progress] [Sending of message with attachments](email/message-sending-with-attachments)
+- [Sending of message with attachments](email/message-sending-with-attachments)
 
 - [Creating of message based on FreeMarker template](email/template-based-message-creating)
 
@@ -27,26 +27,26 @@
 
 - [Reading of attached files](email/attachments-reading)
 
-- [In progress] [Mailbox messages manipulating](email/messages-manipulating) 
+- [Mailbox messages manipulating](email/messages-manipulating) 
     * Forward message
     * Reply on message
     * Mark messages as Read/Unread    
     * Delete message   
     
-- Getting a list of existing mailbox folders (email/folders-listing)
+- [Getting a list of existing mailbox folders](email/folders-listing)
 
-- Mailbox folders manipulating (email/folders-manipulating)
+- [Mailbox folders manipulating](email/folders-manipulating)
     * Create new folder
     * Rename folder
     * Delete folder
     
-- Work with Outlook (email/work-with-outlook)
+- [TODO] Work with Outlook (email/work-with-outlook)
 
-- Work with GMail (email/work-with-gmail)
+- [TODO] Work with GMail (email/work-with-gmail)
 
-- Work with Exchange Server (email/work-with-exchange)
+- [TODO] Work with Exchange Server (email/work-with-exchange)
 
-- Work with Lotus Notes (email/work-with-lotus)
+- [TODO] Work with Lotus Notes (email/work-with-lotus)
 
 ## Excel
 

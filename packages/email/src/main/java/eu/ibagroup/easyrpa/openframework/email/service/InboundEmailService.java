@@ -26,9 +26,9 @@ public interface InboundEmailService {
 
     EmailMessage moveMessage(EmailMessage message, String targetFolder) throws EmailMessagingException;
 
-    void saveMessage(EmailMessage message) throws EmailMessagingException;
+    void updateMessage(EmailMessage message) throws EmailMessagingException;
 
-    void saveMessages(List<EmailMessage> messages) throws EmailMessagingException;
+    void updateMessages(List<EmailMessage> messages) throws EmailMessagingException;
 
     void deleteMessage(EmailMessage message) throws EmailMessagingException;
 

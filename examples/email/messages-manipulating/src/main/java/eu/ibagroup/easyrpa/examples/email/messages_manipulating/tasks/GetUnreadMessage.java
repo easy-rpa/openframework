@@ -17,20 +17,19 @@ public class GetUnreadMessage extends ApTask {
     @Inject
     private EmailClient emailClient;
 
-    @Output("message")
-    private EmailMessage outputMsg;
+    @Output("messageId")
+    private String messageId;
 
     @Override
     public void execute() {
-
         log.info("Lookup unread message in folder '{}'", emailClient.getDefaultFolder());
 
         log.info("Fetch all unread messages.");
-        List<EmailMessage> messages = emailClient.fetchUnreadMessages(false);
+        List<EmailMessage> messages = emailClient.fetchUnreadMessages("Personal", false);
 
         if (messages.size() > 0) {
             log.info("Unread messages found. Take first one.");
-            outputMsg = messages.get(0);
+            messageId = messages.get(0).getId();
         } else {
             log.info("No unread messages found in folder '{}'.", emailClient.getDefaultFolder());
         }

@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 public class ImapPop3EmailService implements InboundEmailService {
 
-    private static final int DEFAULT_BATCH_SIZE = 5;
+    private static final int DEFAULT_BATCH_SIZE = 10;
 
     private final String host;
 
@@ -149,7 +149,7 @@ public class ImapPop3EmailService implements InboundEmailService {
                     while (readMessagesCount < messagesCount) {
                         try {
                             int start = readMessagesCount;
-                            int end = Math.min(readMessagesCount + batchSize, messagesCount) - 1;
+                            int end = Math.min(readMessagesCount + batchSize - 1, messagesCount);
                             List<EmailMessage> messages = messageConverter.convertAllToEmailMessages(folder.getMessages(start, end));
                             for (EmailMessage message : messages) {
                                 try {
@@ -189,7 +189,7 @@ public class ImapPop3EmailService implements InboundEmailService {
                     while (readMessagesCount < messagesCount) {
                         try {
                             int start = readMessagesCount;
-                            int end = Math.min(readMessagesCount + batchSize, messagesCount) - 1;
+                            int end = Math.min(readMessagesCount + batchSize - 1, messagesCount);
                             List<EmailMessage> messages = messageConverter.convertAllToEmailMessages(folder.getMessages(start, end));
                             for (EmailMessage message : messages) {
                                 try {
@@ -353,7 +353,7 @@ public class ImapPop3EmailService implements InboundEmailService {
     }
 
     @Override
-    public void saveMessage(EmailMessage message) throws EmailMessagingException {
+    public void updateMessage(EmailMessage message) throws EmailMessagingException {
         findMessageAndPerform(message, Folder.READ_WRITE, msg -> {
             try {
                 msg.setFlag(Flags.Flag.SEEN, message.isRead());
@@ -365,7 +365,7 @@ public class ImapPop3EmailService implements InboundEmailService {
     }
 
     @Override
-    public void saveMessages(List<EmailMessage> messages) throws EmailMessagingException {
+    public void updateMessages(List<EmailMessage> messages) throws EmailMessagingException {
         findAllMessagesAndPerform(messages, (message, msg) -> {
             try {
                 msg.setFlag(Flags.Flag.SEEN, message.isRead());
@@ -538,7 +538,7 @@ public class ImapPop3EmailService implements InboundEmailService {
             try {
                 Folder[] folders = store.getDefaultFolder().list("*");
                 for (Folder folder : folders) {
-                    if (folder.exists() && folder.getType() == Folder.HOLDS_MESSAGES) {
+                    if (folder.exists() && (folder.getType() & Folder.HOLDS_MESSAGES) > 0) {
                         folder.open(Folder.READ_ONLY);
                         try {
                             T result = action.apply(folder);

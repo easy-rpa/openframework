@@ -1,5 +1,7 @@
 package eu.ibagroup.easyrpa.openframework.email.utils;
 
+import org.jsoup.Jsoup;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -21,5 +23,9 @@ public class EmailUtils {
         }
 
         return mimeType;
+    }
+
+    public static String htmlToText(String html) {
+        return Jsoup.parse(html).text();
     }
 }

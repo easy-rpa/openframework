@@ -4,6 +4,7 @@ import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.annotation.Input;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
+import eu.ibagroup.easyrpa.openframework.email.EmailClient;
 import eu.ibagroup.easyrpa.openframework.email.EmailMessage;
 import eu.ibagroup.easyrpa.openframework.email.EmailSender;
 import lombok.extern.slf4j.Slf4j;
@@ -20,19 +21,25 @@ public class ForwardMessage extends ApTask {
     private String forwardedEmailRecipients;
 
     @Inject
+    private EmailClient emailClient;
+
+    @Inject
     private EmailSender emailSender;
 
-    @Input("message")
-    private EmailMessage msg;
+    @Input("messageId")
+    private String messageId;
 
     @Override
     public void execute() {
+        log.info("Forwarding of message with id '{}'.", messageId);
+        EmailMessage message = emailClient.fetchMessage(messageId);
 
-        if (msg != null) {
+        if (message != null) {
             log.info("Forward the message to '{}'.", forwardedEmailRecipients);
-//            emailSender.send(msg.forwardMessage().recipients(forwardedEmailRecipients).body(FORWARDED_MESSAGE_TEXT));
+            emailSender.send(message.forwardMessage(true).recipients(forwardedEmailRecipients).html(FORWARDED_MESSAGE_TEXT));
+
         } else {
-            log.info("Message is not provided. Skip forwarding.");
+            log.error("Message with id '{}' is not found.", messageId);
         }
     }
 }

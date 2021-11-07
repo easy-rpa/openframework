@@ -63,7 +63,7 @@ public class BooksInStockEmail extends EmailMessage {
         charset("UTF-8");
 
         // Path to corresponding FTL file as body.
-        body(TEMPLATE_FILE_PATH);
+        html(TEMPLATE_FILE_PATH);
 
         // Specifying of properties that are used as inputs for FTL file.
         property("books", books);

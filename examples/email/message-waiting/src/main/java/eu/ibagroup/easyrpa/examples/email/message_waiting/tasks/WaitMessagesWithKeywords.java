@@ -33,8 +33,9 @@ public class WaitMessagesWithKeywords extends ApTask {
 
         log.info("Wait messages that contain any of '{}' keywords in subject or body.", LOOKUP_KEYWORDS);
         List<EmailMessage> messages = emailClient.waitMessages(msg -> {
+            log.info("Check message '{}'", msg.getSubject());
             boolean subjectContainsKeywords = LOOKUP_KEYWORDS.stream().anyMatch(msg.getSubject()::contains);
-            boolean bodyContainsKeywords = LOOKUP_KEYWORDS.stream().anyMatch(msg.getBody()::contains);
+            boolean bodyContainsKeywords = LOOKUP_KEYWORDS.stream().anyMatch(msg.getText()::contains);
             return subjectContainsKeywords || bodyContainsKeywords;
         }, Duration.ofMinutes(30), Duration.ofSeconds(5)).get();
 

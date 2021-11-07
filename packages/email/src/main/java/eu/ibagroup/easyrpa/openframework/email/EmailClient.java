@@ -222,14 +222,14 @@ public class EmailClient {
         return this.service.moveMessage(message, targetFolder);
     }
 
-    public void saveMessage(EmailMessage message) {
+    public void updateMessage(EmailMessage message) {
         initService();
-        this.service.saveMessage(message);
+        this.service.updateMessage(message);
     }
 
-    public void saveMessages(List<EmailMessage> messages) {
+    public void updateMessages(List<EmailMessage> messages) {
         initService();
-        this.service.saveMessages(messages);
+        this.service.updateMessages(messages);
     }
 
     public void deleteMessage(EmailMessage message) {

@@ -39,13 +39,13 @@ public class SendEmailMessage extends ApTask {
                 simpleEmailRecipients, outboundEmailServer, outboundEmailProtocol, emailUserCredentials.getUser());
 
         log.info("Create message with Email Sender and then send it.");
-        new EmailMessage(emailSender).subject(SUBJECT).body(BODY).send();
+        new EmailMessage(emailSender).subject(SUBJECT).text(BODY).send();
 
         log.info("Create message and then send it using Email Sender in the end.");
-        new EmailMessage().subject(SUBJECT).body(BODY).send(emailSender);
+        new EmailMessage().subject(SUBJECT).text(BODY).send(emailSender);
 
         log.info("One more way to send the message using Email Sender.");
-        emailSender.send(new EmailMessage().subject(SUBJECT).body(BODY));
+        emailSender.send(new EmailMessage().subject(SUBJECT).text(BODY));
 
         log.info("Messages have been sent successfully");
     }

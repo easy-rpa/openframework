@@ -16,17 +16,20 @@ public class MarkMessageAsRead extends ApTask {
     @Inject
     private EmailClient emailClient;
 
-    @Input("message")
-    private EmailMessage msg;
+    @Input("messageId")
+    private String messageId;
 
     @Override
     public void execute() {
+        log.info("Marking message with id '{}' as read.", messageId);
+        EmailMessage message = emailClient.fetchMessage(messageId);
 
-        if (msg != null) {
+        if (message != null) {
             log.info("Mark input message as read.");
-            emailClient.saveMessage(msg.markRead());
+//            message.markRead();
+
         } else {
-            log.info("Message is not provided. Skip marking.");
+            log.error("Message with id '{}' is not found.", messageId);
         }
     }
 }

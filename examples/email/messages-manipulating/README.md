@@ -10,10 +10,14 @@ All necessary configuration files can be found in `src/main/resources` directory
 
 | Parameter     | Value         |
 | ------------- |---------------|
-| `email.service` | Host name and port of email server |
-| `email.service.protocol` | Protocol which is used by email server |
-| `email.service.credentials` | Vault alias that contains credentials for authentication on the email server |
-| `email.recipients` | Email address where email message will be sent |
+| `outbound.email.server` | Host name and port of email server for outbound emails |
+| `outbound.email.protocol` | Protocol which is used by email server for outbound emails |
+| `outbound.email.secret` | Vault alias that contains credentials for authentication on the email server for outbound emails |
+| `inbound.email.server` | Host name and port of inbound email server |
+| `inbound.email.protocol` | Protocol which is used by inbound email server |
+| `inbound.email.secret` | Vault alias that contains credentials for authentication on the inbound email server |
+| `email.sender.name` | Name of email sender that will be display as "from" for email recipients |
+| `forwarded.email.recipients` | Email address where email message will be forwarded |
 
 **vault.properties**
 
