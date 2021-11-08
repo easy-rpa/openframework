@@ -34,6 +34,9 @@ public class CreateTable  extends ApTask {
         catch(SQLSyntaxErrorException e){
             log.info("Can't execute query. Reason: "+ e.getMessage());
         }
-        dbService.closeConnection();
+        finally {
+            dbService.closeConnection();
+        }
     }
 }
+

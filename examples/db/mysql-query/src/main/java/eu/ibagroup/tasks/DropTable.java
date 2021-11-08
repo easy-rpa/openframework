@@ -6,6 +6,7 @@ import eu.ibagroup.easyrpa.openframework.db.service.MySqlService;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
+import java.sql.SQLSyntaxErrorException;
 
 @Slf4j
 @ApTaskEntry(name = "Drop Table Task", description = "Drop MySQL table")
@@ -16,7 +17,14 @@ public class DropTable extends ApTask {
     MySqlService dbService;
     @Override
     public void execute() throws Exception {
-        dbService.executeStatement(query);
-        dbService.closeConnection();
+        try {
+            dbService.executeStatement(query);
+        }
+        catch(SQLSyntaxErrorException e){
+            log.info("Can't execute query. Reason: "+ e.getMessage());
+        }
+        finally {
+            dbService.closeConnection();
+        }
     }
 }

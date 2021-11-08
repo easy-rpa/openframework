@@ -7,6 +7,7 @@ import eu.ibagroup.easyrpa.openframework.db.service.MsSqlServerService;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
+import java.sql.BatchUpdateException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -37,8 +38,15 @@ public class InsertFiveRecords extends ApTask {
         queries.add(q3);
         queries.add(q4);
         queries.add(q5);
-        int[] res = dbService.executeBatch(queries);
-        rowsInserted = IntStream.of(res).sum();
-        dbService.closeConnection();
+        try {
+            int[] res = dbService.executeBatch(queries);
+            rowsInserted = IntStream.of(res).sum();
+        }
+        catch(BatchUpdateException e){
+            log.info("Can't execute query. Reason: "+ e.getMessage());
+        }
+        finally {
+            dbService.closeConnection();
+        }
     }
 }

@@ -7,6 +7,7 @@ import eu.ibagroup.easyrpa.openframework.db.service.MySqlService;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
+import java.sql.SQLSyntaxErrorException;
 
 @Slf4j
 @ApTaskEntry(name = "Delete two Oldest Records", description = "Delete two oldest records from MySQL table")
@@ -18,7 +19,14 @@ public class DeleteTwoOldestRecords extends ApTask {
     int rowsDeleted = 0;
     @Override
     public void execute() throws Exception {
-        rowsDeleted = dbService.executeUpdateStatement(query);
-        dbService.closeConnection();
+        try{
+            rowsDeleted = dbService.executeUpdateStatement(query);
+        }
+        catch(SQLSyntaxErrorException e){
+            log.info("Can't execute query. Reason: "+ e.getMessage());
+        }
+        finally {
+            dbService.closeConnection();
+        }
     }
 }
