@@ -160,9 +160,9 @@
 ## Database
   
   **Implemented actions:**
-  - [Connect to DB](db/connect)
-  - [Disconnect from DB](db/disconnect)
-  - [Execute an arbitrary SQL query](db/executeQuery)
+  - [Connect to DB](db/mysql-query)
+  - [Disconnect from DB](db/mysql-query)
+  - [Execute an arbitrary SQL query](db/mysql-query)
   - Call stored procedure
   - Transactions support (Create / Commit / Rollback)
     
