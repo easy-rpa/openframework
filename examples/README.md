@@ -158,5 +158,17 @@
     * Removing data range from sheet
  
 ## Database
- 
-  - TODO
+  
+  **Implemented actions:**
+  - [Connect to DB](db/connect)
+  - [Disconnect from DB](db/disconnect)
+  - [Execute an arbitrary SQL query](db/executeQuery)
+  - Call stored procedure
+  - Transactions support (Create / Commit / Rollback)
+    
+ **Supported databases:**
+  - MySQL
+  - PostgreSQL
+  - Oracle
+  - DB2
+  - MS SQL Server
