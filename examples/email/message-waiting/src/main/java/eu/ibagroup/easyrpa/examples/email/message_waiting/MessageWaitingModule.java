@@ -3,7 +3,6 @@ package eu.ibagroup.easyrpa.examples.email.message_waiting;
 import eu.ibagroup.easyrpa.engine.annotation.ApModuleEntry;
 import eu.ibagroup.easyrpa.engine.apflow.ApModule;
 import eu.ibagroup.easyrpa.engine.apflow.TaskOutput;
-import eu.ibagroup.easyrpa.examples.email.message_waiting.tasks.LookupMessagesWithAttachments;
 import eu.ibagroup.easyrpa.examples.email.message_waiting.tasks.WaitMessagesWithKeywords;
 import lombok.extern.slf4j.Slf4j;
 

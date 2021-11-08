@@ -6,7 +6,7 @@ import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.engine.model.SecretCredentials;
 import eu.ibagroup.easyrpa.examples.email.template_based_message_creating.emails.BooksInStockEmail;
 import eu.ibagroup.easyrpa.examples.email.template_based_message_creating.entities.Book;
-import eu.ibagroup.easyrpa.openframework.core.sevices.RPAServicesAccessor;
+import eu.ibagroup.easyrpa.openframework.email.EmailSender;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
@@ -17,11 +17,11 @@ import java.util.List;
 @Slf4j
 public class SendEmailMessage extends ApTask {
 
-    @Configuration(value = "email.service")
-    private String emailService;
+    @Configuration(value = "outbound.email.server")
+    private String outboundEmailServer;
 
-    @Configuration(value = "email.service.protocol")
-    private String emailServiceProtocol;
+    @Configuration(value = "outbound.email.protocol")
+    private String outboundEmailProtocol;
 
     @Configuration(value = "books.in.stock.email.recipients")
     private String emailRecipients;
@@ -30,7 +30,7 @@ public class SendEmailMessage extends ApTask {
     private SecretCredentials emailUserCredentials;
 
     @Inject
-    private RPAServicesAccessor rpaServices;
+    private EmailSender emailSender;
 
     @Override
     public void execute() {
@@ -39,17 +39,10 @@ public class SendEmailMessage extends ApTask {
         List<Book> books = getBooks();
 
         log.info("Send books in stock email to '{}' using service '{}', protocol '{}' and mailbox '{}'.",
-                emailRecipients, emailService, emailServiceProtocol, emailUserCredentials.getUser());
+                emailRecipients, outboundEmailServer, outboundEmailProtocol, emailUserCredentials.getUser());
 
-        new BooksInStockEmail().setBooksInfo(books)
-                .service(emailService).serviceProtocol(emailServiceProtocol)
-                .credentials(emailUserCredentials.getUser(), emailUserCredentials.getPassword())
-                .recipients(emailRecipients)
-                .send();
-
-        log.info("Send the same message using RPA services accessor.");
-
-        new BooksInStockEmail(rpaServices).setBooksInfo(books).send();
+        log.info("Create message using Email Sender and send it.");
+        new BooksInStockEmail(emailSender).setBooksInfo(books).send();
 
         log.info("Messages have been sent successfully");
     }

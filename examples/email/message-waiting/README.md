@@ -10,17 +10,15 @@ All necessary configuration files can be found in `src/main/resources` directory
 
 | Parameter     | Value         |
 | ------------- |---------------|
-| `email.service` | Host name and port of email server |
-| `email.service.protocol` | Protocol which is used by email server |
-| `email.service.credentials` | Vault alias that contains credentials for authentication on the email server |
-| `email.recipients` | Email address where email message will be sent |
+| `inbound.email.server` | Host name and port of inbound email server |
+| `inbound.email.protocol` | Protocol which is used by inbound email server |
+| `inbound.email.secret` | Vault alias that contains credentials for authentication on the inbound email server |
 
 **vault.properties**
 
 | Alias     | Value         |
 | ------------- |---------------|
-| `email.user` | Json with credentials in encoded with Base64. Example of json:<br>`{ "user": "sender@gmail.com", "password": "passphrase" }` |
-
+| `mailbox` | Json with credentials in encoded with Base64. Example of json:<br>`{ "user": "sender@gmail.com", "password": "passphrase" }` |
 
 ## Running
 

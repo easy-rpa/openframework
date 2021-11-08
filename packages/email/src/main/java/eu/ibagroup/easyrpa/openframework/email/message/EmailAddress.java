@@ -1,45 +1,44 @@
 package eu.ibagroup.easyrpa.openframework.email.message;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.util.Objects;
 
-public class EmailAddress implements Serializable {
-    private static final long serialVersionUID = 5073437689836759727L;
+public class EmailAddress {
 
-    private final String address;
+    private String address;
 
-    private final String personal;
+    private String personal;
 
-    private final String rfc822Address;
+    private String rfc822Address;
 
-    private EmailAddress(InternetAddress address) {
-        this.address = address.getAddress();
-        this.personal = address.getPersonal();
-        this.rfc822Address = address.toString();
-    }
-
-    public static EmailAddress of(String address, String name) {
-        InternetAddress internetAdress;
+    @JsonCreator
+    public EmailAddress(@JsonProperty("address") String address, @JsonProperty("personal") String personal) {
+        InternetAddress internetAddress;
         try {
-            internetAdress = new InternetAddress(address, name);
+            internetAddress = new InternetAddress(address, personal);
+            this.address = internetAddress.getAddress();
+            this.personal = internetAddress.getPersonal();
+            this.rfc822Address = internetAddress.toString();
         } catch (UnsupportedEncodingException e) {
             throw new IllegalArgumentException(e);
         }
-
-        return new EmailAddress(internetAdress);
     }
 
-    public static EmailAddress of(String address) {
-        InternetAddress internetAdress;
+    public EmailAddress(String address) {
+        InternetAddress internetAddress;
         try {
-            internetAdress = new InternetAddress(address);
+            internetAddress = new InternetAddress(address);
+            this.address = internetAddress.getAddress();
+            this.personal = internetAddress.getPersonal();
+            this.rfc822Address = internetAddress.toString();
         } catch (AddressException e) {
             throw new IllegalArgumentException(e);
         }
-
-        return new EmailAddress(internetAdress);
     }
 
     public String getAddress() {
@@ -50,11 +49,27 @@ public class EmailAddress implements Serializable {
         return this.personal;
     }
 
-    public String getRfc822Address() {
+    public String toString() {
         return this.rfc822Address;
     }
 
-    public String toString() {
-        return this.rfc822Address;
+    public String toHtml() {
+        if (personal != null) {
+            return String.format("<b>%1$s</b> <span>&lt;<a href=\"mailto:%2$s\" target=\"_blank\">%2$s</a>&gt;</span>", personal, address);
+        }
+        return String.format("<span>&lt;<a href=\"mailto:%1$s\" target=\"_blank\">%1$s</a>&gt;</span>", address);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof EmailAddress)) return false;
+        EmailAddress that = (EmailAddress) o;
+        return Objects.equals(address, that.address);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(address);
     }
 }
