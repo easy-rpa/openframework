@@ -387,14 +387,16 @@ public class MimeMessageWrapper extends EmailMessage {
 
     @Override
     public void setRead(boolean read) {
-        isRead = openFolderAndPerform(Folder.READ_WRITE, () -> {
-            try {
-                mimeMessage.setFlag(Flags.Flag.SEEN, read);
-                return read;
-            } catch (MessagingException e) {
-                throw new EmailMessagingException(e);
-            }
-        });
+        if (isRead() != read) {
+            isRead = openFolderAndPerform(Folder.READ_WRITE, () -> {
+                try {
+                    mimeMessage.setFlag(Flags.Flag.SEEN, read);
+                    return read;
+                } catch (MessagingException e) {
+                    throw new EmailMessagingException(e);
+                }
+            });
+        }
     }
 
     @Override
@@ -516,14 +518,21 @@ public class MimeMessageWrapper extends EmailMessage {
     private <T> T openFolderAndPerform(int mode, Supplier<T> action) {
         try {
             Folder folder = mimeMessage.getFolder();
-            if (folder.isOpen()) {
+            if (folder.isOpen() && folder.getMode() >= mode) {
                 return action.get();
             } else {
+                boolean folderWasOpen = false;
+                if (folder.isOpen()) {
+                    folderWasOpen = true;
+                    folder.close(false);
+                }
                 folder.open(mode);
                 try {
                     return action.get();
                 } finally {
-                    folder.close(false);
+                    if (!folderWasOpen) {
+                        folder.close(false);
+                    }
                 }
             }
         } catch (MessagingException e) {
