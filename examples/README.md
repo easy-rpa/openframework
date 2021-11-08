@@ -117,7 +117,7 @@
    * Delete file
    * Upload file
    * Rename file
- - Moving file from one directory to another (drive/file-moving)
+ - Moving file from one directory to another (drive/file_moving)
  - Folders manipulations (drive/folders-manipulations)
     * Create folder
     * Rename folder

@@ -37,6 +37,8 @@ public class GoogleDriveServiceProvider {
 
     private List<String> scopes;
 
+    private RPAServicesAccessor rpaServices;
+
     public GoogleDriveServiceProvider() {
     }
 
