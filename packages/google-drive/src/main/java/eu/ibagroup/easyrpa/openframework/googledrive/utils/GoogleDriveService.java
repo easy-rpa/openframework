@@ -48,6 +48,16 @@ public class GoogleDriveService {
         }
     }
 
+    public Optional<File> getFullFileInfoById(String fileId) {
+        try {
+            return Optional.of(service.files().get(fileId)
+                            .setFields("id, name, mimeType, description, size, parents, permissions")
+                    .execute());
+        } catch (IOException e) {
+            return Optional.empty();
+        }
+    }
+
     public Optional<File> createFile(java.io.File file, FileType type) {
         File fileMetadata = fileCreation(file.getName(), type);
         FileContent fileContent = new FileContent(null, file);
@@ -109,7 +119,9 @@ public class GoogleDriveService {
 
     public boolean updateFileMetadata(File file) {
         try {
-            service.files().update(file.getId(), file).execute();
+            File newFile = createMetadataCopyFile(file);
+
+            service.files().update(file.getId(), newFile).execute();
             return true;
         } catch (Exception e) {
             return false;
@@ -121,9 +133,10 @@ public class GoogleDriveService {
         if (!fileMetadata.isPresent()) {
             throw new FileNotFoundException("file with this name not found on drive");
         }
+        File newMetadataFile = createMetadataCopyFile(fileMetadata.get());
         FileContent content = new FileContent(null, file);
         try {
-            service.files().update(fileMetadata.get().getId(), fileMetadata.get(), content);
+            service.files().update(fileMetadata.get().getId(), newMetadataFile, content);
             return true;
         } catch (IOException e) {
             return false;
@@ -181,6 +194,15 @@ public class GoogleDriveService {
         } catch (IOException e) {
             return null;
         }
+    }
+
+    private File createMetadataCopyFile(File file){
+        File newFile = new File();
+        newFile.setName(file.getName());
+        newFile.setMimeType(file.getMimeType());
+        newFile.setParents(file.getParents());
+        newFile.setDescription(file.getDescription());
+        return newFile;
     }
     //setq searching params https://developers.google.com/drive/api/v3/search-files
 
