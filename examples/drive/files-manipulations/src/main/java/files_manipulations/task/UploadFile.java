@@ -2,33 +2,23 @@ package files_manipulations.task;
 
 import com.google.api.services.drive.model.File;
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
-import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
-import eu.ibagroup.easyrpa.openframework.googledrive.utils.FileType;
-import eu.ibagroup.easyrpa.openframework.googledrive.utils.GoogleDriveService;
-import eu.ibagroup.easyrpa.openframework.googledrive.utils.GoogleDriveServiceProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import eu.ibagroup.easyrpa.openframework.googledrive.FileType;
+import eu.ibagroup.easyrpa.openframework.googledrive.GoogleDrive;
+import lombok.extern.slf4j.Slf4j;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Optional;
 
-@ApTaskEntry(
-        name = "Upload File"
-)
+@Slf4j
+@ApTaskEntry(name = "Upload File")
 public class UploadFile extends ApTask {
-    private static final Logger log = LoggerFactory.getLogger(UploadFile.class);
-
-    @Configuration("drive.credentials.filepath")
-    private String filePath;
 
     private static final String fileName = "/myFile.txt";
 
-    public UploadFile() {
-    }
+    @Inject
+    private GoogleDrive drive;
 
     public void execute() {
         log.info("Creation file instance of '{}'",fileName);
@@ -38,11 +28,9 @@ public class UploadFile extends ApTask {
         } catch (IOException e) {
             //do nothing
         }
-        log.info("Initialize Google Drive Service instance");
-        GoogleDriveService instance = new GoogleDriveServiceProvider().setCredentials(filePath).connect();
 
         log.info("Uploading file to google drive");
-        Optional<File> fileMetadata = instance.createFile(file, FileType.FILE);
+        Optional<File> fileMetadata = drive.createFile(file, FileType.FILE);
 
         if(fileMetadata.isPresent()){
             log.info("File successfully uploaded");

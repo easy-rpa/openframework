@@ -1,4 +1,4 @@
-package eu.ibagroup.easyrpa.openframework.googledrive.utils;
+package eu.ibagroup.easyrpa.openframework.googledrive;
 
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -15,7 +15,6 @@ public enum FileType {
     }
 
     public static FileType getValue(String fullFileType){
-        // fullFileType.
         final String regex = "[.](.*?)$";
 
         final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);

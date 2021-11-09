@@ -3,21 +3,14 @@ package getting_files;
 import eu.ibagroup.easyrpa.engine.annotation.ApModuleEntry;
 import eu.ibagroup.easyrpa.engine.apflow.ApModule;
 import eu.ibagroup.easyrpa.engine.apflow.TaskOutput;
-import getting_files.task.GettingFiles;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import getting_files.task.GetFiles;
+import lombok.extern.slf4j.Slf4j;
 
-@ApModuleEntry(
-        name = "Getting list of files"
-)
+@Slf4j
+@ApModuleEntry(name = "Getting files")
 public class GettingFilesModule extends ApModule {
-    private static final Logger log = LoggerFactory.getLogger(GettingFilesModule.class);
-
-    public GettingFilesModule() {
-    }
 
     public TaskOutput run() throws Exception {
-        return this.execute(this.getInput(), GettingFiles.class).get();
+        return this.execute(this.getInput(), GetFiles.class).get();
     }
-
 }

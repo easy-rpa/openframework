@@ -7,17 +7,11 @@ import files_manipulations.task.CreateFile;
 import files_manipulations.task.DeleteFile;
 import files_manipulations.task.RenameFile;
 import files_manipulations.task.UploadFile;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
-@ApModuleEntry(
-        name = "Files manipulations"
-)
+@Slf4j
+@ApModuleEntry(name = "File manipulations")
 public class FileManipulationsModule extends ApModule {
-    private static final Logger log = LoggerFactory.getLogger(FileManipulationsModule.class);
-
-    public FileManipulationsModule() {
-    }
 
     public TaskOutput run() throws Exception {
         return this.execute(this.getInput(), CreateFile.class)
@@ -26,5 +20,4 @@ public class FileManipulationsModule extends ApModule {
                 .thenCompose(execute((RenameFile.class)))
                 .get();
     }
-
 }

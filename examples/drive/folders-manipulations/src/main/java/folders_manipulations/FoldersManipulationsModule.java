@@ -6,17 +6,11 @@ import eu.ibagroup.easyrpa.engine.apflow.TaskOutput;
 import folders_manipulations.task.CreateFolder;
 import folders_manipulations.task.DeleteFolder;
 import folders_manipulations.task.RenameFolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
-@ApModuleEntry(
-        name = "Files manipulations"
-)
+@Slf4j
+@ApModuleEntry(name = "Folders Manipulations")
 public class FoldersManipulationsModule extends ApModule {
-    private static final Logger log = LoggerFactory.getLogger(FoldersManipulationsModule.class);
-
-    public FoldersManipulationsModule() {
-    }
 
     public TaskOutput run() throws Exception {
         return this.execute(this.getInput(), CreateFolder.class)
@@ -24,5 +18,4 @@ public class FoldersManipulationsModule extends ApModule {
                 .thenCompose(execute(DeleteFolder.class))
                 .get();
     }
-
 }
