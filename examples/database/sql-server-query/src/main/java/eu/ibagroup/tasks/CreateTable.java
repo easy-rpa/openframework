@@ -28,6 +28,7 @@ public class CreateTable  extends ApTask {
     @Override
     public void execute() throws Exception {
         try{
+            log.info("Driver version: " + dbService.getDriverVersion());
             dbService.executeStatement(query);
             this.isCreated = true;
         }

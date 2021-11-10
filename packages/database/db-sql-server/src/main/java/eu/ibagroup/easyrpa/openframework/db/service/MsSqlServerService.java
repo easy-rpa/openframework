@@ -79,6 +79,10 @@ public class MsSqlServerService {
         return count;
     }
 
+    public String getDriverVersion() throws SQLException, ClassNotFoundException {
+        return getConnection().getMetaData().getDriverVersion();
+    }
+
     private String getUserName() {
         return this.userName;
     }
