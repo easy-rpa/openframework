@@ -42,7 +42,7 @@ public class WaitMessagesWithKeywords extends ApTask {
 
         log.info("Retrieved messages:");
         messages.forEach(msg -> {
-            log.info("'{}' from '{}'", msg.getSubject(), msg.getSender().toString());
+            log.info("'{}' from '{}'", msg.getSubject(), msg.getSender().getPersonal());
         });
     }
 }

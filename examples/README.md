@@ -50,21 +50,21 @@
 
 ## Excel
 
- - Creating of new Excel file (excel/excel-file-creating)
+ - [Creating of new Excel file](excel/excel-file-creating)
  
- - Reading data from given sheet (excel/sheet-data-reading)
+ - [In Progress] [Reading data from given sheet](excel/sheet-data-reading)
     * Read as range of data
-    * Read as list of typed objects
-    * Lookup rows/cells based on specified condition 
-    * Walking over rows/cells 
+    * Read as list of records    
     
- - Reading data from large Excel files (excel/large-files-reading)
+ - [TODO] Reading data from large Excel files (excel/large-files-reading)
  
- - Editing of existing Excel file (excel/excel-file-editing) 
+ - [In Progress] [Editing of existing Excel file](excel/excel-file-editing) 
+     * Edit cells
+     * Edit records   
  
- - Copying of sheet from one Excel file to another (excel/sheets-copying)    
+ - [Copying of sheet from one Excel file to another](excel/sheets-copying)    
  
- - Sheets manipulating (excel/sheets-manipulating)
+ - [Sheets manipulating](excel/sheets-manipulating)
     * List existing sheets
     * Activate sheet
     * Rename sheet
@@ -72,12 +72,12 @@
     * Clone sheet
     * Delete sheet 
     
- - Working with sheet rows (excel/working-with-rows)
+ - [In Progress] [Working with sheet rows](excel/working-with-rows)
     * Lookup and edit rows
     * Add/insert new rows
     * Delete rows
   
- - Working with sheet columns (excel/working-with-columns)
+ - [In Progress] [Working with sheet columns](excel/working-with-columns)
     * Read column cells
     * Add/insert new columns
     * Move columns
@@ -85,25 +85,24 @@
     * Sort columns 
     * Filter columns 
     
- - Working with formulas (excel/working-with-formulas)
+ - [In Progress] [Working with formulas](excel/working-with-formulas)
     * Edit cell's formulas
     * Evaluating of cell's formulas
     * Evaluating of cell's formulas with links to external Excel files
     
- - Working with pivot tables (excel/working-with-pivot-tables)
+ - [In Progress] [Working with pivot tables](excel/working-with-pivot-tables)
     * Read pivot table
     * Create pivot table 
-    * Update pivot table
         
- - Changing cells style (fonts, colors etc.)  (excel/cell-style-changing)
+ - [In Progress] [Changing cells style (fonts, colors etc.)](excel/cell-style-changing)
  
- - Inserting image to sheet (excel/image-inserting)
+ - [In Progress] [Inserting image to sheet](excel/image-inserting)
  
- - Exporting Excel file to PDF (excel/export-file-to-pdf)
+ - [In Progress] [Exporting Excel file to PDF](excel/export-to-pdf)
  
- - Running of macros (excel/macros-running)
+ - [In Progress] [Running of macros](excel/macros-running)
  
- - Running of custom VB script (excel/custom-vbs-running)
+ - [In Progress] [Running of custom VB script](excel/custom-vbs-running)
  
 ## CSV
 

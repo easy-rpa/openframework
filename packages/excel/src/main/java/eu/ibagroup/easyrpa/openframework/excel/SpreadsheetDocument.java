@@ -1,5 +1,6 @@
 package eu.ibagroup.easyrpa.openframework.excel;
 
+import eu.ibagroup.easyrpa.openframework.excel.function.ColumnFormatter;
 import eu.ibagroup.easyrpa.openframework.excel.function.RecordMapper;
 import eu.ibagroup.easyrpa.openframework.excel.vbscript.*;
 import org.apache.commons.csv.CSVFormat;
@@ -8,6 +9,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.formula.CollaboratingWorkbooksEnvironment;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.ss.util.WorkbookUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -538,6 +541,11 @@ public class SpreadsheetDocument {
         SpreadsheetUtil.eachRow(workbook.getSheetAt(sheetIndex), startRowNum, formulaEvaluator, function);
     }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
     /**
      * Gets data as list of rows from specified spreadsheet range. Every row is list
      * of typed cell values.
@@ -591,6 +599,116 @@ public class SpreadsheetDocument {
             row++;
         }
     }
+
+
+
+
+    public void createHeader(CellReference startRef, List<String> columnNames) {
+        //TODO implement this
+    }
+
+    public void createHeader(CellReference startRef, List<String> columnNames, ColumnFormatter<String> headerCellFormatter) {
+        //TODO implement this
+    }
+
+    public void createHeader(CellReference startRef, Class<?> clazz) {
+        //TODO implement this
+    }
+
+    public void createHeader(CellReference startRef, Class<?> clazz, ColumnFormatter<String> headerCellFormatter) {
+        //TODO implement this
+    }
+
+    public void createHeader(String startRef, List<String> columnNames) {
+        //TODO implement this
+    }
+
+    public void createHeader(String startRef, List<String> columnNames, ColumnFormatter<String> headerCellFormatter) {
+        //TODO implement this
+    }
+
+    public void createHeader(String startRef, Class<?> clazz) {
+        //TODO implement this
+    }
+
+    public void createHeader(String startRef, Class<?> clazz, ColumnFormatter<String> headerCellFormatter) {
+        //TODO implement this
+    }
+
+    public void createHeader(int sheetIndex, CellReference startRef, List<String> columnNames) {
+        //TODO implement this
+    }
+
+    public void createHeader(int sheetIndex, CellReference startRef, List<String> columnNames, ColumnFormatter<String> headerCellFormatter) {
+        //TODO implement this
+    }
+
+    public void createHeader(int sheetIndex, CellReference startRef, Class<?> clazz) {
+        //TODO implement this
+    }
+
+    public void createHeader(int sheetIndex, CellReference startRef, Class<?> clazz, ColumnFormatter<String> headerCellFormatter) {
+        //TODO implement this
+    }
+
+    public void createHeader(int sheetIndex, String startRef, List<String> columnNames) {
+        //TODO implement this
+    }
+
+    public void createHeader(int sheetIndex, String startRef, List<String> columnNames, ColumnFormatter<String> headerCellFormatter) {
+        //TODO implement this
+    }
+
+    public void createHeader(int sheetIndex, String startRef, Class<?> clazz) {
+        //TODO implement this
+    }
+
+    public void createHeader(int sheetIndex, String startRef, Class<?> clazz, ColumnFormatter<String> headerCellFormatter) {
+        //TODO implement this
+    }
+
+    public void createHeader(String sheetName, CellReference startRef, List<String> columnNames) {
+        //TODO implement this
+    }
+
+    public void createHeader(String sheetName, CellReference startRef, List<String> columnNames, ColumnFormatter<String> headerCellFormatter) {
+        //TODO implement this
+    }
+
+    public void createHeader(String sheetName, CellReference startRef, Class<?> clazz) {
+        //TODO implement this
+    }
+
+    public void createHeader(String sheetName, CellReference startRef, Class<?> clazz, ColumnFormatter<String> headerCellFormatter) {
+        //TODO implement this
+    }
+
+    public void createHeader(String sheetName, String startRef, List<String> columnNames) {
+        //TODO implement this
+    }
+
+    public void createHeader(String sheetName, String startRef, List<String> columnNames, ColumnFormatter<String> headerCellFormatter) {
+        //TODO implement this
+    }
+
+    public void createHeader(String sheetName, String startRef, Class<?> clazz) {
+        //TODO implement this
+    }
+
+    public void createHeader(String sheetName, String startRef, Class<?> clazz, ColumnFormatter<String> headerCellFormatter) {
+        //TODO implement this
+    }
+
+
+
+
+
+
+    public void insertRecords(String startRef, List<?> data) {
+
+        //TODO implement this
+    }
+
 
     /********************************************************
      * Methods to work with rows
