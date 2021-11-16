@@ -4,22 +4,21 @@ import eu.ibagroup.easyrpa.engine.annotation.AfterInit;
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Output;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
-import eu.ibagroup.easyrpa.openframework.db.service.PostgreSqlService;
+import eu.ibagroup.easyrpa.openframework.database.service.PostgresService;
+import eu.ibagroup.easyrpa.openframework.database.common.DbSession;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
 import java.sql.Date;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.SQLSyntaxErrorException;
 import java.text.MessageFormat;
 
 @Slf4j
-@ApTaskEntry(name = "Print MySQL table content sample task", description = "Print 'rpa.invoices' table content")
+@ApTaskEntry(name = "Print POSTGRES table content sample task", description = "Print 'rpa.invoices' table content")
 public class PrintTableContent extends ApTask {
     String query = "SELECT * FROM rpa.invoices";
     @Inject
-    PostgreSqlService dbService;
+    PostgresService dbService;
     @Output()
     private String out = "";
     @AfterInit
@@ -27,9 +26,9 @@ public class PrintTableContent extends ApTask {
     }
 
     @Override
-    public void execute() throws SQLException, ClassNotFoundException {
-        try {
-            ResultSet rs = dbService.executePreparedStatement(query);
+    public void execute() throws Exception {
+        try (DbSession session = dbService.initPureConnection().getSession()) {
+            ResultSet rs = session.executeQuery(query);
             while (rs.next()) {
                 int id = rs.getInt("invoice_number");
                 Date invoiceDate = rs.getDate("invoice_date");
@@ -38,12 +37,6 @@ public class PrintTableContent extends ApTask {
 
                 log.info(MessageFormat.format("invoice_number = {0}, invoiceDate = {1}, customerName = {2}, amount = {3} ", id, invoiceDate, customerName, amount));
             }
-        }
-        catch(SQLSyntaxErrorException e){
-            log.info("Can't execute query. Reason: "+ e.getMessage());
-        }
-        finally {
-            dbService.closeConnection();
         }
     }
 }

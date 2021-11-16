@@ -24,7 +24,7 @@
         </dependency>
         <dependency>
             <groupId>eu.ibagroup</groupId>
-            <artifactId>db-sql-server</artifactId>
+            <artifactId>database</artifactId>
             <version>1.0.0-SNAPSHOT</version>
             <scope>compile</scope>
             <exclusions>
@@ -39,6 +39,17 @@
             <artifactId>mssql-jdbc</artifactId>
             <version>9.2.1.jre11</version>
         </dependency>
+        <dependency>
+            <groupId>com.j256.ormlite</groupId>
+            <artifactId>ormlite-core</artifactId>
+            <version>4.48</version>
+        </dependency>
+        <dependency>
+            <groupId>com.j256.ormlite</groupId>
+            <artifactId>ormlite-jdbc</artifactId>
+            <version>4.48</version>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>

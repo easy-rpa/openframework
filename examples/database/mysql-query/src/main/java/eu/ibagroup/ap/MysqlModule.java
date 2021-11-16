@@ -12,13 +12,13 @@ import lombok.extern.slf4j.Slf4j;
 public class MysqlModule extends ApModule {
 
     public TaskOutput run() throws Exception {
-        TaskOutput output1 = execute(getInput(), CreateTable.class).get();
-        TaskOutput output2 = execute(output1, InsertFiveRecords.class).get();
-        TaskOutput output3 = execute(output2, DeleteTwoOldestRecords.class).get();
-        TaskOutput output4 = execute(output3, PrintTableContent.class).get();
-        TaskOutput output5 = execute(output4, DropTable.class).get();
-
-        return output4;
+        TaskOutput output1;
+        output1 = execute(getInput(), CreateTable.class).get();
+        output1 = execute(getInput(), InsertFiveRecords.class).get();
+        output1 = execute(getInput(), DeleteTwoOldestRecords.class).get();
+        output1 = execute(getInput(), PrintTableContent.class).get();
+//        output1 = execute(getInput(), DropTable.class).get();
+        return output1;
     }
 
     public static void main(String[] arg) {
