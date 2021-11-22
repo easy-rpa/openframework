@@ -201,7 +201,7 @@ public class Row implements Iterable<Cell> {
 
         public CellIterator(org.apache.poi.ss.usermodel.Row poiRow) {
             this.poiRow = poiRow;
-            this.cellsCount = poiRow.getLastCellNum();
+            this.cellsCount = poiRow.getLastCellNum() + 1;
         }
 
         @Override

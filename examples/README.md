@@ -64,7 +64,7 @@
  
  - [In Progress] [Copying of sheet from one Excel file to another](excel/sheets-copying)    
  
- - [In Progress] [Sheets manipulating](excel/sheets-manipulating)
+ - [Sheets manipulating](excel/sheets-manipulating)
     * List existing sheets
     * Activate sheet
     * Rename sheet
@@ -72,9 +72,9 @@
     * Clone sheet
     * Delete sheet 
     
- - [In Progress] [Working with sheet rows](excel/working-with-rows)
+ - [Working with sheet rows](excel/working-with-rows)
     * Lookup and edit rows
-    * Add/insert new rows
+    * Insert new rows
     * Delete rows
   
  - [In Progress] [Working with sheet columns](excel/working-with-columns)
@@ -94,7 +94,7 @@
     * Read pivot table
     * Create pivot table 
         
- - [In Progress] [Changing cells style (fonts, colors etc.)](excel/cell-style-changing)
+ - [Changing cells style (fonts, colors etc.)](excel/cell-style-changing)
  
  - [In Progress] [Inserting image to sheet](excel/image-inserting)
  

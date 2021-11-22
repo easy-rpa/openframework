@@ -1,23 +1,23 @@
-package eu.ibagroup.easyrpa.examples.excel.excel_file_editing.tasks;
+package eu.ibagroup.easyrpa.examples.excel.working_with_rows.tasks;
 
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.excel.ExcelDocument;
 import eu.ibagroup.easyrpa.openframework.excel.Sheet;
+import eu.ibagroup.easyrpa.openframework.excel.constants.InsertMethod;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
-import org.joda.time.DateTime;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-@ApTaskEntry(name = "Edit Cells on Sheet")
+@ApTaskEntry(name = "Insert Rows")
 @Slf4j
-public class EditCellsOnSheet extends ApTask {
+public class InsertRows extends ApTask {
 
-    private static final String OUTPUT_FILE_NAME = "edit_data_result.xlsx";
+    private static final String OUTPUT_FILE_NAME = "rows_insert_result.xlsx";
 
     @Configuration(value = "source.spreadsheet.file")
     private String sourceSpreadsheetFile;
@@ -27,17 +27,18 @@ public class EditCellsOnSheet extends ApTask {
 
     @Override
     public void execute() {
-        log.info("Open spreadsheet document located at '{}' and edit.", sourceSpreadsheetFile);
+        int insertBeforeRow = 4;
+        String insertAfterCell = "D10";
+
+        log.info("Add/Insert rows to spreadsheet document located at: {}", sourceSpreadsheetFile);
         ExcelDocument doc = new ExcelDocument(sourceSpreadsheetFile);
-        Sheet dataSheet = doc.selectSheet("Data");
+        Sheet sheet = doc.selectSheet("Inserting");
 
-        log.info("Edit cells on sheet '{}'", dataSheet.getName());
-        dataSheet.setValue("B2", "Some text");
-        dataSheet.setValue("C3", 120);
-        dataSheet.setValue("D4", DateTime.now());
+        log.info("Insert rows after cell '{}' of sheet '{}'", insertAfterCell, sheet.getName());
+        sheet.insertRows(InsertMethod.AFTER, insertAfterCell, getSampleData(10, 20));
 
-        log.info("Put range of sample data on sheet '{}'", dataSheet.getName());
-        dataSheet.putRange("D11", getSampleData(20, 100));
+        log.info("Insert rows before row '{}' of sheet '{}'", insertBeforeRow + 1, sheet.getName());
+        sheet.insertRows(InsertMethod.BEFORE, insertBeforeRow, 1, getSampleData(5, 10));
 
         String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);
         log.info("Save changes to '{}'.", outputFilePath);
@@ -45,6 +46,7 @@ public class EditCellsOnSheet extends ApTask {
 
         log.info("Spreadsheet document is saved successfully.");
     }
+
 
     private List<List<String>> getSampleData(int rowsCount, int columnsCount) {
         List<List<String>> data = new ArrayList<>();

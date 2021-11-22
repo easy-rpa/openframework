@@ -187,7 +187,7 @@ public class Column implements Iterable<Cell> {
 
         public CellIterator(org.apache.poi.ss.usermodel.Sheet poiSheet) {
             this.poiSheet = poiSheet;
-            this.cellsCount = poiSheet.getLastRowNum();
+            this.cellsCount = poiSheet.getLastRowNum() + 1;
         }
 
         @Override

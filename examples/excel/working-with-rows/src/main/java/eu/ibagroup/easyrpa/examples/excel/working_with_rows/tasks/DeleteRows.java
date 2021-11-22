@@ -7,36 +7,47 @@ import eu.ibagroup.easyrpa.openframework.excel.ExcelDocument;
 import eu.ibagroup.easyrpa.openframework.excel.Row;
 import eu.ibagroup.easyrpa.openframework.excel.Sheet;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
+
+import java.io.File;
 
 @ApTaskEntry(name = "Delete Rows")
 @Slf4j
 public class DeleteRows extends ApTask {
 
+    private static final String OUTPUT_FILE_NAME = "rows_delete_result.xlsx";
+
     @Configuration(value = "source.spreadsheet.file")
     private String sourceSpreadsheetFile;
 
-    @Configuration(value = "output.spreadsheet.file")
-    private String outputSpreadsheetFile;
+    @Configuration(value = "output.files.dir")
+    private String outputFilesDir;
 
     @Override
     public void execute() {
-        int rowIndex = 5;
-        String lookupValue = "Moran, Mr. James";
+        int rowIndex = 8;
+        String lookupValue = "keyword1";
 
         log.info("Delete row of spreadsheet document located at: {}", sourceSpreadsheetFile);
         ExcelDocument doc = new ExcelDocument(sourceSpreadsheetFile);
-        Sheet activeSheet = doc.getActiveSheet();
+        Sheet sheet = doc.selectSheet("Deleting");
 
-        log.info("Delete row with index '{}' from sheet '{}'", rowIndex, activeSheet.getName());
-        activeSheet.removeRow(rowIndex);
+        log.info("Delete row with num '{}' from sheet '{}'", rowIndex + 1, sheet.getName());
+        sheet.removeRow(rowIndex);
 
         log.info("Delete row that contains value '{}' in cells.", lookupValue);
-        Row rowToDelete = activeSheet.findRow(lookupValue);
-        activeSheet.removeRow(rowToDelete);
+        Row rowToDelete = sheet.findRow(lookupValue);
+        if (rowToDelete != null) {
+            sheet.removeRow(rowToDelete);
+            log.info("Row '{}' deleted successfully.", rowToDelete.getIndex());
+        } else {
+            log.warn("Row with value '{}' not found.", lookupValue);
+        }
 
-        log.info("Save changes to '{}'.", outputSpreadsheetFile);
-        doc.saveAs(outputSpreadsheetFile);
+        String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);
+        log.info("Save changes to '{}'.", outputFilePath);
+        doc.saveAs(outputFilePath);
 
-        log.info("Rows have been deleted successfully.");
+        log.info("Spreadsheet document is saved successfully.");
     }
 }

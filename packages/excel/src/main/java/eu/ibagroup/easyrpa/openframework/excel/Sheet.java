@@ -245,7 +245,7 @@ public class Sheet implements Iterable<Row> {
                 poiSheet.removeRow(row);
             }
         } else {
-            shiftRows(rowIndex, -1);
+            shiftRows(rowIndex + 1, -1);
         }
     }
 
@@ -547,16 +547,16 @@ public class Sheet implements Iterable<Row> {
 
         private org.apache.poi.ss.usermodel.Sheet poiSheet;
         private int index = 0;
-        private int cellsCount;
+        private int rowsCount;
 
         public RowIterator(org.apache.poi.ss.usermodel.Sheet poiSheet) {
             this.poiSheet = poiSheet;
-            this.cellsCount = poiSheet.getLastRowNum();
+            this.rowsCount = poiSheet.getLastRowNum() + 1;
         }
 
         @Override
         public boolean hasNext() {
-            return index < cellsCount;
+            return index < rowsCount;
         }
 
         @Override

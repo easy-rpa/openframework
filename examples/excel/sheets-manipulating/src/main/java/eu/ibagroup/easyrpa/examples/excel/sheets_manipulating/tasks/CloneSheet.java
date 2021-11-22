@@ -6,13 +6,21 @@ import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.excel.ExcelDocument;
 import eu.ibagroup.easyrpa.openframework.excel.Sheet;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
+
+import java.io.File;
 
 @ApTaskEntry(name = "Clone Sheet")
 @Slf4j
 public class CloneSheet extends ApTask {
 
+    private static final String OUTPUT_FILE_NAME = "sheet_clone_result.xlsx";
+
     @Configuration(value = "source.spreadsheet.file")
     private String sourceSpreadsheetFile;
+
+    @Configuration(value = "output.files.dir")
+    private String outputFilesDir;
 
     @Override
     public void execute() {
@@ -21,11 +29,23 @@ public class CloneSheet extends ApTask {
 
         log.info("Clone active by default sheet for spreadsheet document located at: {}", sourceSpreadsheetFile);
         ExcelDocument doc = new ExcelDocument(sourceSpreadsheetFile);
+        Sheet activeSheet = doc.getActiveSheet();
 
-        Sheet clonedSheet = doc.cloneSheet(doc.getActiveSheet().getName());
+        log.info("Active sheet name: '{}'", activeSheet.getName());
+
+        Sheet clonedSheet = doc.cloneSheet(activeSheet.getName());
         log.info("Sheet '{}' has been cloned successfully.", clonedSheet.getName());
 
         log.info("Rename cloned sheet to '{}'.", clonedSheetName);
         doc.renameSheet(clonedSheet, clonedSheetName);
+
+        log.info("Name of sheet after rename '{}'.", clonedSheet.getName());
+
+        String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);
+        log.info("Save changes to '{}'.", outputFilePath);
+        doc.saveAs(outputFilePath);
+
+        log.info("Spreadsheet document is saved successfully.");
+
     }
 }

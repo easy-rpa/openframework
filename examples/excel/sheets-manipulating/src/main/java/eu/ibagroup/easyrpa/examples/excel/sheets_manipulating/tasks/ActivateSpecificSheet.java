@@ -16,8 +16,8 @@ public class ActivateSpecificSheet extends ApTask {
 
     @Override
     public void execute() {
-        int sheetIndex = 3;
-        String sheetName = "Sheet2";
+        int sheetIndex = 1;
+        String sheetName = "Summary";
 
         log.info("Activate sheet with name '{}' for spreadsheet document located at: {}", sheetName, sourceSpreadsheetFile);
         ExcelDocument doc = new ExcelDocument(sourceSpreadsheetFile);
@@ -25,13 +25,13 @@ public class ActivateSpecificSheet extends ApTask {
 
         log.info("Active sheet before any action: {}", activeSheet.getName());
 
-        log.info("Active sheet.");
-        doc.selectSheet(sheetName);
+        log.info("Activate sheet.");
+        activeSheet = doc.selectSheet(sheetName);
 
         log.info("Active sheet after activation: {}", activeSheet.getName());
 
         log.info("Active sheet using index {}.", sheetIndex);
-        doc.selectSheet(sheetIndex);
+        activeSheet = doc.selectSheet(sheetIndex);
 
         log.info("Active sheet after activation: {}", activeSheet.getName());
     }
