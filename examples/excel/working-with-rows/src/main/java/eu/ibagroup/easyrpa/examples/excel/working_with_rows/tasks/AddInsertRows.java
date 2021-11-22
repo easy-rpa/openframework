@@ -4,7 +4,6 @@ import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.excel.ExcelDocument;
-import eu.ibagroup.easyrpa.openframework.excel.Row;
 import eu.ibagroup.easyrpa.openframework.excel.Sheet;
 import eu.ibagroup.easyrpa.openframework.excel.constants.InsertMethod;
 import lombok.extern.slf4j.Slf4j;
@@ -26,18 +25,17 @@ public class AddInsertRows extends ApTask {
     public void execute() {
         int insertBeforeIndex = 5;
 
-        Row row = new Row();
-        row.addValues(getSampleData());
+        List<String> sampleData = getSampleData();
 
         log.info("Add/Insert rows to spreadsheet document located at: {}", sourceSpreadsheetFile);
         ExcelDocument doc = new ExcelDocument(sourceSpreadsheetFile);
         Sheet activeSheet = doc.getActiveSheet();
 
         log.info("Add row to the end of sheet '{}'", activeSheet.getName());
-        activeSheet.addRow(row);
+        activeSheet.addRows(sampleData);
 
         log.info("Insert row before index '{}' of sheet '{}'", insertBeforeIndex, activeSheet.getName());
-        activeSheet.insertRow(insertBeforeIndex, InsertMethod.BEFORE, row);
+        activeSheet.insertRows(InsertMethod.BEFORE, insertBeforeIndex, sampleData);
 
         log.info("Save changes to '{}'.", outputSpreadsheetFile);
         doc.saveAs(outputSpreadsheetFile);

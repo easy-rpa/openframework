@@ -1,6 +1,6 @@
 package eu.ibagroup.easyrpa.openframework.excel.function;
 
-import org.apache.poi.ss.usermodel.Cell;
+import eu.ibagroup.easyrpa.openframework.excel.Cell;
 
 import java.util.List;
 

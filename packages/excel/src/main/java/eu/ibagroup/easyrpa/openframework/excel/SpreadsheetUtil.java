@@ -7,13 +7,12 @@ import org.apache.poi.openxml4j.opc.PackagePart;
 import org.apache.poi.openxml4j.opc.PackagePartName;
 import org.apache.poi.openxml4j.opc.PackagingURIHelper;
 import org.apache.poi.openxml4j.opc.TargetMode;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
-import org.apache.poi.util.POILogFactory;
-import org.apache.poi.util.POILogger;
 import org.apache.poi.xssf.model.ExternalLinksTable;
 import org.apache.poi.xssf.model.StylesTable;
 import org.apache.poi.xssf.usermodel.*;
@@ -370,7 +369,7 @@ public class SpreadsheetUtil {
     public static boolean isCellEmpty(final Cell cell, FormulaEvaluator evaluator) {
         if (cell == null)
             return true;
-        switch (cell.getCellTypeEnum()) {
+        switch (cell.getCellType()) {
             case NUMERIC:
                 return false;
             case BOOLEAN:
@@ -380,7 +379,7 @@ public class SpreadsheetUtil {
             case FORMULA:
                 evaluator = evaluator != null ? evaluator : cell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
                 CellValue cellValue = evaluator.evaluate(cell);
-                switch (cellValue.getCellTypeEnum()) {
+                switch (cellValue.getCellType()) {
                     case STRING:
                         return cellValue.getStringValue().isEmpty();
                     case ERROR:
@@ -422,13 +421,13 @@ public class SpreadsheetUtil {
         if (cell == null) {
             return false;
         }
-        switch (cell.getCellTypeEnum()) {
+        switch (cell.getCellType()) {
             case ERROR:
                 return true;
             case FORMULA:
                 evaluator = evaluator != null ? evaluator : cell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
                 CellValue cellValue = evaluator.evaluate(cell);
-                return CellType.ERROR.equals(cellValue.getCellTypeEnum());
+                return CellType.ERROR.equals(cellValue.getCellType());
             default:
                 return false;
         }
@@ -459,14 +458,14 @@ public class SpreadsheetUtil {
         if (cell == null) {
             return null;
         }
-        switch (cell.getCellTypeEnum()) {
+        switch (cell.getCellType()) {
             case NUMERIC:
                 return cell.getNumericCellValue();
             case FORMULA:
                 try {
                     evaluator = evaluator != null ? evaluator : cell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
                     CellValue cellValue = evaluator.evaluate(cell);
-                    switch (cellValue.getCellTypeEnum()) {
+                    switch (cellValue.getCellType()) {
                         case NUMERIC:
                             return cellValue.getNumberValue();
                         case STRING:
@@ -542,7 +541,7 @@ public class SpreadsheetUtil {
         if (cell == null) {
             return "";
         }
-        switch (cell.getCellTypeEnum()) {
+        switch (cell.getCellType()) {
             case NUMERIC:
                 CellStyle cellStyle = cell.getCellStyle();
                 short formatIndex = cellStyle.getDataFormat();
@@ -558,7 +557,7 @@ public class SpreadsheetUtil {
                 try {
                     evaluator = evaluator != null ? evaluator : cell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
                     CellValue cellValue = evaluator.evaluate(cell);
-                    switch (cellValue.getCellTypeEnum()) {
+                    switch (cellValue.getCellType()) {
                         case NUMERIC:
                             cellStyle = cell.getCellStyle();
                             formatIndex = cellStyle.getDataFormat();
@@ -613,7 +612,7 @@ public class SpreadsheetUtil {
         if (cell == null) {
             return null;
         }
-        switch (cell.getCellTypeEnum()) {
+        switch (cell.getCellType()) {
             case NUMERIC:
                 CellStyle cellStyle = cell.getCellStyle();
                 short formatIndex = cellStyle.getDataFormat();
@@ -629,7 +628,7 @@ public class SpreadsheetUtil {
                 try {
                     evaluator = evaluator != null ? evaluator : cell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
                     CellValue cellValue = evaluator.evaluate(cell);
-                    switch (cellValue.getCellTypeEnum()) {
+                    switch (cellValue.getCellType()) {
                         case NUMERIC:
                             cellStyle = cell.getCellStyle();
                             formatIndex = cellStyle.getDataFormat();
@@ -816,25 +815,25 @@ public class SpreadsheetUtil {
         }
     }
 
-    /**
-     * Activates output of POI logs into console.
-     *
-     * @param logsLevel - value logs level from POILogger
-     */
-    public static void outputPOILogsToConsole(int logsLevel) {
-        try {
-            System.setProperty("org.apache.poi.util.POILogger", "org.apache.poi.util.SystemOutLogger");
-            System.setProperty("poi.log.level", logsLevel + "");
-            Field loggerClassNameField = POILogFactory.class.getDeclaredField("_loggerClassName");
-            loggerClassNameField.setAccessible(true);
-            loggerClassNameField.set(null, null);
-            Field loggersField = POILogFactory.class.getDeclaredField("_loggers");
-            loggersField.setAccessible(true);
-            loggersField.set(null, new HashMap<String, POILogger>());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    /**
+//     * Activates output of POI logs into console.
+//     *
+//     * @param logsLevel - value logs level from POILogger
+//     */
+//    public static void outputPOILogsToConsole(int logsLevel) {
+//        try {
+//            System.setProperty("org.apache.poi.util.POILogger", "org.apache.poi.util.SystemOutLogger");
+//            System.setProperty("poi.log.level", logsLevel + "");
+//            Field loggerClassNameField = POILogFactory.class.getDeclaredField("_loggerClassName");
+//            loggerClassNameField.setAccessible(true);
+//            loggerClassNameField.set(null, null);
+//            Field loggersField = POILogFactory.class.getDeclaredField("_loggers");
+//            loggersField.setAccessible(true);
+//            loggersField.set(null, new HashMap<String, POILogger>());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     /**
      * Aligns file path separators according to system default and performs substitution of environment variables like %USERPROFILE%.
@@ -894,8 +893,7 @@ public class SpreadsheetUtil {
         if (copyStyle) {
             copyCellStyle(srcCell, destCell, stylesHash);
         }
-        destCell.setCellType(srcCell.getCellTypeEnum());
-        switch (srcCell.getCellTypeEnum()) {
+        switch (srcCell.getCellType()) {
             case STRING:
                 destCell.setCellValue(srcCell.getStringCellValue());
                 break;
@@ -903,7 +901,7 @@ public class SpreadsheetUtil {
                 destCell.setCellValue(srcCell.getNumericCellValue());
                 break;
             case BLANK:
-                destCell.setCellType(CellType.BLANK);
+                destCell.setBlank();
                 break;
             case BOOLEAN:
                 destCell.setCellValue(srcCell.getBooleanCellValue());

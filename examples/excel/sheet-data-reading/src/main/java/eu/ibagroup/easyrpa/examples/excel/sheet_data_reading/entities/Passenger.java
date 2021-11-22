@@ -1,8 +1,8 @@
 package eu.ibagroup.easyrpa.examples.excel.sheet_data_reading.entities;
 
+import eu.ibagroup.easyrpa.examples.excel.sheet_data_reading.entities.mappers.SurvivedFieldMapper;
 import eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelColumn;
 import lombok.Data;
-import lombok.ToString;
 
 @Data
 public class Passenger {
@@ -19,7 +19,7 @@ public class Passenger {
     @ExcelColumn(name = "Age")
     private Integer age;
 
-    @ExcelColumn(name = "Survived")
+    @ExcelColumn(name = "Survived", mapper = SurvivedFieldMapper.class)
     private boolean survived;
 
     @ExcelColumn(name = "Class")

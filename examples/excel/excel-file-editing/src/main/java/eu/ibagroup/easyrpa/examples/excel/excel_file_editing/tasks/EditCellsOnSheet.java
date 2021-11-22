@@ -29,8 +29,8 @@ public class EditCellsOnSheet extends ApTask {
         activeSheet.setValue("B2", 10);
         activeSheet.setValue("C2", DateTime.now());
 
-        log.info("Put range of sample data on sheet '{}'", activeSheet.getName());
-        activeSheet.putRange("A4", getSampleData());
+//        log.info("Put range of sample data on sheet '{}'", activeSheet.getName());
+//        activeSheet.putRange("A4", getSampleData());
 
         log.info("Save changes.");
         doc.save();

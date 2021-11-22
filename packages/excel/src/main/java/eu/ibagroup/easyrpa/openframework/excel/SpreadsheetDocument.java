@@ -1,6 +1,5 @@
 package eu.ibagroup.easyrpa.openframework.excel;
 
-import eu.ibagroup.easyrpa.openframework.excel.function.ColumnFormatter;
 import eu.ibagroup.easyrpa.openframework.excel.function.RecordMapper;
 import eu.ibagroup.easyrpa.openframework.excel.vbscript.*;
 import org.apache.commons.csv.CSVFormat;
@@ -10,6 +9,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.formula.CollaboratingWorkbooksEnvironment;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.ss.util.WorkbookUtil;
@@ -600,116 +600,6 @@ public class SpreadsheetDocument {
         }
     }
 
-
-
-
-    public void createHeader(CellReference startRef, List<String> columnNames) {
-        //TODO implement this
-    }
-
-    public void createHeader(CellReference startRef, List<String> columnNames, ColumnFormatter<String> headerCellFormatter) {
-        //TODO implement this
-    }
-
-    public void createHeader(CellReference startRef, Class<?> clazz) {
-        //TODO implement this
-    }
-
-    public void createHeader(CellReference startRef, Class<?> clazz, ColumnFormatter<String> headerCellFormatter) {
-        //TODO implement this
-    }
-
-    public void createHeader(String startRef, List<String> columnNames) {
-        //TODO implement this
-    }
-
-    public void createHeader(String startRef, List<String> columnNames, ColumnFormatter<String> headerCellFormatter) {
-        //TODO implement this
-    }
-
-    public void createHeader(String startRef, Class<?> clazz) {
-        //TODO implement this
-    }
-
-    public void createHeader(String startRef, Class<?> clazz, ColumnFormatter<String> headerCellFormatter) {
-        //TODO implement this
-    }
-
-    public void createHeader(int sheetIndex, CellReference startRef, List<String> columnNames) {
-        //TODO implement this
-    }
-
-    public void createHeader(int sheetIndex, CellReference startRef, List<String> columnNames, ColumnFormatter<String> headerCellFormatter) {
-        //TODO implement this
-    }
-
-    public void createHeader(int sheetIndex, CellReference startRef, Class<?> clazz) {
-        //TODO implement this
-    }
-
-    public void createHeader(int sheetIndex, CellReference startRef, Class<?> clazz, ColumnFormatter<String> headerCellFormatter) {
-        //TODO implement this
-    }
-
-    public void createHeader(int sheetIndex, String startRef, List<String> columnNames) {
-        //TODO implement this
-    }
-
-    public void createHeader(int sheetIndex, String startRef, List<String> columnNames, ColumnFormatter<String> headerCellFormatter) {
-        //TODO implement this
-    }
-
-    public void createHeader(int sheetIndex, String startRef, Class<?> clazz) {
-        //TODO implement this
-    }
-
-    public void createHeader(int sheetIndex, String startRef, Class<?> clazz, ColumnFormatter<String> headerCellFormatter) {
-        //TODO implement this
-    }
-
-    public void createHeader(String sheetName, CellReference startRef, List<String> columnNames) {
-        //TODO implement this
-    }
-
-    public void createHeader(String sheetName, CellReference startRef, List<String> columnNames, ColumnFormatter<String> headerCellFormatter) {
-        //TODO implement this
-    }
-
-    public void createHeader(String sheetName, CellReference startRef, Class<?> clazz) {
-        //TODO implement this
-    }
-
-    public void createHeader(String sheetName, CellReference startRef, Class<?> clazz, ColumnFormatter<String> headerCellFormatter) {
-        //TODO implement this
-    }
-
-    public void createHeader(String sheetName, String startRef, List<String> columnNames) {
-        //TODO implement this
-    }
-
-    public void createHeader(String sheetName, String startRef, List<String> columnNames, ColumnFormatter<String> headerCellFormatter) {
-        //TODO implement this
-    }
-
-    public void createHeader(String sheetName, String startRef, Class<?> clazz) {
-        //TODO implement this
-    }
-
-    public void createHeader(String sheetName, String startRef, Class<?> clazz, ColumnFormatter<String> headerCellFormatter) {
-        //TODO implement this
-    }
-
-
-
-
-
-
-    public void insertRecords(String startRef, List<?> data) {
-
-        //TODO implement this
-    }
-
-
     /********************************************************
      * Methods to work with rows
      ********************************************************/
@@ -1124,7 +1014,7 @@ public class SpreadsheetDocument {
      * @param colRef column reference letter
      */
     public void runInsertColumn(String colRef) {
-        runScript(new InsertColumn().tabName(getActiveSheet().getSheetName()).colRef(colRef));
+        runScript(new InsertColumn().sheetName(getActiveSheet().getSheetName()).colRef(colRef));
     }
 
     public void runMultiFilterPivotTable(String tabName, String pivotTableName, String pivotTableField, String mode, String select, String unselect) {

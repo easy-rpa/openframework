@@ -1,6 +1,14 @@
 package eu.ibagroup.easyrpa.openframework.excel.annotations;
 
-import org.apache.poi.ss.usermodel.*;
+import eu.ibagroup.easyrpa.openframework.excel.style.DataFormats;
+import eu.ibagroup.easyrpa.openframework.excel.style.ExcelColors;
+import eu.ibagroup.easyrpa.openframework.excel.style.FontOffsetType;
+import eu.ibagroup.easyrpa.openframework.excel.style.FontUnderlineStyle;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.xssf.usermodel.XSSFFont;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -10,41 +18,55 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExcelCellStyle {
 
-    short font() default -1;
+    String fontName() default XSSFFont.DEFAULT_FONT_NAME;
 
-    IndexedColors color() default IndexedColors.BLACK1;
+    short fontSize() default XSSFFont.DEFAULT_FONT_SIZE;
 
-    IndexedColors background() default IndexedColors.BLACK1;
+    boolean bold() default false;
+
+    boolean italic() default false;
+
+    boolean strikeout() default false;
+
+    FontUnderlineStyle underline() default FontUnderlineStyle.NONE;
+
+    FontOffsetType fontOffset() default FontOffsetType.NORMAL;
+
+    ExcelColors color() default ExcelColors.AUTOMATIC;
+
+    DataFormats dataFormat() default DataFormats.GENERAL;
+
+    ExcelColors background() default ExcelColors.AUTOMATIC;
 
     FillPatternType fill() default FillPatternType.NO_FILL;
 
-    short dataFormat() default -1;
+    HorizontalAlignment hAlign() default HorizontalAlignment.GENERAL;
 
-    HorizontalAlignment hAlign() default HorizontalAlignment.LEFT;
-
-    VerticalAlignment vAlign() default VerticalAlignment.TOP;
+    VerticalAlignment vAlign() default VerticalAlignment.BOTTOM;
 
     boolean wrapText() default false;
 
-    short rotation() default -1;
-
-    BorderStyle borders() default BorderStyle.NONE;
-
-    BorderStyle leftBorder() default BorderStyle.NONE;
-
-    BorderStyle rightBorder() default BorderStyle.NONE;
+    short rotation() default 0;
 
     BorderStyle topBorder() default BorderStyle.NONE;
 
+    BorderStyle rightBorder() default BorderStyle.NONE;
+
     BorderStyle bottomBorder() default BorderStyle.NONE;
 
-    short bordersColor() default -1;
+    BorderStyle leftBorder() default BorderStyle.NONE;
 
-    short leftBorderColor() default -1;
+    ExcelColors topBorderColor() default ExcelColors.BLACK;
 
-    short rightBorderColor() default -1;
+    ExcelColors rightBorderColor() default ExcelColors.BLACK;
 
-    short topBorderColor() default -1;
+    ExcelColors bottomBorderColor() default ExcelColors.BLACK;
 
-    short bottomBorderColor() default -1;
+    ExcelColors leftBorderColor() default ExcelColors.BLACK;
+
+    boolean hidden() default false;
+
+    boolean locked() default false;
+
+    short indention() default 0;
 }

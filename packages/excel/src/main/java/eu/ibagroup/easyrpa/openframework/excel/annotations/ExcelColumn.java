@@ -1,6 +1,7 @@
 package eu.ibagroup.easyrpa.openframework.excel.annotations;
 
 import eu.ibagroup.easyrpa.openframework.excel.function.ColumnFormatter;
+import eu.ibagroup.easyrpa.openframework.excel.function.FieldMapper;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -10,9 +11,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExcelColumn {
 
-    String[] name();
+    String[] name() default {};
 
-    boolean identifier() default false;
+    int width() default -1;
+
+    int order() default -1;
 
     ExcelCellStyle[] headerStyle() default {};
 
@@ -20,5 +23,5 @@ public @interface ExcelColumn {
 
     Class<? extends ColumnFormatter> formatter() default ColumnFormatter.class;
 
-    int order() default -1;
+    Class<? extends FieldMapper> mapper() default FieldMapper.class;
 }

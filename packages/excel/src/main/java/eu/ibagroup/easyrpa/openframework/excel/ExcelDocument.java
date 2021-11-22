@@ -1,123 +1,123 @@
 package eu.ibagroup.easyrpa.openframework.excel;
 
+import eu.ibagroup.easyrpa.openframework.excel.constants.MatchMethod;
+import eu.ibagroup.easyrpa.openframework.excel.internal.PoiElementsCache;
+import eu.ibagroup.easyrpa.openframework.excel.utils.FilePathUtils;
 import eu.ibagroup.easyrpa.openframework.excel.vbscript.VBScript;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.poi.poifs.macros.Module;
+import org.apache.poi.poifs.macros.VBAMacroReader;
+import org.apache.poi.ss.formula.CollaboratingWorkbooksEnvironment;
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.util.WorkbookUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 
-public class ExcelDocument {
+public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
 
-    private InputStream inputStream;
+    private int id = -1;
+
+    private String filePath;
 
     private Workbook workbook;
 
-    private String filePath = null;
-    private String fileName = null;
-
-    private FormulaEvaluator formulaEvaluator;
-    private Map<String, FormulaEvaluator> collaboratingEvaluators = new HashMap<String, FormulaEvaluator>();
+    private Set<String> availableMacros = new HashSet<>();
+    private Map<String, FormulaEvaluator> collaboratingEvaluators = new HashMap<>();
 
     /**
-     * Create empty spreadsheet document.
+     * Create empty Excel Document.
      */
     public ExcelDocument() {
         this((InputStream) null);
     }
 
     /**
-     * Create empty spreadsheet document.
-     *
-     * @param fileName the name of the workbook. Will used to set name of the file
-     *                 on Agent. Will use temp name with .xlsx extension if not
-     *                 specified.
-     */
-    public ExcelDocument(String fileName) {
-        this(null, fileName);
-    }
-
-    /**
-     * Create new Spreadsheet Document. Creates and set workbook from input stream
+     * Create new Excel Document. Creates and set workbook from input stream
      * specified. Set first workbook sheet as active sheet.
      *
-     * @param is input stream with workbook contents. Creates empty workbook if is
-     *           is null.
+     * @param is input stream with Excel workbook content. Creates empty document if it's null.
      */
     public ExcelDocument(InputStream is) {
         initWorkbook(is);
     }
 
     /**
-     * Create new Spreadsheet Document. Creates and set workbook from input stream
-     * specified. Set first workbook sheet as active sheet.
+     * Create new Excel Document for specified file.
      *
-     * @param is       input stream with workbook contents. Creates empty workbook
-     *                 if is is null.
-     * @param fileName the name of the workbook. Will used to set name of the file
-     *                 on Agent. Will use temp name with .xlsx extension if not
-     *                 specified.
+     * @param file input Excel file that needs to accessed via this document.
+     * @throws IllegalArgumentException if <code>file</code> is null or not exist.
      */
-    public ExcelDocument(InputStream is, String fileName) {
-        this(is);
-        setFileName(fileName);
-    }
-
-    /**
-     * Create new Spreadsheet Document
-     *
-     * @param is          - input stream with spreadsheet content.
-     * @param onlyVBSMode - if the value is true then Apache POI workbook won't be
-     *                    initialized. In this case only VBS methods work.
-     */
-    public ExcelDocument(InputStream is, boolean onlyVBSMode) {
-        if (onlyVBSMode) {
-            this.inputStream = is;
-        } else {
-            initWorkbook(is);
+    public ExcelDocument(File file) {
+        if (file == null) {
+            throw new IllegalArgumentException("File cannot be null.");
+        }
+        try {
+            setFilePath(file.getAbsolutePath());
+            initWorkbook(new FileInputStream(file));
+        } catch (FileNotFoundException e) {
+            throw new IllegalArgumentException(String.format("File '%s' is not exist.", file.getAbsolutePath()), e);
         }
     }
 
     /**
-     * Create new Spreadsheet Document
+     * Create new Excel Document for file specified using path.
      *
-     * @param is          - input stream with spreadsheet content.
-     * @param fileName    - the name of the workbook. Will used to set name of the
-     *                    file on Agent. Will use temp name with .xlsx extension if
-     *                    not specified.
-     * @param onlyVBSMode - if the value is true then Apache POI workbook won't be
-     *                    initialized. In this case only VBS methods work.
+     * @param path the path to input Excel file that needs to accessed via this document.
+     * @throws IllegalArgumentException if <code>path</code> is null or point to nonexistent file.
      */
-    public ExcelDocument(InputStream is, String fileName, boolean onlyVBSMode) {
-        if (onlyVBSMode) {
-            this.inputStream = is;
-        } else {
-            initWorkbook(is);
+    public ExcelDocument(Path path) {
+        if (path == null) {
+            throw new IllegalArgumentException("Path cannot be null.");
         }
-        setFileName(fileName);
+        try {
+            setFilePath(path.toAbsolutePath().toString());
+            initWorkbook(Files.newInputStream(path));
+        } catch (IOException e) {
+            throw new IllegalArgumentException(String.format("Failed to read file '%s'. Perhaps is's not exist.", path), e);
+        }
     }
 
     /**
-     * @return the fileName
-     */
-    public String getFileName() {
-        return String.format("%s%s", fileName != null ? FilenameUtils.getBaseName(fileName) : "spreadsheet", getExtension());
-    }
-
-    /**
-     * set file name of the excel workbook
+     * Create new Excel Document for specified file.
      *
-     * @param fileName the name of the workbook file. Will store the file name only,
-     *                 without path.
+     * @param filePath the path to input Excel file that needs to accessed via this document.
+     * @throws IllegalArgumentException if <code>filePath</code> is null or point to nonexistent file.
      */
-    public void setFileName(String fileName) {
-        this.fileName = FilenameUtils.getName(fileName);
+    public ExcelDocument(String filePath) {
+        if (filePath == null) {
+            throw new IllegalArgumentException("File path cannot be null.");
+        }
+        File file = FilePathUtils.getFile(filePath);
+        try {
+            setFilePath(file.getAbsolutePath());
+            initWorkbook(new FileInputStream(file));
+        } catch (FileNotFoundException e) {
+            throw new IllegalArgumentException(String.format("File '%s' is not exist.", filePath), e);
+        }
+    }
+
+    /**
+     * @return the filePath if specified. Otherwise <code>null</code>.
+     */
+    public String getFilePath() {
+        return filePath;
+    }
+
+    /**
+     * Set file path for this Excel Document. The Excel Document is saved to file defined by this path when
+     * method <code>save()</code> is called.
+     *
+     * @param filePath the absolute path to file where excel document is saved when method <code>save()</code> is called.
+     */
+    public void setFilePath(String filePath) {
+        this.filePath = FilePathUtils.normalizeFilePath(filePath);
     }
 
     /**
@@ -129,7 +129,7 @@ public class ExcelDocument {
      * other: application/vnd.ms-excel
      */
     public String getContentType() {
-        if (isMacro()) {
+        if (hasMacros()) {
             return "application/vnd.ms-excel.sheet.macroEnabled.12";
         }
         return workbook instanceof XSSFWorkbook ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : "application/vnd.ms-excel";
@@ -141,73 +141,71 @@ public class ExcelDocument {
      * @return spreadsheet file extension.
      */
     public String getExtension() {
-        if (isMacro()) {
+        if (hasMacros()) {
             return ".xlsm";
         }
         return workbook != null ? (workbook instanceof XSSFWorkbook ? ".xlsx" : ".xls") : ".xlsx";
     }
 
     /**
-     * Document contains macro if file name is null or have ".xlsm" extension
+     * Check whether current Excel Document has macros that can be executed.
      *
-     * @return
+     * @return <code>true</code> if document has macros.
      */
-    public boolean isMacro() {
-        return fileName != null && "xlsm".equalsIgnoreCase(FilenameUtils.getExtension(fileName));
+    public boolean hasMacros() {
+        return availableMacros.size() > 0;
     }
 
     /**
-     * Gets input stream of spreadsheet document.
+     * Gets actual content of this Excel Document as input stream.
      *
-     * @return input stream or null on error occurs.
+     * @return byte array input stream with Excel Document content.
      */
     public InputStream getInputStream() {
-        try {
-            if (workbook != null) {
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                workbook.write(bos);
-                return new ByteArrayInputStream(bos.toByteArray());
-            } else {
-                return inputStream;
-            }
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            workbook.write(bos);
+            return new ByteArrayInputStream(bos.toByteArray());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     /**
-     * Write workbook to the file. This will create parent folders if do not exist and create a file if not exists and
-     * throw a exception if file object is a directory or cannot be written to.
+     * Overwrite the original file specified by <code>filePath</code> with actual content of this Excel Document.
      */
     public void save() {
-        //TODO implement this
-        //keep file path, not only file name, and then used it here to save.
+        if (filePath != null) {
+            saveAs(filePath);
+        }
     }
 
     /**
-     * Write workbook to the file. This will create parent folders if do not exist and create a file if not exists and
-     * throw a exception if file object is a directory or cannot be written to.
+     * Save this Excel Document to specified file. This will create parent folders if do not exist and
+     * create a file if not exists and throw a exception if file object is a directory or cannot be written to.
      *
      * @param filePath the path of the file to write.
      */
     public void saveAs(String filePath) {
         try {
+            filePath = FilePathUtils.normalizeFilePath(filePath);
             File file = new File(filePath);
-            file.createNewFile(); // if file already exists will do nothing
-            if (workbook != null) {
-                try (FileOutputStream out = new FileOutputStream(file, false)) {
-                    workbook.write(out);
+            if (!file.exists()) {
+                //noinspection ResultOfMethodCallIgnored
+                file.getParentFile().mkdirs();
+                if (!file.createNewFile()) {
+                    throw new RuntimeException(String.format("Failed to create a new file at '%s'. Something went wrong.", filePath));
                 }
-            } else {
-                FileUtils.copyInputStreamToFile(inputStream, file);
+            }
+            try (FileOutputStream out = new FileOutputStream(file, false)) {
+                workbook.write(out);
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(String.format("Failed to save excel document to file located at '%s'.", filePath), e);
         }
     }
 
     /**
-     * Gets workbook of the spreadsheet.
+     * Gets Apache POI workbook of this Excel Document.
      *
      * @return workbook instance.
      */
@@ -216,33 +214,43 @@ public class ExcelDocument {
     }
 
     /**
-     * Update input stream that contains content of current spreadsheet document. If
-     * Apache POI is used then Apache POI Workbook will be reinitialized.
+     * Update content of this Excel Document. Invokes Apache POI workbook reinitialization.
      *
      * @param is - input stream with contents.
      */
-    public void updateInputStream(InputStream is) {
-        if (workbook != null) {
-            initWorkbook(is);
-        } else {
-            this.inputStream = is;
+    public void update(InputStream is) {
+        initWorkbook(is);
+    }
+
+    /**
+     * Links external document to allow using of it in cell formulas.
+     */
+    public void linkExternalDocument(String ref, ExcelDocument externalDoc) {
+        if (ref != null && externalDoc != null) {
+            workbook.linkExternalWorkbook(ref, externalDoc.getWorkbook());
+            collaboratingEvaluators.put(ref, externalDoc.getWorkbook().getCreationHelper().createFormulaEvaluator());
+            CollaboratingWorkbooksEnvironment.setupFormulaEvaluator(collaboratingEvaluators);
         }
     }
 
     /**
-     * Links sheet from external document to allow using of it in cell formulas.
+     * Sets custom data formatter for this Excel Document.
+     *
+     * @param formatter - instance of specific formatter
+     * @see org.apache.poi.ss.usermodel.DataFormatter
      */
-    public int linkExternalSheet(String ref, Sheet externalSheet) {
-        //TODO Implement this
-        int wbId = -1;
-//        if (ref != null) {
-//            wbId = SpreadsheetUtil.addExternalSheet(workbook, ref, externalSheet);
-//            if (!collaboratingEvaluators.containsKey(ref)) {
-//                collaboratingEvaluators.put(ref, externalSheet.getWorkbook().getCreationHelper().createFormulaEvaluator());
-//                CollaboratingWorkbooksEnvironment.setupFormulaEvaluator(collaboratingEvaluators);
-//            }
-//        }
-        return wbId;
+    public void setDataFormatter(DataFormatter formatter) {
+        PoiElementsCache.setDataFormatter(id, formatter);
+    }
+
+    /**
+     * Gets currently used data formatter for this Excel Document.
+     *
+     * @return instance of data formatter
+     * @see org.apache.poi.ss.usermodel.DataFormatter
+     */
+    public DataFormatter getDataFormatter() {
+        return PoiElementsCache.getDataFormatter(id);
     }
 
 
@@ -251,7 +259,7 @@ public class ExcelDocument {
      ********************************************************/
 
     /**
-     * Create a new sheet for this Workbook and return the high level
+     * Create a new sheet for this Excel Document and return the high level
      * representation. New sheet will set as active sheet. Will set existing sheet
      * as active sheet and return it if sheet with name specified is exist already
      *
@@ -259,66 +267,62 @@ public class ExcelDocument {
      * @return Sheet representing the new sheet.
      */
     public Sheet createSheet(String sheetName) {
-        //TODO Implement this
-        return null;
-//        checkWorkbook();
-//        String name = WorkbookUtil.createSafeSheetName(sheetName);
-//        Sheet activeSheet = workbook.getSheet(name);
-//        if (activeSheet == null) {
-//            activeSheet = workbook.createSheet(name);
-//        }
-//        workbook.setActiveSheet(workbook.getSheetIndex(activeSheet));
-//        return activeSheet;
+        String name = WorkbookUtil.createSafeSheetName(sheetName);
+        org.apache.poi.ss.usermodel.Sheet activeSheet = workbook.getSheet(name);
+        if (activeSheet == null) {
+            activeSheet = workbook.createSheet(name);
+        }
+        int sheetIndex = workbook.getSheetIndex(activeSheet);
+        workbook.setActiveSheet(sheetIndex);
+        return new Sheet(this, sheetIndex);
     }
 
     /**
-     * Create an Sheet from an existing sheet in the Workbook. This new sheet will
+     * Create an Sheet from an existing sheet in the Excel Document. This new sheet will
      * be placed next to the source sheet.
      *
      * @param sheetName the name of sheet to clone.
-     * @return Sheet representing the cloned sheet. Returns null if sheet specified
-     * not found.
+     * @return Sheet representing the cloned sheet. Returns null if specified sheet not found.
      */
     public Sheet cloneSheet(String sheetName) {
-        //TODO Implement this
+        org.apache.poi.ss.usermodel.Sheet source = workbook.getSheet(sheetName);
+        if (source != null) {
+            org.apache.poi.ss.usermodel.Sheet clone = workbook.cloneSheet(workbook.getSheetIndex(source));
+            return new Sheet(this, workbook.getSheetIndex(clone));
+        }
         return null;
-//        checkWorkbook();
-//        Sheet source = workbook.getSheet(sheetName);
-//        return source != null ? workbook.cloneSheet(workbook.getSheetIndex(source)) : null;
     }
 
     /**
      * Copy the content of sheet {@code sheetName} to another sheet with styles.
-     * Destination sheet can be located in another spreadsheet.
+     * Destination sheet can be located in another Excel Document.
      *
      * @param sheetName - name of the sheet to copy
      * @param destSheet - destination sheet
      */
     public void copySheet(String sheetName, Sheet destSheet) {
-        //TODO Implement this
-//        checkWorkbook();
-//        Sheet source = workbook.getSheet(sheetName);
-//        if (source == null) {
-//            throw new IllegalArgumentException(String.format("Sheet with name '%s' is not found to copy.", sheetName));
-//        }
-//        SpreadsheetUtil.copySheet(source, destSheet);
+        org.apache.poi.ss.usermodel.Sheet source = workbook.getSheet(sheetName);
+        if (source == null) {
+            throw new IllegalArgumentException(String.format("Sheet with name '%s' is not found to copy.", sheetName));
+        }
+        //TODO Rewrite based on ExcelCellStyle implementation
+        SpreadsheetUtil.copySheet(source, destSheet.getPoiSheet());
     }
 
     /**
      * Copy the content of sheet {@code sheetName} to another sheet without styles.
-     * Destination sheet can be located in another spreadsheet.
+     * Destination sheet can be located in another Excel Document.
      *
      * @param sheetName - name of the sheet to copy
      * @param destSheet - destination sheet
      */
     public void copySheetWithoutStyles(String sheetName, Sheet destSheet) {
-        //TODO Implement this
-//        checkWorkbook();
-//        Sheet source = workbook.getSheet(sheetName);
-//        if (source == null) {
-//            throw new IllegalArgumentException(String.format("Sheet with name '%s' is not found to copy.", sheetName));
-//        }
-//        SpreadsheetUtil.copySheetWithoutStyles(source, destSheet);
+        org.apache.poi.ss.usermodel.Sheet source = workbook.getSheet(sheetName);
+        if (source == null) {
+            throw new IllegalArgumentException(String.format("Sheet with name '%s' is not found to copy.", sheetName));
+        }
+        //TODO Rewrite based on ExcelCellStyle implementation
+        SpreadsheetUtil.copySheetWithoutStyles(source, destSheet.getPoiSheet());
     }
 
     /**
@@ -327,26 +331,21 @@ public class ExcelDocument {
      * @return List of sheet names
      */
     public List<String> getSheetNames() {
-        //TODO Implement this
-        return null;
-//        checkWorkbook();
-//        List<String> sheetNames = new ArrayList<>();
-//        for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
-//            sheetNames.add(workbook.getSheetName(i));
-//        }
-//        return sheetNames;
+        List<String> sheetNames = new ArrayList<>();
+        for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+            sheetNames.add(workbook.getSheetName(i));
+        }
+        return sheetNames;
     }
 
     /**
-     * Sets the order of appearance for a given sheet.
+     * Move specified sheet to a new position.
      *
      * @param sheetName the name of the sheet to reorder
      * @param newPos    the position that we want to move the sheet into (0 based)
      */
     public void moveSheet(String sheetName, int newPos) {
-        //TODO Implement this
-//        checkWorkbook();
-//        workbook.setSheetOrder(sheetName, newPos);
+        workbook.setSheetOrder(sheetName, newPos);
     }
 
     /**
@@ -356,83 +355,86 @@ public class ExcelDocument {
      * @param sheetName of the sheet to remove
      */
     public void removeSheet(String sheetName) {
-        //TODO Implement this
-//        checkWorkbook();
-//        int index = workbook.getSheetIndex(sheetName);
-//        if (index < 0) {
-//            index = workbook.getSheetIndex(WorkbookUtil.createSafeSheetName(sheetName));
-//        }
-//        if (index >= 0) {
-//            workbook.removeSheetAt(index);
-//        }
+        int index = workbook.getSheetIndex(sheetName);
+        if (index < 0) {
+            index = workbook.getSheetIndex(WorkbookUtil.createSafeSheetName(sheetName));
+        }
+        if (index >= 0) {
+            workbook.removeSheetAt(index);
+        }
     }
 
     /**
-     * Returns the current active sheet.
-     *
-     * @return
+     * @return current active sheet.
      */
     public Sheet getActiveSheet() {
-        //TODO Implement this
-        return null;
-//        checkWorkbook();
-//        return workbook.getSheetAt(workbook.getActiveSheetIndex());
+        return new Sheet(this, workbook.getActiveSheetIndex());
     }
 
     /**
      * Change the name of given sheet.
      *
-     * @param newName
+     * @param sheet   - instance of Sheet that needs to renamed
+     * @param newName - a new name for specified sheet
      */
     public void renameSheet(Sheet sheet, String newName) {
-        //TODO Implement this
-//        checkWorkbook();
-//        int index = workbook.getSheetIndex(sheet);
-//        workbook.setSheetName(index, newName);
+        int index = workbook.getSheetIndex(sheet.getPoiSheet());
+        workbook.setSheetName(index, newName);
     }
 
     /**
-     * Set the sheet with given index as active and return
+     * Set the sheet with given index as active and return it.
      *
-     * @param index
-     * @return
+     * @param index - index of sheet that need to be activated.
+     * @return instance of activated sheet.
      */
     public Sheet selectSheet(int index) {
-        //TODO Implement this
-        return null;
-//        workbook.setActiveSheet(index);
-//        return workbook.getSheetAt(index);
+        workbook.setActiveSheet(index);
+        return new Sheet(this, index);
     }
 
     /**
-     * Set the sheet with given name as active and return. Returns null if sheet not
-     * found.
+     * Set the sheet with given name as active and return it.
+     *
+     * @param sheetName - name of sheet that need to be activated.
+     * @return instance of activated sheet or <code>null</code> if sheet not found.
      */
     public Sheet selectSheet(String sheetName) {
-        //TODO Implement this
-        return null;
-//        checkWorkbook();
-//        int i = workbook.getSheetIndex(sheetName);
-//        if (i < 0)
-//            return null;
-//        return selectSheet(i);
+        int i = workbook.getSheetIndex(sheetName);
+        if (i < 0)
+            return null;
+        return selectSheet(i);
     }
 
     /**
-     * Set the sheet with a row that contains all given values as active and return
-     * it. Returns null if sheet not found.
+     * Finds the sheet with a row that contains all given values and active it.
+     *
+     * @param values - list of values to match.
+     * @return instance of found and activated sheet or <code>null</code> if sheet not found.
      */
     public Sheet findSheet(String... values) {
-        //TODO Implement this
+        return findSheet(MatchMethod.EXACT, values);
+    }
+
+    /**
+     * Finds the sheet with a row that contains all given values and active it.
+     *
+     * @param matchMethod - method that defines how passed values are matched with each row values.
+     * @param values      - list of values to match.
+     * @return instance of found and activated sheet or <code>null</code> if sheet not found.
+     * @see eu.ibagroup.easyrpa.openframework.excel.constants.MatchMethod
+     */
+    public Sheet findSheet(MatchMethod matchMethod, String... values) {
+        int sheetIndex = 0;
+        for (Sheet sheet : this) {
+            Row row = sheet.findRow(matchMethod, values);
+            if (row != null) {
+                workbook.setActiveSheet(sheetIndex);
+                return sheet;
+            }
+            sheetIndex++;
+        }
         return null;
-//        checkWorkbook();
-//        for (Sheet sheet : workbook) {
-//            if (SpreadsheetUtil.findRow(sheet, values) >= 0) {
-//                workbook.setActiveSheet(workbook.getSheetIndex(sheet));
-//                return sheet;
-//            }
-//        }
-//        return null;
     }
 
     /***************************************************************
@@ -482,15 +484,34 @@ public class ExcelDocument {
         //TODO Implement this
     }
 
+    /**
+     * @return Excel Document sheets iterator
+     */
+    @Override
+    public Iterator<Sheet> iterator() {
+        return new SheetIterator(workbook.getNumberOfSheets());
+    }
+
+    /**
+     * Frees up all allocated resources.
+     */
+    @Override
+    public void close() {
+        if (id > 0) {
+            PoiElementsCache.unregister(id);
+        }
+    }
+
+    /***************************************************************
+     * Protected methods
+     ***************************************************************/
+    protected int getId() {
+        return id;
+    }
+
     /***************************************************************
      * Private methods
      ***************************************************************/
-
-    private void checkWorkbook() {
-        if (workbook == null) {
-            throw new IllegalStateException("This function cannot be used in only VBS mode");
-        }
-    }
 
     /**
      * Creates and set workbook from input stream specified. Set first workbook
@@ -511,17 +532,58 @@ public class ExcelDocument {
                 workbook.setActiveSheet(0);
             }
 
-            formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
+            if (id > 0) {
+                PoiElementsCache.unregister(id);
+            } else {
+                id = generateId();
+            }
+
+            PoiElementsCache.register(id, workbook);
+
+            availableMacros.clear();
+            try (VBAMacroReader reader = new VBAMacroReader(is)) {
+                Map<String, Module> macrosMap = reader.readMacroModules();
+                availableMacros.addAll(macrosMap.keySet());
+            } catch (Exception e) {
+                //do nothing
+            }
+
             collaboratingEvaluators.clear();
-            collaboratingEvaluators.put(getFileName(), formulaEvaluator);
+            collaboratingEvaluators.put(FilenameUtils.getName(getFilePath()), PoiElementsCache.getEvaluator(id));
 
             // For debug propose
 //            SpreadsheetUtil.outputPOILogsToConsole(1);
 //            formulaEvaluator.setDebugEvaluationOutputForNextEval(true);
 
         } catch (Exception e) {
-            throw new RuntimeException(String.format("Initializing of workbook for spreadsheet '%s' has failed.", getFileName()), e);
+            throw new RuntimeException(String.format("Initializing of workbook for spreadsheet '%s' has failed.", getFilePath()), e);
         }
     }
 
+    /**
+     * @return unique Id for this Excel Document.
+     */
+    private int generateId() {
+        return Integer.parseInt((int) (Math.random() * 100) + "" + (System.currentTimeMillis() % 1000000));
+    }
+
+    private class SheetIterator implements Iterator<Sheet> {
+
+        private int index = 0;
+        private int sheetsCount;
+
+        public SheetIterator(int sheetsCount) {
+            this.sheetsCount = sheetsCount;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return index < sheetsCount;
+        }
+
+        @Override
+        public Sheet next() {
+            return new Sheet(ExcelDocument.this, index++);
+        }
+    }
 }

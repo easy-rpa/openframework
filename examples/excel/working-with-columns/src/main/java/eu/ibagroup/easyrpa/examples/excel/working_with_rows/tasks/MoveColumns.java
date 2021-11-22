@@ -29,7 +29,7 @@ public class MoveColumns extends ApTask {
         Sheet activeSheet = doc.getActiveSheet();
 
         log.info("Move column '{}' to the end of sheet '{}'", columnToMoveRef, activeSheet.getName());
-        Column lastColumn = activeSheet.getLostColumn();
+        Column lastColumn = activeSheet.getLastColumn();
         activeSheet.moveColumn(columnToMoveRef, lastColumn.getRef(), InsertMethod.AFTER);
     }
 

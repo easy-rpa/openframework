@@ -18,8 +18,8 @@ public class ReadRangeOfData extends ApTask {
 
     @Override
     public void execute() {
-        String topLeftCellRef = "A3";
-        String bottomRightCellRef = "F200";
+        String topLeftCellRef = "C4";
+        String bottomRightCellRef = "M200";
 
         log.info("Read range of data from spreadsheet document located at: {}", sourceSpreadsheetFile);
         ExcelDocument doc = new ExcelDocument(sourceSpreadsheetFile);

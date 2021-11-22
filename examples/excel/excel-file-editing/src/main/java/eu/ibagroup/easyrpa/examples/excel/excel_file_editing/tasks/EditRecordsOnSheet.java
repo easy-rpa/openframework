@@ -5,11 +5,11 @@ import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.examples.excel.excel_file_editing.entities.Passenger;
 import eu.ibagroup.easyrpa.openframework.excel.ExcelDocument;
+import eu.ibagroup.easyrpa.openframework.excel.Row;
 import eu.ibagroup.easyrpa.openframework.excel.Sheet;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 
 @ApTaskEntry(name = "Edit Records on Sheet")
 @Slf4j
@@ -20,7 +20,7 @@ public class EditRecordsOnSheet extends ApTask {
 
     @Override
     public void execute() {
-        List<String> keywordsToLocalizeTable = Arrays.asList("Passenger Id", "Name");
+        String[] keywordsToLocalizeTable = new String[]{"Passenger Id", "Name"};
         String passengerName = "Moran, Mr. James";
 
         log.info("Open spreadsheet document located at '{}' and edit.", sourceSpreadsheetFile);
@@ -28,7 +28,12 @@ public class EditRecordsOnSheet extends ApTask {
         Sheet activeSheet = doc.getActiveSheet();
 
         log.info("Lookup record by specific condition on sheet '{}'", activeSheet.getName());
-        Passenger record = activeSheet.findRecord(keywordsToLocalizeTable, r -> {
+        Row headerRow = activeSheet.findRow(keywordsToLocalizeTable);
+        if (headerRow == null) {
+            log.warn("Table with column names '{}' not found.", (Object) keywordsToLocalizeTable);
+            return;
+        }
+        Passenger record = activeSheet.findRecord(headerRow.getReference(), r -> {
             if (passengerName.equals(r.getName())) {
                 return true;
             }
@@ -36,11 +41,11 @@ public class EditRecordsOnSheet extends ApTask {
         });
 
         if (record != null) {
-            log.info("Edit 'Age' of the record.");
+            log.info("Edit Age of the record with Name '{}'.", passengerName);
             record.setAge(50);
 
-            log.info("Update corresponding row on sheet.");
-            activeSheet.updateRecord(keywordsToLocalizeTable, record);
+            log.info("Update corresponding record on sheet.");
+            activeSheet.updateRecords(headerRow.getReference(), Collections.singletonList(record));
 
             log.info("Save changes.");
             doc.save();
@@ -48,7 +53,7 @@ public class EditRecordsOnSheet extends ApTask {
             log.info("Spreadsheet document is saved successfully.");
 
         } else {
-            log.warn("Row that specifies condition has not found.");
+            log.warn("Record that specifies condition has not found.");
         }
     }
 }

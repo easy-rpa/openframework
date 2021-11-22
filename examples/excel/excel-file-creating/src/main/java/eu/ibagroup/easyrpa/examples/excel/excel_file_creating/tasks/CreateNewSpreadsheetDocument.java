@@ -11,6 +11,7 @@ import eu.ibagroup.easyrpa.examples.excel.excel_file_creating.entities.Passenger
 import eu.ibagroup.easyrpa.openframework.excel.ExcelDocument;
 import eu.ibagroup.easyrpa.openframework.excel.Sheet;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,20 +37,49 @@ public class CreateNewSpreadsheetDocument extends ApTask {
 
         log.info("Create new spreadsheet document.");
         ExcelDocument doc = new ExcelDocument();
+        Sheet activeSheet = doc.getActiveSheet();
 
-        log.info("Create new sheet with name '{}'.", newSheetName);
-        Sheet sheet = doc.createSheet(newSheetName);
+        log.info("Rename active sheet to '{}'.", newSheetName);
+        doc.renameSheet(activeSheet, newSheetName);
 
         log.info("Put data on the sheet '{}'.", newSheetName);
-        sheet.insertHeader("A1", Passenger.class);
-        sheet.insertRecords("A2", data);
+        activeSheet.insertTable("C3", data);
+//        activeSheet.insertTable("C3", prepareLargeData(data));
 
-        String outputFilePath = outputFilesDir + File.pathSeparator + "output.xlsx";
+        String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + "output.xlsx");
         log.info("Save file to '{}'.", outputFilePath);
         doc.saveAs(outputFilePath);
 
         log.info("Spreadsheet document has been saved successfully");
     }
+
+//    private List<Passenger> prepareLargeData(List<Passenger> init) {
+//        List<Passenger> result = new ArrayList<>();
+//        for(int i=0; i < 500000; i++){
+//            Passenger passenger;
+//            if(i < init.size()){
+//                passenger = init.get(i);
+//            }else{
+//                passenger = new Passenger();
+//                Passenger sample = init.get(i % init.size());
+//                passenger.setPassengerId(i);
+//                passenger.setName(sample.getName());
+//                passenger.setSex(sample.getSex());
+//                passenger.setAge(sample.getAge());
+//                passenger.setSurvived(sample.isSurvived());
+//                passenger.setCabin(sample.getCabin());
+//                passenger.setFare(sample.getFare());
+//                passenger.setPClass(sample.getPClass());
+//                passenger.setSibSp(sample.getSibSp());
+//                passenger.setParch(sample.getParch());
+//                passenger.setTicket(sample.getTicket());
+//                passenger.setEmbarked(sample.getEmbarked());
+//            }
+//            result.add(passenger);
+//        }
+//        return result;
+//    }
+
 
     private List<Passenger> loadSampleData(String jsonFilePath) {
         try {
@@ -75,3 +105,4 @@ public class CreateNewSpreadsheetDocument extends ApTask {
         }
     }
 }
+

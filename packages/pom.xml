@@ -7,7 +7,6 @@
     <version>1.0.0-SNAPSHOT</version>
     <modules>
         <module>google-drive</module>
-        <module>database</module>
     </modules>
     <packaging>pom</packaging>
     <properties>
@@ -87,7 +86,7 @@
             <dependency>
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi</artifactId>
-                <version>4.1.2</version>
+                <version>5.1.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>
@@ -97,12 +96,12 @@
             <dependency>
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml</artifactId>
-                <version>4.1.2</version>
+                <version>5.1.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-scratchpad</artifactId>
-                <version>4.1.2</version>
+                <version>5.1.0</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
@@ -112,7 +111,7 @@
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>2.6</version>
+                <version>2.7</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -211,15 +210,10 @@
                 <version>v3-rev110-1.23.0</version>
             </dependency>
             <dependency>
-                <groupId>com.j256.ormlite</groupId>
-                <artifactId>ormlite-jdbc</artifactId>
-                <version>4.48</version>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>2.14.1</version>
                 <scope>compile</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>1.18.20</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

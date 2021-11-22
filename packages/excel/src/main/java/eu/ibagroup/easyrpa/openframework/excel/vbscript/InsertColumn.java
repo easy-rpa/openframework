@@ -23,12 +23,12 @@ public class InsertColumn extends VBScript {
         this("", "");
     }
 
-    public InsertColumn(String tabName, String colRef) {
+    public InsertColumn(String sheetName, String colRef) {
         super(VBS_FILE_PATH);
-        params(tabName, colRef);
+        params(sheetName, colRef);
     }
 
-    public InsertColumn tabName(String tabName) {
+    public InsertColumn sheetName(String tabName) {
         getParameters().set(0, tabName);
         return this;
     }
