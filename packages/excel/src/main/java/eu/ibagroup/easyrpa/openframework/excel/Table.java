@@ -209,7 +209,7 @@ public class Table<T> implements Iterable<T> {
         int startRow = insertPos + hBottomRow + 1;
         for (int i = startRow; i < rowsCount + startRow; i++) {
             for (int j = hLeftCol; j < hRightCol; j++) {
-                typeHelper.formatCell(parent.getCell(i, j), columnNamesMap.get(j - hLeftCol), i - startRow, records);
+                typeHelper.formatCell(parent.getCell(i, j), columnNamesMap.get(j - hLeftCol), i - hBottomRow - 1, this.records);
             }
         }
     }
@@ -233,7 +233,7 @@ public class Table<T> implements Iterable<T> {
                 List<Object> values = typeHelper.mapToValues(record, columnsIndexMap);
                 parent.putRange(rowNum, hLeftCol, values);
                 for (int j = hLeftCol; j <= hRightCol; j++) {
-                    typeHelper.formatCell(parent.getCell(rowNum, j), columnNamesMap.get(j - hLeftCol), index, records);
+                    typeHelper.formatCell(parent.getCell(rowNum, j), columnNamesMap.get(j - hLeftCol), index, this.records);
                 }
                 this.records.set(index, record);
             }

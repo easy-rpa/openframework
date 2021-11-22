@@ -6,6 +6,7 @@ import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.examples.excel.sheet_data_reading.entities.Passenger;
 import eu.ibagroup.easyrpa.openframework.excel.ExcelDocument;
 import eu.ibagroup.easyrpa.openframework.excel.Sheet;
+import eu.ibagroup.easyrpa.openframework.excel.Table;
 import eu.ibagroup.easyrpa.openframework.excel.constants.MatchMethod;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,14 +28,15 @@ public class ReadListOfTypedRecords extends ApTask {
         ExcelDocument doc = new ExcelDocument(sourceSpreadsheetFile);
         Sheet activeSheet = doc.getActiveSheet();
 
-        log.info("Get list of records that contains in the table on sheet '{}'.", activeSheet.getName());
-        List<Passenger> records = activeSheet.getRecords(topLeftCellOfTableRef, Passenger.class);
-
-        log.info("Fetched records:");
-        records.forEach(r -> log.info("{}", r));
+        log.info("List records that contains in the table on sheet '{}'.", activeSheet.getName());
+        Table<Passenger> passengersTable1 = activeSheet.getTable(topLeftCellOfTableRef, Passenger.class);
+        for (Passenger p : passengersTable1) {
+            log.info("{}", p);
+        }
 
         log.info("Get the same list of records using keywords '{}' to localize the table header.", (Object) keywordsToLocalizeTable);
-        records = activeSheet.getRecords(Passenger.class, MatchMethod.EXACT, keywordsToLocalizeTable);
+        Table<Passenger> passengersTable2 = activeSheet.findTable(Passenger.class, MatchMethod.EXACT, keywordsToLocalizeTable);
+        List<Passenger> records = passengersTable2.getRecords();
 
         log.info("Amount of fetched records: {}", records.size());
     }

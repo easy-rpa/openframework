@@ -52,19 +52,19 @@
 
  - [Creating of new Excel file](excel/excel-file-creating)
  
- - [In Progress] [Reading data from given sheet](excel/sheet-data-reading)
+ - [Reading data from given sheet](excel/sheet-data-reading)
     * Read as range of data
     * Read as list of records    
     
  - [TODO] Reading data from large Excel files (excel/large-files-reading)
  
- - [In Progress] [Editing of existing Excel file](excel/excel-file-editing) 
+ - [Editing of existing Excel file](excel/excel-file-editing) 
      * Edit cells
      * Edit records   
  
- - [Copying of sheet from one Excel file to another](excel/sheets-copying)    
+ - [In Progress] [Copying of sheet from one Excel file to another](excel/sheets-copying)    
  
- - [Sheets manipulating](excel/sheets-manipulating)
+ - [In Progress] [Sheets manipulating](excel/sheets-manipulating)
     * List existing sheets
     * Activate sheet
     * Rename sheet

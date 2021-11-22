@@ -1,4 +1,4 @@
-package eu.ibagroup.easyrpa.examples.excel.sheet_data_reading.entities.mappers;
+package eu.ibagroup.easyrpa.examples.excel.excel_file_editing.entities.mappers;
 
 import eu.ibagroup.easyrpa.openframework.excel.function.FieldMapper;
 
