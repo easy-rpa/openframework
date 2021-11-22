@@ -1,17 +1,17 @@
 package eu.ibagroup.easyrpa.openframework.database.connection;
 
-import eu.ibagroup.easyrpa.openframework.database.common.OpenFrameworkConnection;
+import eu.ibagroup.easyrpa.openframework.database.common.DatabaseConnection;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class OpenFrameworkDbHelper {
 
-    private static OpenFrameworkConnection connection = null;
+    private static DatabaseConnection connection = null;
 
     public static void initialize(String connectionString, String userName, String password) throws SQLException {
-        if (connection == null) {
-            connection = new OpenFrameworkConnection(DriverManager.getConnection(connectionString, userName, password));
+        if (connection == null || connection.isClosed()) {
+            connection = new DatabaseConnection(DriverManager.getConnection(connectionString, userName, password));
         }
     }
 
@@ -22,7 +22,7 @@ public class OpenFrameworkDbHelper {
         }
     }
 
-    public static OpenFrameworkConnection getConnection() {
+    public static DatabaseConnection getConnection() {
         if (connection != null) {
             return connection;
         } else {

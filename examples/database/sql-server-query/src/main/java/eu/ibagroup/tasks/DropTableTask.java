@@ -4,11 +4,9 @@ import eu.ibagroup.easyrpa.engine.annotation.AfterInit;
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.database.service.SQLServerService;
-import eu.ibagroup.easyrpa.openframework.database.common.DbSession;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
-import java.sql.SQLSyntaxErrorException;
 
 @Slf4j
 @ApTaskEntry(name = "Drop Table Task", description = "Drop MS-SQL table")
@@ -24,11 +22,8 @@ public class DropTableTask extends ApTask {
 
     @Override
     public void execute() throws Exception {
-        try (DbSession session = dbService.initPureConnection().getSession()) {
-            session.executeUpdate(query);
-        }
-        catch(SQLSyntaxErrorException e){
-            log.info("Can't execute query. Reason: "+ e.getMessage());
-        }
+        dbService.withConnection(() -> {
+            return dbService.executeUpdate(query);
+        });
     }
 }

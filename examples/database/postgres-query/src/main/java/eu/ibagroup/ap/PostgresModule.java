@@ -19,6 +19,7 @@ public class PostgresModule extends ApModule {
         output = execute(getInput(), DeleteTwoOldestRecords.class).get();
         output = execute(getInput(), PrintTableContentOrm.class).get();
         output = execute(getInput(), PrintTableContent.class).get();
+        output = execute(getInput(), CallStoredProc.class).get();
         output = execute(getInput(), DropTable.class).get();
         return output;
     }

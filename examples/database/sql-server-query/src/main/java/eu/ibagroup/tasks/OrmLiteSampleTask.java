@@ -1,10 +1,6 @@
 package eu.ibagroup.tasks;
 
-import com.j256.ormlite.dao.Dao;
-import com.j256.ormlite.dao.DaoManager;
-import com.j256.ormlite.stmt.PreparedQuery;
 import com.j256.ormlite.stmt.QueryBuilder;
-import com.j256.ormlite.support.ConnectionSource;
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.database.service.SQLServerService;
@@ -22,15 +18,13 @@ public class OrmLiteSampleTask extends ApTask {
 
     @Override
     public void execute() throws Exception {
-
-        ConnectionSource connectionSource = dbService.initOrmConnection().getOrmConnectionSource();
-        Dao<MsSqlInvoice, Integer> invoicesDao = DaoManager.createDao(connectionSource, MsSqlInvoice.class);
-
-        QueryBuilder<MsSqlInvoice, Integer> queryBuilder = invoicesDao.queryBuilder();
+        QueryBuilder<MsSqlInvoice, Integer> queryBuilder = dbService.getQueryBuilder(MsSqlInvoice.class);
         queryBuilder.where().eq("customer_name", "IBM");
-        PreparedQuery<MsSqlInvoice> preparedQuery = queryBuilder.prepare();
 
-        List<MsSqlInvoice> accountList = invoicesDao.query(preparedQuery);
-
+        List<MsSqlInvoice> accountList = dbService.query(queryBuilder, MsSqlInvoice.class);
+        accountList.forEach(a -> {
+            log.info("id: {}; invoice#: {}; invoice_date: {}; customer_name: {}; amount: {}",
+                    a.getId(), a.getInvoiceNumber(), a.getInvoiceDate(), a.getCustomerName(), a.getAmount());
+        });
     }
 }

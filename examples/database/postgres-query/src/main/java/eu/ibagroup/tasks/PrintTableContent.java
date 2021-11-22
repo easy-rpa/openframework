@@ -5,7 +5,6 @@ import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Output;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.database.service.PostgresService;
-import eu.ibagroup.easyrpa.openframework.database.common.DbSession;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
@@ -21,14 +20,15 @@ public class PrintTableContent extends ApTask {
     PostgresService dbService;
     @Output()
     private String out = "";
+
     @AfterInit
     public void init() {
     }
 
     @Override
     public void execute() throws Exception {
-        try (DbSession session = dbService.initPureConnection().getSession()) {
-            ResultSet rs = session.executeQuery(query);
+        dbService.withConnection(() -> {
+            ResultSet rs = dbService.executeQuery(query);
             while (rs.next()) {
                 int id = rs.getInt("invoice_number");
                 Date invoiceDate = rs.getDate("invoice_date");
@@ -37,6 +37,7 @@ public class PrintTableContent extends ApTask {
 
                 log.info(MessageFormat.format("invoice_number = {0}, invoiceDate = {1}, customerName = {2}, amount = {3} ", id, invoiceDate, customerName, amount));
             }
-        }
+            return null;
+        });
     }
 }

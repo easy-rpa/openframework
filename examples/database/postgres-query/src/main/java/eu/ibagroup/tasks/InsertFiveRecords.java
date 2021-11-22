@@ -4,11 +4,9 @@ import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Output;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.database.service.PostgresService;
-import eu.ibagroup.easyrpa.openframework.database.common.DbSession;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
-import java.sql.SQLSyntaxErrorException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,14 +37,6 @@ public class InsertFiveRecords extends ApTask {
         queries.add(q3);
         queries.add(q4);
         queries.add(q5);
-        try (DbSession session = dbService.initPureConnection().getSession()) {
-            int[] rowsAffected = session.executeTransaction(queries);
-            for(int n : rowsAffected){
-                rowsInserted += n;
-            }
-        }
-        catch(SQLSyntaxErrorException e){
-            log.info("Can't execute query. Reason: "+ e.getMessage());
-        }
+        dbService.withTransaction(() -> dbService.executeBatch(queries));
     }
 }

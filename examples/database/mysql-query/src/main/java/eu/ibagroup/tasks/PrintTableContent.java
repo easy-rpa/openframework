@@ -1,10 +1,8 @@
 package eu.ibagroup.tasks;
 
-import eu.ibagroup.easyrpa.engine.annotation.AfterInit;
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Output;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
-import eu.ibagroup.easyrpa.openframework.database.common.DbSession;
 import eu.ibagroup.easyrpa.openframework.database.service.MySqlService;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,8 +22,9 @@ public class PrintTableContent extends ApTask {
 
     @Override
     public void execute() throws Exception {
-        try (DbSession session = dbService.initPureConnection().getSession()) {
-            ResultSet rs = session.executeQuery(query);
+
+        dbService.withConnection(() -> {
+            ResultSet rs = dbService.executeQuery(query);
             while (rs.next()) {
                 int id = rs.getInt("invoice_number");
                 Date invoiceDate = rs.getDate("invoice_date");
@@ -33,6 +32,8 @@ public class PrintTableContent extends ApTask {
                 double amount = rs.getDouble("amount");
                 log.info(MessageFormat.format("invoice_number = {0}, invoiceDate = {1}, customerName = {2}, amount = {3} ", id, invoiceDate, customerName, amount));
             }
-        }
+            return null;
+        });
+
     }
 }

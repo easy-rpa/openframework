@@ -17,7 +17,7 @@ public class SqlServerModule extends ApModule {
         output1 = execute(getInput(), InsertFiveRecordsTask.class).get();
         output1 = execute(getInput(), DeleteTwoOldestRecordsTask.class).get();
         output1 = execute(getInput(), PrintTableContentTask.class).get();
-        //output1 = execute(getInput(), DropTableTask.class).get();
+        output1 = execute(getInput(), DropTableTask.class).get();
         return output1;
     }
 

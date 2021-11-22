@@ -1,4 +1,5 @@
 package eu.ibagroup.entity;
+
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
@@ -7,7 +8,7 @@ import java.util.Date;
 
 import static eu.ibagroup.ap.Constants.DB_DATE_PATTERN;
 
-@DatabaseTable(tableName = "rpa.invoices")
+@DatabaseTable(tableName = "invoices")
 public class MySqlInvoice {
 
     @DatabaseField(generatedId = true, allowGeneratedIdInsert = true)

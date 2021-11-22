@@ -17,7 +17,9 @@ public class MysqlModule extends ApModule {
         output1 = execute(getInput(), InsertFiveRecords.class).get();
         output1 = execute(getInput(), DeleteTwoOldestRecords.class).get();
         output1 = execute(getInput(), PrintTableContent.class).get();
-//        output1 = execute(getInput(), DropTable.class).get();
+        output1 = execute(getInput(), PrintTableContentOrm.class).get();
+
+        output1 = execute(getInput(), DropTable.class).get();
         return output1;
     }
 

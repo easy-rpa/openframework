@@ -1,20 +1,28 @@
 package eu.ibagroup.easyrpa.openframework.database.connection;
 
-import eu.ibagroup.easyrpa.openframework.database.common.DbSession;
 import com.j256.ormlite.support.ConnectionSource;
+import eu.ibagroup.easyrpa.openframework.database.common.DatabaseSession;
+
 import java.sql.SQLException;
 
 public class ConnectionKeeper implements AutoCloseable {
 
-    private static DbSession session = null;
+    private static DatabaseSession session = null;
 
     private static ConnectionSource ormConnectionSource = null;
 
-    public static DbSession getSession() {
+    public static DatabaseSession getSession() {
         return session;
     }
 
-    public static void setSession(DbSession session) throws SQLException {
+    public static boolean sessionAlive() throws SQLException {
+        if (getSession() == null || getSession().getConnection() == null || getSession().getConnection().isClosed()) {
+            return false;
+        }
+        return true;
+    }
+
+    public static void setSession(DatabaseSession session) throws SQLException {
         ConnectionKeeper.session = session;
     }
 
@@ -27,13 +35,14 @@ public class ConnectionKeeper implements AutoCloseable {
     }
 
     public static void closeOrmConnection() throws SQLException {
-        if(ormConnectionSource != null){
-            if(ormConnectionSource.isOpen()){
+        if (ormConnectionSource != null) {
+            if (ormConnectionSource.isOpen()) {
                 ormConnectionSource.close();
             }
             ormConnectionSource = null;
         }
     }
+
     public static void closeSessionConnection() throws Exception {
         session.close();
     }
@@ -45,11 +54,6 @@ public class ConnectionKeeper implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        if (ormConnectionSource != null) {
-            if (ormConnectionSource.isOpen()) {
-                ormConnectionSource.close();
-            }
-            ormConnectionSource = null;
-        }
+        closeConnections();
     }
 }

@@ -215,6 +215,17 @@
                 <version>2.14.1</version>
                 <scope>compile</scope>
             </dependency>
+            <dependency>
+                <groupId>com.j256.ormlite</groupId>
+                <artifactId>ormlite-jdbc</artifactId>
+                <version>4.48</version>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.20</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 <!--    See https://central.sonatype.org/ -->

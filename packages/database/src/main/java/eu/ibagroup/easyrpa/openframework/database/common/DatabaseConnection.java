@@ -3,11 +3,11 @@ package eu.ibagroup.easyrpa.openframework.database.common;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class OpenFrameworkConnection {
+public class DatabaseConnection {
 
     private Connection connection = null;
 
-    public OpenFrameworkConnection(Connection connection) {
+    public DatabaseConnection(Connection connection) {
         this.connection = connection;
     }
 
@@ -29,7 +29,7 @@ public class OpenFrameworkConnection {
         }
     }
 
-    public DbSession getSession() throws SQLException {
-        return new DbSession(this.connection);
+    public DatabaseSession getSession() throws SQLException {
+        return new DatabaseSession(this.connection);
     }
 }

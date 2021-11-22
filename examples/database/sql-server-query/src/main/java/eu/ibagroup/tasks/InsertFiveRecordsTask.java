@@ -4,12 +4,9 @@ import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Output;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.database.service.SQLServerService;
-import eu.ibagroup.easyrpa.openframework.database.common.DbSession;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @ApTaskEntry(name = "Insert Records Task", description = "Insert 5 records into DB table")
@@ -32,32 +29,13 @@ public class InsertFiveRecordsTask extends ApTask {
 
     @Override
     public void execute() throws Exception {
-        try (DbSession session = dbService.initPureConnection().getSession()) {
-            List<String> queries = new ArrayList<>();
-            queries.add(q1);
-            queries.add(q2);
-            queries.add(q3);
-            queries.add(q4);
-            queries.add(q5);
-            int[] rowsAffected = session.executeTransaction(q1, q2, q3, q4, q5);
-            for(int n : rowsAffected){
-                rowsInserted += n;
-            }
-// OR
-// int[] rowsAffected = session.executeTransaction(queries);
-// OR
-//            session.beginTransaction();
-//            try {
-//                session.executeInsert(q1);
-//                session.executeInsert(q2);
-//                session.executeInsert(q3);
-//                session.executeInsert(q4);
-//                session.executeInsert(q5);
-//                session.commitTransaction();
-//            }catch (SQLException e){
-//                session.rollbackTransaction();
-//                throw e;
-//            }
-        }
+        dbService.withTransaction(() -> {
+            dbService.executeInsert(q1);
+            dbService.executeInsert(q2);
+            dbService.executeInsert(q3);
+            dbService.executeInsert(q4);
+            dbService.executeInsert(q5);
+            return null;
+        });
     }
 }
