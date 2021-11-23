@@ -98,11 +98,11 @@
  
  - [In Progress] [Inserting image to sheet](excel/image-inserting)
  
- - [In Progress] [Exporting Excel file to PDF](excel/export-to-pdf)
+ - [Exporting Excel file to PDF](excel/export-to-pdf)
  
- - [In Progress] [Running of macros](excel/macros-running)
+ - [Running of macros](excel/macros-running)
  
- - [In Progress] [Running of custom VB script](excel/custom-vbs-running)
+ - [Running of custom VB script](excel/custom-vbs-running)
  
 ## CSV
 

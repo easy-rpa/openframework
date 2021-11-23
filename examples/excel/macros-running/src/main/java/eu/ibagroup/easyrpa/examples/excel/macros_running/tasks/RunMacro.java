@@ -16,16 +16,19 @@ public class RunMacro extends ApTask {
     @Configuration(value = "macro.function.name")
     private String macroFunctionName;
 
+    @Configuration(value = "output.spreadsheet.file")
+    private String outputSpreadsheetFile;
+
     @Override
     public void execute() {
-        log.info("Run macro function '{}' of spreadsheet document located at '{}'", macroFunctionName, sourceSpreadsheetFile);
+        log.info("Run macro function '{}' of Excel Document located at '{}'", macroFunctionName, sourceSpreadsheetFile);
         ExcelDocument doc = new ExcelDocument(sourceSpreadsheetFile);
         doc.runMacro(macroFunctionName);
         log.info("Running of macro finished successfully.");
 
-        log.info("Save changes for the document.");
-        doc.save();
+        log.info("Save changes to '{}'.", outputSpreadsheetFile);
+        doc.saveAs(outputSpreadsheetFile);
 
-        log.info("Changes saved.");
+        log.info("Excel document is saved successfully.");
     }
 }

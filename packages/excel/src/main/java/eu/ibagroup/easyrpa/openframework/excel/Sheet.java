@@ -3,8 +3,10 @@ package eu.ibagroup.easyrpa.openframework.excel;
 import eu.ibagroup.easyrpa.openframework.excel.constants.InsertMethod;
 import eu.ibagroup.easyrpa.openframework.excel.constants.MatchMethod;
 import eu.ibagroup.easyrpa.openframework.excel.constants.SortDirection;
+import eu.ibagroup.easyrpa.openframework.excel.exceptions.VBScriptExecutionException;
 import eu.ibagroup.easyrpa.openframework.excel.internal.PoiElementsCache;
 import eu.ibagroup.easyrpa.openframework.excel.utils.TypeUtils;
+import eu.ibagroup.easyrpa.openframework.excel.vbscript.ExportToPDF;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.ss.usermodel.DataValidation;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -468,13 +470,13 @@ public class Sheet implements Iterable<Row> {
     }
 
     /**
-     * Exports sheet to PDF
+     * Exports this sheet to PDF file.
      *
-     * @param pdfFilePath
+     * @param pdfFilePath - path of output PDF file
+     * @throws VBScriptExecutionException with error description if exporting failed.
      */
     public void exportToPDF(String pdfFilePath) {
-        //TODO Implement this
-//        runScript(new ExportToPDF(getActiveSheet().getSheetName(), pdfFilePath));
+        parent.runScript(new ExportToPDF(getName(), pdfFilePath));
     }
 
     public void addImage(String pathToImage, String fromCellRef, String toCellRef) {

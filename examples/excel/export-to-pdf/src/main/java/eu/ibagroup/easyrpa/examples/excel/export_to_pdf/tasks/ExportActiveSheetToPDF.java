@@ -5,6 +5,7 @@ import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.excel.ExcelDocument;
 import eu.ibagroup.easyrpa.openframework.excel.Sheet;
+import eu.ibagroup.easyrpa.openframework.excel.exceptions.VBScriptExecutionException;
 import lombok.extern.slf4j.Slf4j;
 
 @ApTaskEntry(name = "Export Active Sheet to PDF")
@@ -23,9 +24,14 @@ public class ExportActiveSheetToPDF extends ApTask {
         ExcelDocument doc = new ExcelDocument(sourceSpreadsheetFile);
         Sheet activeSheet = doc.getActiveSheet();
 
-        log.info("Export sheet '{}' to PDF file located at '{}'", activeSheet.getName(), outputPdfFile);
-        activeSheet.exportToPDF(outputPdfFile);
+        try {
+            log.info("Export sheet '{}' to PDF file located at '{}'", activeSheet.getName(), outputPdfFile);
+            activeSheet.exportToPDF(outputPdfFile);
 
-        log.info("Sheet has been exported successfully.");
+            log.info("Sheet has been exported successfully.");
+
+        } catch (VBScriptExecutionException e) {
+            throw new RuntimeException("Exporting of sheet '{}' to PDF has failed.", e);
+        }
     }
 }

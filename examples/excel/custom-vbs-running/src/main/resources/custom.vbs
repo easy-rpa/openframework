@@ -5,9 +5,11 @@ Set workbook = excel.Workbooks.Open(Wscript.Arguments(0))
 excel.Application.DisplayAlerts = False
 excel.Visible = False
 
-Set sheetToExport = workbook.Sheets(Wscript.Arguments(1))
-sheetToExport.Select
-sheetToExport.ExportAsFixedFormat 0, Replace(Wscript.Arguments(2), "/", "\"), 0, 1, 0, , , 0  
+Set sheet1 = workbook.Sheets("Sheet1")
+sheet1.Select
+Set cellB6 = sheet1.Range("B6")
+cellB6.Select
+cellB6.Value = "TEST"
 
 If Err.Number <> 0 Then
 	workbook.Close False

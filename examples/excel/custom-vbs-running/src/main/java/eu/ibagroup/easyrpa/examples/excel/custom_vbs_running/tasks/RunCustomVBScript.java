@@ -16,6 +16,9 @@ public class RunCustomVBScript extends ApTask {
     @Configuration(value = "vb.script.file")
     private String vbScriptFile;
 
+    @Configuration(value = "output.spreadsheet.file")
+    private String outputSpreadsheetFile;
+
     @Override
     public void execute() {
         log.info("Run VB script '{}' for spreadsheet document located at '{}'", vbScriptFile, sourceSpreadsheetFile);
@@ -23,9 +26,9 @@ public class RunCustomVBScript extends ApTask {
         doc.runScript(vbScriptFile);
         log.info("Running of VB script finished successfully.");
 
-        log.info("Save changes for the document.");
-        doc.save();
+        log.info("Save changes to '{}'.", outputSpreadsheetFile);
+        doc.saveAs(outputSpreadsheetFile);
 
-        log.info("Changes saved.");
+        log.info("Excel document is saved successfully.");
     }
 }

@@ -888,26 +888,26 @@ public class SpreadsheetDocument {
      *
      * @param macros list of macros from this excel document to be executed
      */
-    public void runMacro(String... macros) {
-        // Check if this spreadsheet is macro enabled
-        if (!isMacro()) {
-            throw new RuntimeException("This document must be .xlsm file to run Macro.");
-        }
-        VBScriptProcessor processor = new VBScriptProcessor(this);
-        for (String macroName : macros) {
-            processor.addScript(new MacroRunner(macroName));
-        }
-        processor.process();
-    }
+//    public void runMacro(String... macros) {
+//        // Check if this spreadsheet is macro enabled
+//        if (!isMacro()) {
+//            throw new RuntimeException("This document must be .xlsm file to run Macro.");
+//        }
+//        VBScriptProcessor processor = new VBScriptProcessor(this);
+//        for (String macroName : macros) {
+//            processor.addScript(new MacroRunner(macroName));
+//        }
+//        processor.process();
+//    }
 
     /**
      * Run VB script for the spreadsheet
      *
      * @param script
      */
-    public void runScript(VBScript script) {
-        new VBScriptProcessor(this).addScript(script).process();
-    }
+//    public void runScript(VBScript script) {
+//        new VBScriptProcessor(this).addScript(script).process();
+//    }
 
     /**
      * Extracts content of active sheet using exporting into CSV file. Usually it
@@ -916,9 +916,9 @@ public class SpreadsheetDocument {
      *
      * @return list of maps that present extracted records
      */
-    public List<Map<String, Object>> runExtractDataViaCSV() {
-        return runExtractDataViaCSV(null);
-    }
+//    public List<Map<String, Object>> runExtractDataViaCSV() {
+//        return runExtractDataViaCSV(null);
+//    }
 
     /**
      * Extracts content of specified sheet using exporting into CSV file. Usually it
@@ -928,32 +928,32 @@ public class SpreadsheetDocument {
      * @param sheetName - name of sheet to extract data from
      * @return list of maps that present extracted records
      */
-    public List<Map<String, Object>> runExtractDataViaCSV(String sheetName) {
-        List<Map<String, Object>> data = new ArrayList<>();
-        File csvFile = null;
-        try {
-            csvFile = new File(runSaveAsCSV(sheetName));
-
-            try (InputStreamReader reader = new InputStreamReader(new FileInputStream(csvFile), StandardCharsets.UTF_8)) {
-                Iterable<CSVRecord> csvRecords = CSVFormat.EXCEL.withDelimiter(';').withFirstRecordAsHeader().parse(reader);
-                for (CSVRecord csvRec : csvRecords) {
-                    Map<String, Object> rec = new HashMap<>();
-                    csvRec.toMap().forEach(rec::put);
-                    data.add(rec);
-                }
-            }
-
-            return data;
-        } catch (Exception e) {
-            throw new RuntimeException(sheetName != null
-                    ? String.format("Extracting of data from '%s' sheet has failed.", sheetName)
-                    : "Extracting of data from spreadsheet has failed", e);
-        } finally {
-            if (csvFile != null) {
-                FileUtils.deleteQuietly(csvFile);
-            }
-        }
-    }
+//    public List<Map<String, Object>> runExtractDataViaCSV(String sheetName) {
+//        List<Map<String, Object>> data = new ArrayList<>();
+//        File csvFile = null;
+//        try {
+//            csvFile = new File(runSaveAsCSV(sheetName));
+//
+//            try (InputStreamReader reader = new InputStreamReader(new FileInputStream(csvFile), StandardCharsets.UTF_8)) {
+//                Iterable<CSVRecord> csvRecords = CSVFormat.EXCEL.withDelimiter(';').withFirstRecordAsHeader().parse(reader);
+//                for (CSVRecord csvRec : csvRecords) {
+//                    Map<String, Object> rec = new HashMap<>();
+//                    csvRec.toMap().forEach(rec::put);
+//                    data.add(rec);
+//                }
+//            }
+//
+//            return data;
+//        } catch (Exception e) {
+//            throw new RuntimeException(sheetName != null
+//                    ? String.format("Extracting of data from '%s' sheet has failed.", sheetName)
+//                    : "Extracting of data from spreadsheet has failed", e);
+//        } finally {
+//            if (csvFile != null) {
+//                FileUtils.deleteQuietly(csvFile);
+//            }
+//        }
+//    }
 
     /**
      * Saves content of specified sheet as CSV file
@@ -961,20 +961,20 @@ public class SpreadsheetDocument {
      * @param sheetName - name of sheet to export to CSV
      * @return path of output CSV file
      */
-    public String runSaveAsCSV(String sheetName) {
-        SaveAs saveAs = new SaveAs(sheetName, SaveAs.FileFormat.CSV);
-        new VBScriptProcessor(this).addScript(saveAs).process();
-        return saveAs.getOutputFilePath();
-    }
+//    public String runSaveAsCSV(String sheetName) {
+//        SaveAs saveAs = new SaveAs(sheetName, SaveAs.FileFormat.CSV);
+//        new VBScriptProcessor(this).addScript(saveAs).process();
+//        return saveAs.getOutputFilePath();
+//    }
 
     /**
      * Exports active sheet to PDF
      *
      * @param pdfFilePath
      */
-    public void runExportToPDF(String pdfFilePath) {
-        runScript(new ExportToPDF(getActiveSheet().getSheetName(), pdfFilePath));
-    }
+//    public void runExportToPDF(String pdfFilePath) {
+//        runScript(new ExportToPDF(getActiveSheet().getSheetName(), pdfFilePath));
+//    }
 
     /**
      * Apply CategoryFilter to active sheet
@@ -983,9 +983,9 @@ public class SpreadsheetDocument {
      * @param filterColRange
      * @param fieldIndex
      */
-    public void runCategoryFilter(String category, String filterColRange, String fieldIndex) {
-        runScript(new CategoryFilter(getActiveSheet().getSheetName(), category, filterColRange, fieldIndex));
-    }
+//    public void runCategoryFilter(String category, String filterColRange, String fieldIndex) {
+//        runScript(new CategoryFilter(getActiveSheet().getSheetName(), category, filterColRange, fieldIndex));
+//    }
 
     /**
      * Apply Filter to active sheet
@@ -994,9 +994,9 @@ public class SpreadsheetDocument {
      * @param filterColRange
      * @param fieldIndex
      */
-    public void runFilter(String filterPattern, String target, String filterColRange, String fieldIndex) {
-        runScript(new Filter(getActiveSheet().getSheetName(), filterPattern, target, filterColRange, fieldIndex));
-    }
+//    public void runFilter(String filterPattern, String target, String filterColRange, String fieldIndex) {
+//        runScript(new Filter(getActiveSheet().getSheetName(), filterPattern, target, filterColRange, fieldIndex));
+//    }
 
     /**
      * Apply FilterPivotTable to active sheet
@@ -1004,27 +1004,27 @@ public class SpreadsheetDocument {
      * @param pivotTableName
      * @param filterPattern
      */
-    public void runFilterPivotTable(String pivotTableName, String filterPattern) {
-        runScript(new FilterPivotTable().tabName(getActiveSheet().getSheetName()).tableName(pivotTableName).pattern(filterPattern));
-    }
+//    public void runFilterPivotTable(String pivotTableName, String filterPattern) {
+//        runScript(new FilterPivotTable().tabName(getActiveSheet().getSheetName()).tableName(pivotTableName).pattern(filterPattern));
+//    }
 
     /**
      * Insert empty column before colRef. Columns in colRef will shift to the right.
      *
      * @param colRef column reference letter
      */
-    public void runInsertColumn(String colRef) {
-        runScript(new InsertColumn().sheetName(getActiveSheet().getSheetName()).colRef(colRef));
-    }
+//    public void runInsertColumn(String colRef) {
+//        runScript(new InsertColumn().sheetName(getActiveSheet().getSheetName()).colRef(colRef));
+//    }
 
-    public void runMultiFilterPivotTable(String tabName, String pivotTableName, String pivotTableField, String mode, String select, String unselect) {
-        runScript(new MultiFilterPivotTable().tabName(getActiveSheet().getSheetName()).tableName(pivotTableName)
-                .tableField(pivotTableField).mode(mode).select(select).unselect(unselect));
-    }
+//    public void runMultiFilterPivotTable(String tabName, String pivotTableName, String pivotTableField, String mode, String select, String unselect) {
+//        runScript(new MultiFilterPivotTable().tabName(getActiveSheet().getSheetName()).tableName(pivotTableName)
+//                .tableField(pivotTableField).mode(mode).select(select).unselect(unselect));
+//    }
 
-    public void runPivotTable(PivotTableBuilder pivotTableBuilder) {
-        runScript(pivotTableBuilder);
-    }
+//    public void runPivotTable(PivotTableBuilder pivotTableBuilder) {
+//        runScript(pivotTableBuilder);
+//    }
 
     /**
      * Sort active sheet using header cell as column to sort
@@ -1032,28 +1032,28 @@ public class SpreadsheetDocument {
      * @param headerCellRef
      * @param sortType
      */
-    public void runSort(String headerCellRef, Sorter.SortingType sortType) {
-        runScript(new Sorter(getActiveSheet().getSheetName(), headerCellRef, sortType, this));
-    }
+//    public void runSort(String headerCellRef, Sorter.SortingType sortType) {
+//        runScript(new Sorter(getActiveSheet().getSheetName(), headerCellRef, sortType, this));
+//    }
 
     /**
      * Converts xls to xlsx
      */
-    public void runConvertToXlsx() {
-        File convertedFile = null;
-        try {
-            SaveAs saveAs = new SaveAs(SaveAs.FileFormat.XLSX);
-            new VBScriptProcessor(this).addScript(saveAs).process();
-            convertedFile = new File(saveAs.getOutputFilePath());
-            updateInputStream(new FileInputStream(convertedFile));
-        } catch (Exception e) {
-            throw new RuntimeException("Convertion of XLS spreadsheet to XLSX has failed.", e);
-        } finally {
-            if (convertedFile != null) {
-                FileUtils.deleteQuietly(convertedFile);
-            }
-        }
-    }
+//    public void runConvertToXlsx() {
+//        File convertedFile = null;
+//        try {
+//            SaveAs saveAs = new SaveAs(SaveAs.FileFormat.XLSX);
+//            new VBScriptProcessor(this).addScript(saveAs).process();
+//            convertedFile = new File(saveAs.getOutputFilePath());
+//            updateInputStream(new FileInputStream(convertedFile));
+//        } catch (Exception e) {
+//            throw new RuntimeException("Convertion of XLS spreadsheet to XLSX has failed.", e);
+//        } finally {
+//            if (convertedFile != null) {
+//                FileUtils.deleteQuietly(convertedFile);
+//            }
+//        }
+//    }
 
     /***************************************************************
      * Private methods

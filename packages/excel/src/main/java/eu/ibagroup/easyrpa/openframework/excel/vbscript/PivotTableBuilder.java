@@ -95,8 +95,8 @@ public class PivotTableBuilder extends VBScript {
      * @param spreadsheet -
      */
     public void createPivotTable(SpreadsheetDocument spreadsheet) {
-        spreadsheet.createSheet(getTargetSheet());
-        spreadsheet.runScript(this);
+//        spreadsheet.createSheet(getTargetSheet());
+//        spreadsheet.runScript(this);
     }
 
     private String getTargetSheet() {

@@ -21,6 +21,11 @@ public class FilePathUtils {
 		return file;
 	}
 
+	/**
+	 * Aligns file path separators according to system default and performs substitution of environment variables like %USERPROFILE%.
+	 *
+	 * @param path - file path to normalize.
+	 */
     public static String normalizeFilePath(String path) {
         if (path.contains("%")) {
             path = FilenameUtils.separatorsToSystem(path);

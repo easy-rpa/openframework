@@ -1,9 +1,12 @@
 package eu.ibagroup.easyrpa.openframework.excel;
 
 import eu.ibagroup.easyrpa.openframework.excel.constants.MatchMethod;
+import eu.ibagroup.easyrpa.openframework.excel.exceptions.VBScriptExecutionException;
 import eu.ibagroup.easyrpa.openframework.excel.internal.PoiElementsCache;
 import eu.ibagroup.easyrpa.openframework.excel.utils.FilePathUtils;
+import eu.ibagroup.easyrpa.openframework.excel.vbscript.MacroRunner;
 import eu.ibagroup.easyrpa.openframework.excel.vbscript.VBScript;
+import eu.ibagroup.easyrpa.openframework.excel.vbscript.VBScriptProcessor;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.poifs.macros.Module;
 import org.apache.poi.poifs.macros.VBAMacroReader;
@@ -19,6 +22,9 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
 
@@ -30,6 +36,8 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
 
     private Set<String> availableMacros = new HashSet<>();
     private Map<String, FormulaEvaluator> collaboratingEvaluators = new HashMap<>();
+
+    private Pattern macroNamesExtractor = Pattern.compile("^Sub (\\w+).*$", Pattern.MULTILINE);
 
     /**
      * Create empty Excel Document.
@@ -118,6 +126,19 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      */
     public void setFilePath(String filePath) {
         this.filePath = FilePathUtils.normalizeFilePath(filePath);
+    }
+
+    /**
+     * Get file name for this Excel Document.
+     *
+     * @return name of file from file path if it's specified. Otherwise returns default name with
+     * extension corresponding to this Excel Document type.
+     */
+    public String getFileName() {
+        if (filePath != null) {
+            return FilenameUtils.getName(filePath);
+        }
+        return "spreadsheet" + getExtension();
     }
 
     /**
@@ -442,41 +463,48 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      ***************************************************************/
 
     /**
-     * Run the set of macros from this spreadsheet document.
+     * Run the set of macros from this Excel Document.
      *
-     * @param macros list of macros from this excel document to be executed
+     * @param macros list of macros to execute.
      */
     public void runMacro(String... macros) {
-        // Check if this spreadsheet is macro enabled
-        //TODO Implement this
-//        if (!isMacro()) {
-//            throw new RuntimeException("This document must be .xlsm file to run Macro.");
-//        }
-//        VBScriptProcessor processor = new VBScriptProcessor(this);
-//        for (String macroName : macros) {
-//            processor.addScript(new MacroRunner(macroName));
-//        }
-//        processor.process();
+        List<String> absentMacros = Arrays.asList(macros);
+        if (hasMacros()) {
+            absentMacros = Arrays.stream(macros).filter(m -> !availableMacros.contains(m)).collect(Collectors.toList());
+            if (absentMacros.isEmpty()) {
+                VBScriptProcessor processor = new VBScriptProcessor(this);
+                for (String macroName : macros) {
+                    processor.addScript(new MacroRunner(macroName));
+                }
+                processor.process();
+            }
+        }
+        if (absentMacros.size() > 0) {
+            throw new RuntimeException(String.format(
+                    "Following macros are absent in Excel Document and cannot be executed: %s",
+                    String.join(", ", absentMacros)
+            ));
+        }
     }
 
     /**
-     * Run VB script for the spreadsheet
+     * Run VB script for this Excel Document
      *
-     * @param vbsFilePath
+     * @param script - text of VB script or path to resource '.vbs' file
+     * @throws VBScriptExecutionException with error description if execution of VB script failed.
      */
-    public void runScript(String vbsFilePath) {
-        //TODO Implement this
-//        new VBScriptProcessor(this).addScript(script).process();
+    public void runScript(String script) {
+        new VBScriptProcessor(this).addScript(new VBScript(script)).process();
     }
 
     /**
-     * Run VB script for the spreadsheet
+     * Run VB script for this Excel Document
      *
-     * @param script
+     * @param script - instance of VBScript to run
+     * @throws VBScriptExecutionException with error description if execution of VB script failed.
      */
     public void runScript(VBScript script) {
-        //TODO Implement this
-//        new VBScriptProcessor(this).addScript(script).process();
+        new VBScriptProcessor(this).addScript(script).process();
     }
 
 
@@ -522,6 +550,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      */
     private void initWorkbook(InputStream is) {
         try {
+//            POIXMLTypeLoader.DEFAULT_XML_OPTIONS.setLoadUseXMLReader(SAXParserFactory.newInstance().newSAXParser().getXMLReader());
             if (is == null) {
                 workbook = new XSSFWorkbook();
                 // New workbook doesn't have a sheet.
@@ -532,6 +561,8 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
                 workbook.setActiveSheet(0);
             }
 
+            extractAvailableMacros(is);
+
             if (id > 0) {
                 PoiElementsCache.unregister(id);
             } else {
@@ -539,14 +570,6 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
             }
 
             PoiElementsCache.register(id, workbook);
-
-            availableMacros.clear();
-            try (VBAMacroReader reader = new VBAMacroReader(is)) {
-                Map<String, Module> macrosMap = reader.readMacroModules();
-                availableMacros.addAll(macrosMap.keySet());
-            } catch (Exception e) {
-                //do nothing
-            }
 
             collaboratingEvaluators.clear();
             collaboratingEvaluators.put(FilenameUtils.getName(getFilePath()), PoiElementsCache.getEvaluator(id));
@@ -557,6 +580,35 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
 
         } catch (Exception e) {
             throw new RuntimeException(String.format("Initializing of workbook for spreadsheet '%s' has failed.", getFilePath()), e);
+        }
+    }
+
+    /**
+     * Reads content of input stream and looks up modules with macros. Then extract names of available macros
+     * from them using regexp.
+     *
+     * @param is - Excel file input stream
+     */
+    private void extractAvailableMacros(InputStream is) throws IOException {
+        availableMacros.clear();
+        if (is != null) {
+            if (is instanceof FileInputStream) {
+                ((FileInputStream) is).getChannel().position(0);
+            }
+            try (VBAMacroReader reader = new VBAMacroReader(is)) {
+                List<Module> modules = reader.readMacroModules().values().stream()
+                        .filter(m -> m.geModuleType() == Module.ModuleType.Module)
+                        .collect(Collectors.toList());
+
+                for (Module module : modules) {
+                    Matcher matcher = macroNamesExtractor.matcher(module.getContent());
+                    while (matcher.find()) {
+                        availableMacros.add(matcher.group(1));
+                    }
+                }
+            } catch (Exception e) {
+                //do nothing
+            }
         }
     }
 

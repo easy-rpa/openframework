@@ -1,6 +1,6 @@
 package eu.ibagroup.easyrpa.openframework.excel.vbscript;
 
-import eu.ibagroup.easyrpa.openframework.excel.SpreadsheetDocument;
+import eu.ibagroup.easyrpa.openframework.excel.ExcelDocument;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -12,12 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Execute batch of scripts on spreadsheet excel file specified
+ * Execute batch of scripts on spreadsheet excel file
  */
 public class VBScriptProcessor {
 
     private final List<VBScript> scripts = new ArrayList<>();
-    private SpreadsheetDocument document;
+    private ExcelDocument document;
 
     /**
      * Construct new empty script processor.
@@ -26,34 +26,34 @@ public class VBScriptProcessor {
     }
 
     /**
-     * Construct new script processor with spreadsheet document object specified.
+     * Construct new script processor with target Excel Document specified.
      *
-     * @param document - document
+     * @param document - instance of Excel Document
      */
-    public VBScriptProcessor(SpreadsheetDocument document) {
+    public VBScriptProcessor(ExcelDocument document) {
         this.document = document;
     }
 
     /**
-     * Run set of scripts on spreadsheet document.
+     * Run set of scripts on Excel Document.
      *
      * @throws RuntimeException if document not specified.
-     * @throws RuntimeException if can't upload the document to temp file.
-     * @throws RuntimeException if can't update the document with content from temp
-     *                          file.
+     * @throws RuntimeException if uploading the document to temp file failed.
+     * @throws RuntimeException if updating the document with content from temp file failed.
      */
     public void process() {
         if (document == null)
-            throw new RuntimeException("SpreadsheetDocument must be defined!");
+            throw new RuntimeException("ExcelDocument must be specified!");
 
         // Upload document to temp file
         File tmpDocFile = null;
         try {
             try {
+
                 tmpDocFile = File.createTempFile(FilenameUtils.getBaseName(document.getFileName()), document.getExtension());
                 FileUtils.copyInputStreamToFile(document.getInputStream(), tmpDocFile);
-            } catch (IOException ioe) {
-                throw new RuntimeException(String.format("Cannot upload spreadsheet '%s' to temp file.", document.getFileName()), ioe);
+            } catch (IOException e) {
+                throw new RuntimeException(String.format("Uploading of Excel Document '%s' to temp file has failed.", document.getFileName()), e);
             }
             // Execute scripts
             for (VBScript script : scripts) {
@@ -62,9 +62,9 @@ public class VBScriptProcessor {
 
             // Download document from temp file
             try {
-                document.updateInputStream(new FileInputStream(tmpDocFile));
-            } catch (FileNotFoundException fnfe) {
-                throw new RuntimeException(String.format("Cannot get updated spreadsheet '%s' from temp file.", document.getFileName()), fnfe);
+                document.update(new FileInputStream(tmpDocFile));
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(String.format("Reading of updated Excel Document '%s' from temp file has failed.", document.getFileName()), e);
             }
         } finally {
             if (tmpDocFile != null) {
@@ -82,10 +82,10 @@ public class VBScriptProcessor {
     }
 
     /**
-     * Set spreadsheet.
+     * Set target Excel Document.
      */
-    public VBScriptProcessor document(SpreadsheetDocument spreadsheetDocument) {
-        document = spreadsheetDocument;
+    public VBScriptProcessor document(ExcelDocument document) {
+        this.document = document;
         return this;
     }
 }
