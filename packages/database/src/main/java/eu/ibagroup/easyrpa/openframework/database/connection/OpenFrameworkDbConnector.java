@@ -5,7 +5,7 @@ import eu.ibagroup.easyrpa.openframework.database.common.DatabaseConnection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class OpenFrameworkDbHelper {
+public class OpenFrameworkDbConnector {
 
     private static DatabaseConnection connection = null;
 

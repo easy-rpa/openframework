@@ -8,7 +8,7 @@ public class PostgresConnectionHelper {
 
     public static void initialize(String connectionString, String userName, String password) throws ClassNotFoundException, SQLException {
         Class.forName(POSTGRES_JDBC_DRIVER);
-        OpenFrameworkDbHelper.initialize(
+        OpenFrameworkDbConnector.initialize(
                 connectionString,
                 userName,
                 password

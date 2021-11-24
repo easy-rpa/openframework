@@ -7,7 +7,7 @@ import static eu.ibagroup.easyrpa.openframework.database.constants.Constants.MYS
 public class MySqlConnectionHelper {
     public static void initialize(String connectionString, String userName, String password) throws ClassNotFoundException, SQLException {
         Class.forName(MYSQL_JDBC_DRIVER);
-        OpenFrameworkDbHelper.initialize(
+        OpenFrameworkDbConnector.initialize(
                 connectionString,
                 userName,
                 password

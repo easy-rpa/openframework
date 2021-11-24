@@ -3,7 +3,7 @@ package eu.ibagroup.easyrpa.openframework.database.service;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import eu.ibagroup.easyrpa.openframework.core.sevices.RPAServicesAccessor;
 import eu.ibagroup.easyrpa.openframework.database.connection.ConnectionKeeper;
-import eu.ibagroup.easyrpa.openframework.database.connection.OpenFrameworkDbHelper;
+import eu.ibagroup.easyrpa.openframework.database.connection.OpenFrameworkDbConnector;
 import eu.ibagroup.easyrpa.openframework.database.connection.PostgresConnectionHelper;
 
 import javax.inject.Inject;
@@ -20,7 +20,7 @@ public class PostgresService extends DatabaseService {
     }
 
     @Override
-    DatabaseService initPureConnection() throws SQLException, ClassNotFoundException {
+    DatabaseService initJdbcConnection() throws SQLException, ClassNotFoundException {
         if (!ConnectionKeeper.sessionAlive()) {
             String connectionString = getRpaServices().getConfigParam(POSTGRES_URL_CONF_FIELD);
 
@@ -28,7 +28,7 @@ public class PostgresService extends DatabaseService {
             String password = getRpaServices().getCredentials(POSTGRES_SECRET_VAULT).getPassword();
 
             PostgresConnectionHelper.initialize(connectionString, userName, password);
-            this.setSession(OpenFrameworkDbHelper.getConnection().getSession());
+            this.setSession(OpenFrameworkDbConnector.getConnection().getSession());
         }
         return this;
     }

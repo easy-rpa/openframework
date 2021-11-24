@@ -25,9 +25,9 @@ public class PrintTableContentTask extends ApTask {
 
     @Override
     public void execute() throws Exception {
-        dbService.withConnection(() ->{
+        dbService.withConnection((ex) ->{
             String outStr = "";
-            ResultSet rs = dbService.executeQuery(query);
+            ResultSet rs = ex.executeQuery(query);
             while (rs.next()) {
                 int id = rs.getInt("invoice_number");
                 Date invoiceDate = rs.getDate("invoice_date");

@@ -1,6 +1,6 @@
 package eu.ibagroup.easyrpa.openframework.database.common;
 
-import eu.ibagroup.easyrpa.openframework.database.connection.OpenFrameworkDbHelper;
+import eu.ibagroup.easyrpa.openframework.database.connection.OpenFrameworkDbConnector;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -26,7 +26,7 @@ public class DatabaseSession {
     }
 
     private void closeConnectionHelpers() throws SQLException {
-        OpenFrameworkDbHelper.close();
+        OpenFrameworkDbConnector.close();
         if (this.connection != null) {
             if (!this.connection.isClosed()) {
                 this.connection.close();

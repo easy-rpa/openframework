@@ -38,22 +38,6 @@ public class InsertFiveRecordsOrm extends ApTask {
     @Override
     public void execute() throws Exception {
 
-//        ConnectionSource connectionSource = dbService.getOrmConnectionSource();
-
-//        Dao<PostgresInvoice, Integer> invoicesDao = DaoManager.createDao(connectionSource, PostgresInvoice.class);
-
-//        List<Integer> k = dbService.withTransaction(() -> {
-//            List<Integer> res = new ArrayList();
-//            res.add(dbService.executeUpdate(q1));
-//            res.add(dbService.executeUpdate(q2));
-//            res.add(dbService.executeUpdate(q3));
-//            res.add(dbService.executeUpdate(q4));
-//            res.add(dbService.executeUpdate(q5));
-//
-//            //res.add(dbService.deleteById(3, PostgresInvoice.class));
-//            return res;
-//        });
-
         List<PostgresInvoice> invoicesToAdd = new ArrayList<>();
 
         invoicesToAdd.add(new PostgresInvoice(10001, new SimpleDateFormat(DB_DATE_PATTERN).parse("2016-01-22"), "IBA", 4500));
@@ -62,11 +46,11 @@ public class InsertFiveRecordsOrm extends ApTask {
         invoicesToAdd.add(new PostgresInvoice(10004, new SimpleDateFormat(DB_DATE_PATTERN).parse("2011-05-14"), "EPAM", 1000));
         invoicesToAdd.add(new PostgresInvoice(10005, new SimpleDateFormat(DB_DATE_PATTERN).parse("2018-02-06"), "WF", 2400.99));
 
-        List<Integer> affectedRecords = dbService.withTransaction(PostgresInvoice.class, () -> {
+        List<Integer> affectedRecords = dbService.withTransaction(PostgresInvoice.class, (ex) -> {
             List<Integer> res = new ArrayList();
 
             for (PostgresInvoice inv : invoicesToAdd) {
-                res.add(dbService.create(inv));
+                res.add(ex.create(inv));
             }
             return res;
         });

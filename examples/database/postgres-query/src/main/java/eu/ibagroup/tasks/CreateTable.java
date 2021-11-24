@@ -28,6 +28,6 @@ public class CreateTable extends ApTask {
 
     @Override
     public void execute() throws Exception {
-        dbService.withConnection(() -> dbService.executeUpdate(query));
+        dbService.withConnection((ex) -> ex.executeUpdate(query));
     }
 }

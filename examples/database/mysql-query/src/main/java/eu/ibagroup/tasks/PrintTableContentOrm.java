@@ -29,15 +29,21 @@ public class PrintTableContentOrm extends ApTask {
     @Override
     public void execute() throws Exception {
 
-        List<MySqlInvoice> allInvoices = dbService.withConnection(MySqlInvoice.class, () -> {
-            return dbService.selectAll(MySqlInvoice.class);
+        List<MySqlInvoice> allInvoices = dbService.withConnection(MySqlInvoice.class, (ex) -> {
+            return ex.selectAll(MySqlInvoice.class);
+        });
+        log.info("All invoices:");
+        allInvoices.forEach(a -> {
+            log.info("id: {}; invoice#: {}; invoice_date: {}; customer_name: {}; amount: {}",
+                    a.getId(), a.getInvoiceNumber(), a.getInvoiceDate(), a.getCustomerName(), a.getAmount());
         });
 
-        dbService.withConnection(MySqlInvoice.class, () -> {
-            QueryBuilder<MySqlInvoice, Integer> queryBuilder = dbService.getQueryBuilder(MySqlInvoice.class);
+        dbService.withConnection(MySqlInvoice.class, (ac) -> {
+            QueryBuilder<MySqlInvoice, Integer> queryBuilder = ac.getQueryBuilder(MySqlInvoice.class);
             queryBuilder.where().ge("invoice_date", new SimpleDateFormat(DB_DATE_PATTERN).parse("2016-01-01"));
 
-            List<MySqlInvoice> accountList = dbService.query(queryBuilder, MySqlInvoice.class);
+            List<MySqlInvoice> accountList = ac.query(queryBuilder, MySqlInvoice.class);
+            log.info("Invoices newer than 2016-01-01:");
             accountList.forEach(a -> {
                 log.info("id: {}; invoice#: {}; invoice_date: {}; customer_name: {}; amount: {}",
                         a.getId(), a.getInvoiceNumber(), a.getInvoiceDate(), a.getCustomerName(), a.getAmount());

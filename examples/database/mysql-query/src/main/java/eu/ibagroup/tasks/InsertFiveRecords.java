@@ -38,10 +38,11 @@ public class InsertFiveRecords extends ApTask {
         queries.add(q3);
         queries.add(q4);
         queries.add(q5);
+
         List<ResultSet> rs = new ArrayList<>();
-        dbService.withConnection(() -> {
+        dbService.withTransaction((ex) -> {
             for (String query : queries) {
-                rs.add(dbService.executeInsert(query));
+                rs.add(ex.executeInsert(query));
             }
             return rs;
         });

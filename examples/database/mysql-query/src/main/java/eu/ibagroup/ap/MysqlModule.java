@@ -15,6 +15,7 @@ public class MysqlModule extends ApModule {
         return execute(getInput(), CreateTable.class)
                 .thenCompose(execute(CreateTable.class))
                 .thenCompose(execute(InsertFiveRecords.class))
+                .thenCompose(execute(InsertFiveRecordsOrm.class))
                 .thenCompose(execute(DeleteTwoOldestRecords.class))
                 .thenCompose(execute(PrintTableContent.class))
                 .thenCompose(execute(PrintTableContentOrm.class))

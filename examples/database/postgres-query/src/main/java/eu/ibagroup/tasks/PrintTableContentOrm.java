@@ -29,11 +29,11 @@ public class PrintTableContentOrm extends ApTask {
     public void execute() throws Exception {
 
 
-        dbService.withConnection(PostgresInvoice.class, () -> {
-            QueryBuilder<PostgresInvoice, Integer> queryBuilder = dbService.getQueryBuilder(PostgresInvoice.class);
+        dbService.withConnection(PostgresInvoice.class, (ex) -> {
+            QueryBuilder<PostgresInvoice, Integer> queryBuilder = ex.getQueryBuilder(PostgresInvoice.class);
             queryBuilder.where().ge("invoice_date", new SimpleDateFormat(DB_DATE_PATTERN).parse("2016-01-01"));
 
-            List<PostgresInvoice> accountList = dbService.query(queryBuilder, PostgresInvoice.class);
+            List<PostgresInvoice> accountList = ex.query(queryBuilder, PostgresInvoice.class);
             accountList.forEach(a -> {
                 log.info("id: {}; invoice#: {}; invoice_date: {}; customer_name: {}; amount: {}",
                         a.getId(), a.getInvoiceNumber(), a.getInvoiceDate(), a.getCustomerName(), a.getAmount());

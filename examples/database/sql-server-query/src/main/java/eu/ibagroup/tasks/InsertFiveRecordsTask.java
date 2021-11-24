@@ -29,12 +29,12 @@ public class InsertFiveRecordsTask extends ApTask {
 
     @Override
     public void execute() throws Exception {
-        dbService.withTransaction(() -> {
-            dbService.executeInsert(q1);
-            dbService.executeInsert(q2);
-            dbService.executeInsert(q3);
-            dbService.executeInsert(q4);
-            dbService.executeInsert(q5);
+        dbService.withTransaction((ex) -> {
+            ex.executeInsert(q1);
+            ex.executeInsert(q2);
+            ex.executeInsert(q3);
+            ex.executeInsert(q4);
+            ex.executeInsert(q5);
             return null;
         });
     }

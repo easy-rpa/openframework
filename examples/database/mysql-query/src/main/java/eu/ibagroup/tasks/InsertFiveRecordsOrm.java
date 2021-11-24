@@ -34,11 +34,11 @@ public class InsertFiveRecordsOrm extends ApTask {
         invoicesToAdd.add(new MySqlInvoice(10004, new SimpleDateFormat(DB_DATE_PATTERN).parse("2011-05-14"), "EPAM", 1000));
         invoicesToAdd.add(new MySqlInvoice(10005, new SimpleDateFormat(DB_DATE_PATTERN).parse("2018-02-06"), "WF", 2400.99));
 
-        List<Integer> affectedRecords = dbService.withTransaction(MySqlInvoice.class, () -> {
+        List<Integer> affectedRecords = dbService.withTransaction(MySqlInvoice.class, (ex) -> {
             List<Integer> res = new ArrayList();
 
             for (MySqlInvoice inv : invoicesToAdd) {
-                res.add(dbService.create(inv));
+                res.add(ex.create(inv));
             }
             return res;
         });

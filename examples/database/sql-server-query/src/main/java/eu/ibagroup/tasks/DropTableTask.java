@@ -22,8 +22,9 @@ public class DropTableTask extends ApTask {
 
     @Override
     public void execute() throws Exception {
-        dbService.withConnection(() -> {
-            return dbService.executeUpdate(query);
+
+        dbService.withConnection((ex) -> {
+            return ex.executeUpdate(query);
         });
     }
 }

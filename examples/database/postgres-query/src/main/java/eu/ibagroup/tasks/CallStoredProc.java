@@ -25,8 +25,8 @@ public class CallStoredProc extends ApTask {
     @Override
     public void execute() throws Exception {
         final Date[] currentDate = {null};
-        dbService.withConnection(() -> {
-            ResultSet rs = dbService.executeQuery(query);
+        dbService.withConnection((ex) -> {
+            ResultSet rs = ex.executeQuery(query);
             while (rs.next()) {
                 currentDate[0] = rs.getDate("getdate");
                 log.info(MessageFormat.format("Current Date = {0}", currentDate[0]));

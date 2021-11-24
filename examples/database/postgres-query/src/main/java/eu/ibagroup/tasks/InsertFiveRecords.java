@@ -37,6 +37,6 @@ public class InsertFiveRecords extends ApTask {
         queries.add(q3);
         queries.add(q4);
         queries.add(q5);
-        dbService.withTransaction(() -> dbService.executeBatch(queries));
+        dbService.withTransaction((ex) -> ex.executeBatch(queries));
     }
 }

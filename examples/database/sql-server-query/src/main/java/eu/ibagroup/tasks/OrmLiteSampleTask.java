@@ -18,13 +18,16 @@ public class OrmLiteSampleTask extends ApTask {
 
     @Override
     public void execute() throws Exception {
-        QueryBuilder<MsSqlInvoice, Integer> queryBuilder = dbService.getQueryBuilder(MsSqlInvoice.class);
-        queryBuilder.where().eq("customer_name", "IBM");
+        dbService.withConnection((ex) ->{
+            QueryBuilder<MsSqlInvoice, Integer> queryBuilder = ex.getQueryBuilder(MsSqlInvoice.class);
+            queryBuilder.where().eq("customer_name", "IBM");
 
-        List<MsSqlInvoice> accountList = dbService.query(queryBuilder, MsSqlInvoice.class);
-        accountList.forEach(a -> {
-            log.info("id: {}; invoice#: {}; invoice_date: {}; customer_name: {}; amount: {}",
-                    a.getId(), a.getInvoiceNumber(), a.getInvoiceDate(), a.getCustomerName(), a.getAmount());
+            List<MsSqlInvoice> accountList = ex.query(queryBuilder, MsSqlInvoice.class);
+            accountList.forEach(a -> {
+                log.info("id: {}; invoice#: {}; invoice_date: {}; customer_name: {}; amount: {}",
+                        a.getId(), a.getInvoiceNumber(), a.getInvoiceDate(), a.getCustomerName(), a.getAmount());
+            });
+            return accountList;
         });
     }
 }
