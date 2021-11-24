@@ -10,7 +10,8 @@ All necessary configuration files can be found in <code>src/main/resources</code
 | Parameter     | Value         |
 | ------------- |---------------|
 | `source.spreadsheet.file` | Path to the source spreadsheet file. It can be path on local file system or within resources of this project. |
-| `linked.spreadsheet.file` | Path to the linked spreadsheet file that has data used in formulas of source file.  It can be path on local file system or within resources of this project. |
+| `shared.spreadsheet.file` | Path to the shared spreadsheet file that has data used in formulas of source file.  It can be path on local file system or within resources of this project. |
+| `output.files.dir` | Path to directory on local file system where robot will put all modified within this process spreadsheet files. |
 
 ## Running
 

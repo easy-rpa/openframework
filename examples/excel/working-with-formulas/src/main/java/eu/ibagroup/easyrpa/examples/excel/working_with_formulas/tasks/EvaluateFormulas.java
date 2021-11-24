@@ -17,7 +17,7 @@ public class EvaluateFormulas extends ApTask {
 
     @Override
     public void execute() {
-        String cellWithFormulaRef = "C3";
+        String cellWithFormulaRef = "C5";
 
         log.info("Get value of cell with formula from spreadsheet document located at: {}", sourceSpreadsheetFile);
         ExcelDocument doc = new ExcelDocument(sourceSpreadsheetFile);
@@ -26,7 +26,7 @@ public class EvaluateFormulas extends ApTask {
         log.info("Get value of cell with formula '{}' the same way as for simple cell.", cellWithFormulaRef);
         Cell cell = activeSheet.getCell(cellWithFormulaRef);
         if (cell.hasFormula()) {
-            log.info("Evaluated value of cell '{}': {}", cellWithFormulaRef, cell.getValue());
+            log.info("Evaluated value of cell '{}': {}; Formula: {}", cellWithFormulaRef, cell.getValue(), cell.getFormula());
         } else {
             log.info("Cell '{}' does not have formula.", cellWithFormulaRef);
         }

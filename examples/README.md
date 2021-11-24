@@ -62,7 +62,7 @@
      * Edit cells
      * Edit records   
  
- - [In Progress] [Copying of sheet from one Excel file to another](excel/sheets-copying)    
+ - [Copying of sheet from one Excel file to another](excel/sheets-copying)    
  
  - [Sheets manipulating](excel/sheets-manipulating)
     * List existing sheets
@@ -85,7 +85,7 @@
     * Sort columns 
     * Filter columns 
     
- - [In Progress] [Working with formulas](excel/working-with-formulas)
+ - [Working with formulas](excel/working-with-formulas)
     * Edit cell's formulas
     * Evaluating of cell's formulas
     * Evaluating of cell's formulas with links to external Excel files

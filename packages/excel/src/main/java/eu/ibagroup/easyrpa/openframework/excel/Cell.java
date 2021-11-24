@@ -127,8 +127,13 @@ public class Cell {
         return getPoiCell().getCellType() == CellType.FORMULA;
     }
 
+    public String getFormula() {
+        return getPoiCell().getCellFormula();
+    }
+
     public void setFormula(String newCellFormula) {
         getPoiCell().setCellFormula(newCellFormula);
+        setValue(getValue());
     }
 
     public org.apache.poi.ss.usermodel.Cell getPoiCell() {

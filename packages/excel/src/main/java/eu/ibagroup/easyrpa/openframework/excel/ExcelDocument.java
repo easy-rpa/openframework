@@ -19,6 +19,8 @@ import org.apache.poi.ss.util.WorkbookUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -246,10 +248,21 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     /**
      * Links external document to allow using of it in cell formulas.
      */
-    public void linkExternalDocument(String ref, ExcelDocument externalDoc) {
-        if (ref != null && externalDoc != null) {
-            workbook.linkExternalWorkbook(ref, externalDoc.getWorkbook());
-            collaboratingEvaluators.put(ref, externalDoc.getWorkbook().getCreationHelper().createFormulaEvaluator());
+    public void linkExternalDocument(ExcelDocument externalDoc) {
+        if (externalDoc != null) {
+            linkExternalDocument(externalDoc.getFileName(), externalDoc);
+        }
+    }
+
+    public void linkExternalDocument(String name, ExcelDocument externalDoc) {
+        if (name != null && externalDoc != null) {
+            try {
+                name = new URI(null, null, name, null).toString();
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(String.format("Name '%s' is invalid to be used as reference to external excel document.", name), e);
+            }
+            workbook.linkExternalWorkbook(name, externalDoc.getWorkbook());
+            collaboratingEvaluators.put(name, externalDoc.getWorkbook().getCreationHelper().createFormulaEvaluator());
             CollaboratingWorkbooksEnvironment.setupFormulaEvaluator(collaboratingEvaluators);
         }
     }

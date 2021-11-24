@@ -13,6 +13,7 @@ All necessary configuration files can be found in <code>src/main/resources</code
 | `source.spreadsheet.file` | Path to source spreadsheet file. It can be path on local file system or within resources of this project. |
 | `source.sheet.name` | Name of sheet in the source spreadsheet file that has to be copied. |
 | `target.spreadsheet.file` | Path to target spreadsheet file where the sheet has to be copied. It can be path on local file system or within resources of this project. |
+| `output.files.dir` | Path to directory on local file system where robot will put all modified within this process spreadsheet files. |
 
 ## Running
 
