@@ -6,7 +6,7 @@ import com.j256.ormlite.table.DatabaseTable;
 
 import java.util.Date;
 
-import static eu.ibagroup.ap.Constants.DB_DATE_PATTERN;
+import static eu.ibagroup.constants.Constants.DB_DATE_PATTERN;
 
 @DatabaseTable(tableName = "invoices")
 public class MySqlInvoice {

@@ -12,16 +12,14 @@ import lombok.extern.slf4j.Slf4j;
 public class PostgresModule extends ApModule {
 
     public TaskOutput run() throws Exception {
-        TaskOutput output = null;
-        output = execute(getInput(), CreateTable.class).get();
-        output = execute(getInput(), InsertFiveRecords.class).get();
-        output = execute(getInput(), InsertFiveRecordsOrm.class).get();
-        output = execute(getInput(), DeleteTwoOldestRecords.class).get();
-        output = execute(getInput(), PrintTableContentOrm.class).get();
-        output = execute(getInput(), PrintTableContent.class).get();
-        output = execute(getInput(), CallStoredProc.class).get();
-        output = execute(getInput(), DropTable.class).get();
-        return output;
+        return execute(getInput(), CreateTable.class)
+                .thenCompose(execute(InsertFiveRecords.class))
+                .thenCompose(execute(InsertFiveRecordsOrm.class))
+                .thenCompose(execute(DeleteTwoOldestRecords.class))
+                .thenCompose(execute(PrintTableContent.class))
+                .thenCompose(execute(PrintTableContentOrm.class))
+                .thenCompose(execute(DropTable.class))
+                .get();
     }
 
     public static void main(String[] arg) {

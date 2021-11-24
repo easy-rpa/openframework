@@ -12,7 +12,7 @@ import javax.inject.Inject;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
-import static eu.ibagroup.ap.Constants.DB_DATE_PATTERN;
+import static eu.ibagroup.constants.Constants.DB_DATE_PATTERN;
 
 
 @Slf4j

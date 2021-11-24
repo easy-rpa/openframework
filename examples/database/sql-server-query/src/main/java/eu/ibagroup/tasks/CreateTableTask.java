@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import javax.inject.Inject;
 
 @Slf4j
-@ApTaskEntry(name = "Create MS-SQL SERVER table", description = "Creates rpa.invoices SQL SERVER table")
+@ApTaskEntry(name = "Create MS-SQL Server table", description = "Creates rpa.invoices SQL Server table")
 public class CreateTableTask extends ApTask {
     String query = "if not exists (select * from sysobjects where name='invoices' and xtype='U') \n" +
             "CREATE TABLE rpa.invoices(\n" +

@@ -12,13 +12,12 @@ import lombok.extern.slf4j.Slf4j;
 public class SqlServerModule extends ApModule {
 
     public TaskOutput run() throws Exception {
-        TaskOutput output1;
-        output1 = execute(getInput(), CreateTableTask.class).get();
-        output1 = execute(getInput(), InsertFiveRecordsTask.class).get();
-        output1 = execute(getInput(), DeleteTwoOldestRecordsTask.class).get();
-        output1 = execute(getInput(), PrintTableContentTask.class).get();
-        output1 = execute(getInput(), DropTableTask.class).get();
-        return output1;
+        return execute(getInput(), CreateTableTask.class)
+                .thenCompose(execute(InsertFiveRecordsTask.class))
+                .thenCompose(execute(DeleteTwoOldestRecordsTask.class))
+                .thenCompose(execute(PrintTableContentTask.class))
+                .thenCompose(execute(DropTableTask.class))
+                .get();
     }
 
     public static void main(String[] arg) {
