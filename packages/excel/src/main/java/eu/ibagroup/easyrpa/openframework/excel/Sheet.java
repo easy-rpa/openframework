@@ -7,6 +7,7 @@ import eu.ibagroup.easyrpa.openframework.excel.exceptions.VBScriptExecutionExcep
 import eu.ibagroup.easyrpa.openframework.excel.internal.PoiElementsCache;
 import eu.ibagroup.easyrpa.openframework.excel.utils.TypeUtils;
 import eu.ibagroup.easyrpa.openframework.excel.vbscript.ExportToPDF;
+import eu.ibagroup.easyrpa.openframework.excel.vbscript.PivotTableScript;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.ss.usermodel.DataValidation;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -54,6 +55,30 @@ public class Sheet implements Iterable<Row> {
     public Cell getCell(int rowIndex, int colIndex) {
         Row row = getRow(rowIndex);
         return row != null ? row.getCell(colIndex) : null;
+    }
+
+    public Cell findCell(String value) {
+        return findCell(MatchMethod.EXACT, value);
+    }
+
+    public Cell findCell(MatchMethod matchMethod, String value) {
+        if (matchMethod == null) {
+            matchMethod = MatchMethod.EXACT;
+        }
+        for (Row row : this) {
+            if (row == null) {
+                continue;
+            }
+            for (Cell cell : row) {
+                if (cell == null) {
+                    continue;
+                }
+                if (matchMethod.match(cell.getValue(String.class), value)) {
+                    return cell;
+                }
+            }
+        }
+        return null;
     }
 
     public Object getValue(String cellRef) {
@@ -483,6 +508,26 @@ public class Sheet implements Iterable<Row> {
         //TODO Implement this
     }
 
+    public void updatePivotTable(String pTableName) {
+        updatePivotTable(PivotTableParams.create(pTableName));
+    }
+
+    public void updatePivotTable(PivotTableParams ptParams) {
+        if (ptParams == null) {
+            return;
+        }
+        ptParams.setSheetName(getName());
+        getDocument().runScript(new PivotTableScript(PivotTableScript.ScriptAction.UPDATE, ptParams));
+    }
+
+    public void addPivotTable(PivotTableParams ptParams) {
+        if (ptParams == null) {
+            return;
+        }
+        ptParams.setSheetName(getName());
+        ptParams.checkPosition();
+        getDocument().runScript(new PivotTableScript(PivotTableScript.ScriptAction.CREATE, ptParams));
+    }
 
     @Override
     public Iterator<Row> iterator() {

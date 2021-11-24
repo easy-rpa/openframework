@@ -174,6 +174,15 @@ public class Column implements Iterable<Cell> {
         return parent.getPoiSheet().getLastRowNum();
     }
 
+    public boolean isEmpty(){
+        for(Cell cell : this){
+            if(cell != null && !cell.isEmpty()){
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public Iterator<Cell> iterator() {
         return new CellIterator(parent.getPoiSheet());
