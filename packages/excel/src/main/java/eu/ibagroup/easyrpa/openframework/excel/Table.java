@@ -265,6 +265,16 @@ public class Table<T> implements Iterable<T> {
         records = null;
     }
 
+    public void trimLeadingAndTrailingSpaces() {
+        while (parent.getColumn(getHeaderLeftCol()).isEmpty()) {
+            setHeaderLeftCol(getHeaderLeftCol() + 1);
+        }
+
+        while (parent.getColumn(getHeaderRightCol()).isEmpty()) {
+            setHeaderRightCol(getHeaderRightCol() - 1);
+        }
+    }
+
     @Override
     public Iterator<T> iterator() {
         return new RecordIterator();

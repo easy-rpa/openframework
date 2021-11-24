@@ -90,9 +90,10 @@
     * Evaluating of cell's formulas
     * Evaluating of cell's formulas with links to external Excel files
     
- - [In Progress] [Working with pivot tables](excel/working-with-pivot-tables)
-    * Read pivot table
-    * Create pivot table 
+ - [Working with pivot tables](excel/working-with-pivot-tables)
+    * Create pivot table
+    * Read pivot table 
+    * Update pivot table
         
  - [Changing cells style (fonts, colors etc.)](excel/cell-style-changing)
  

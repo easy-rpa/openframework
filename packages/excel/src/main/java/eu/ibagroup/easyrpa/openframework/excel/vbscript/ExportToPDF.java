@@ -1,7 +1,7 @@
 package eu.ibagroup.easyrpa.openframework.excel.vbscript;
 
 /**
- * Exports specified sheet of Excel file into PDF.
+ * VB script to export specified sheet of Excel file into PDF.
  * <br>
  * This class uses <code>exportToPDF.vbs</code> script.
  * <br><br>

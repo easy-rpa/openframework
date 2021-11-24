@@ -1,10 +1,20 @@
 package eu.ibagroup.easyrpa.openframework.excel;
 
+import org.apache.poi.ss.formula.SheetNameFormatter;
 import org.apache.poi.ss.util.CellReference;
 
 import java.util.Objects;
 
 public class CellRef {
+
+    /**
+     * The character ($) that signifies a row or column value is absolute instead of relative
+     */
+    private static final char ABSOLUTE_REFERENCE_MARKER = '$';
+    /**
+     * The character (!) that separates sheet names from cell references
+     */
+    private static final char SHEET_NAME_DELIMITER = '!';
 
     private String sheetName;
     private int rowIndex = -1;
@@ -13,6 +23,7 @@ public class CellRef {
     private boolean isColAbs = false;
 
     private String ref;
+    private String rowColRef;
 
     public CellRef(String cellRef) {
         if (cellRef != null) {
@@ -45,6 +56,17 @@ public class CellRef {
         this.isColAbs = isColAbs;
     }
 
+    CellRef(CellReference poiRef) {
+        if (poiRef != null) {
+            this.sheetName = poiRef.getSheetName();
+            this.rowIndex = poiRef.getRow();
+            this.colIndex = poiRef.getCol();
+            this.isRowAbs = poiRef.isRowAbsolute();
+            this.isColAbs = poiRef.isColAbsolute();
+            this.ref = poiRef.formatAsString();
+        }
+    }
+
     public String getSheetName() {
         return sheetName;
     }
@@ -53,6 +75,7 @@ public class CellRef {
         if (!Objects.equals(this.sheetName, sheetName)) {
             this.sheetName = sheetName;
             this.ref = null;
+            this.rowColRef = null;
         }
     }
 
@@ -64,6 +87,7 @@ public class CellRef {
         if (this.rowIndex != rowIndex) {
             this.rowIndex = rowIndex;
             this.ref = null;
+            this.rowColRef = null;
         }
     }
 
@@ -75,6 +99,7 @@ public class CellRef {
         if (this.colIndex != colIndex) {
             this.colIndex = colIndex;
             this.ref = null;
+            this.rowColRef = null;
         }
     }
 
@@ -86,6 +111,7 @@ public class CellRef {
         if (this.isRowAbs != rowAbs) {
             this.isRowAbs = rowAbs;
             this.ref = null;
+            this.rowColRef = null;
         }
     }
 
@@ -97,6 +123,7 @@ public class CellRef {
         if (this.isColAbs != colAbs) {
             this.isColAbs = colAbs;
             this.ref = null;
+            this.rowColRef = null;
         }
     }
 
@@ -107,7 +134,52 @@ public class CellRef {
         return ref;
     }
 
+    public String formatAsRowColString() {
+        return formatAsRowColString(true);
+    }
+
+    public String formatAsRowColString(boolean includeSheetName) {
+        if (rowColRef == null) {
+            StringBuilder sb = new StringBuilder(32);
+            if (includeSheetName && sheetName != null) {
+                SheetNameFormatter.appendFormat(sb, sheetName);
+                sb.append(SHEET_NAME_DELIMITER);
+            }
+            if (rowIndex >= 0) {
+                if (isRowAbs) {
+                    sb.append(ABSOLUTE_REFERENCE_MARKER);
+                }
+                sb.append("R").append(rowIndex + 1);
+            }
+            if (colIndex >= 0) {
+                if (isColAbs) {
+                    sb.append(ABSOLUTE_REFERENCE_MARKER);
+                }
+                sb.append("C").append(colIndex + 1);
+            }
+            rowColRef = sb.toString();
+        }
+        return rowColRef;
+    }
+
     public boolean isSheetNameDefined() {
         return sheetName != null && sheetName.length() > 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CellRef)) return false;
+        CellRef cellRef = (CellRef) o;
+        return rowIndex == cellRef.rowIndex &&
+                colIndex == cellRef.colIndex &&
+                isRowAbs == cellRef.isRowAbs &&
+                isColAbs == cellRef.isColAbs &&
+                Objects.equals(sheetName, cellRef.sheetName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sheetName, rowIndex, colIndex, isRowAbs, isColAbs);
     }
 }

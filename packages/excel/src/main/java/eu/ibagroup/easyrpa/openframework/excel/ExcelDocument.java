@@ -507,11 +507,6 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
         new VBScriptProcessor(this).addScript(script).process();
     }
 
-
-    public void createPivotTable(String pivotTableName, PivotTableParams ptParams) {
-        //TODO Implement this
-    }
-
     /**
      * @return Excel Document sheets iterator
      */
@@ -550,6 +545,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      */
     private void initWorkbook(InputStream is) {
         try {
+            //override XSSFSheet in _table of XSSFRelation
 //            POIXMLTypeLoader.DEFAULT_XML_OPTIONS.setLoadUseXMLReader(SAXParserFactory.newInstance().newSAXParser().getXMLReader());
             if (is == null) {
                 workbook = new XSSFWorkbook();
