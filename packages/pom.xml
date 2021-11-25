@@ -222,11 +222,11 @@
                 <scope>compile</scope>
             </dependency>
             <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>1.18.20</version>
+                <groupId>com.google.apis</groupId>
+                <artifactId>google-api-services-sheets</artifactId>
+                <version>v4-rev581-1.25.0</version>
             </dependency>
-        </dependencies>
-    </dependencyManagement>
-<!--    See https://central.sonatype.org/ -->
-</project>
+    </dependencies>
+</dependencyManagement>
+        <!--    See https://central.sonatype.org/ -->
+        </project>
