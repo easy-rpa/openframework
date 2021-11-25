@@ -10,6 +10,7 @@ All necessary configuration files can be found in <code>src/main/resources</code
 | Parameter     | Value         |
 | ------------- |---------------|
 | `source.spreadsheet.file` | Path to source spreadsheet file. It can be path on local file system or within resources of this project. |
+| `output.spreadsheet.file` | Path on local file system where modified spreadsheet document will be written. |
 
 ## Running
 

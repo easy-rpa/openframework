@@ -77,13 +77,13 @@
     * Insert new rows
     * Delete rows
   
- - [In Progress] [Working with sheet columns](excel/working-with-columns)
+ - [Working with sheet columns](excel/working-with-columns)
     * Read column cells
     * Add/insert new columns
     * Move columns
     * Delete columns
-    * Sort columns 
-    * Filter columns 
+    * Sort table columns 
+    * Filter table columns 
     
  - [Working with formulas](excel/working-with-formulas)
     * Edit cell's formulas
@@ -97,7 +97,7 @@
         
  - [Changing cells style (fonts, colors etc.)](excel/cell-style-changing)
  
- - [In Progress] [Inserting image to sheet](excel/image-inserting)
+ - [Inserting image to sheet](excel/image-inserting)
  
  - [Exporting Excel file to PDF](excel/export-to-pdf)
  

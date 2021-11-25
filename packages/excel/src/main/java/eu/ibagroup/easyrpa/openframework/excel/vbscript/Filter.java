@@ -1,67 +1,35 @@
 package eu.ibagroup.easyrpa.openframework.excel.vbscript;
 
+import eu.ibagroup.easyrpa.openframework.excel.CellRange;
+
 /**
- * Example of script execution : 'cscript filter.vbs
- * "C:\Scripts\VBS\ChartofAccounts984.xlsx" "ChartofAccounts" "19***" "A1:H460"
- * "B2:B460" "2"
- * <p>
- * Argument 0: Excel file to proceed Argument 1: Sheet name (Tab name) Argument
- * 2: filterPattern Argument 3: target Range Argument 4: filterColRange Argument
- * 5: fieldIndex 'The integer offset of the field on which you want to base the
- * filter (from the left of the list; the leftmost field is field one).
+ * VB script to filter records of table on Excel file sheet.
+ * <br>
+ * This class uses <code>filter.vbs</code> script.
+ * <br><br>
+ * Example of cscript command that this class initiate:
+ * <br><br>
+ * <code>cscript "C:/scripts/filter.vbs" "C:/Users/user1/AppData/Local/Temp/document.xlsx" "Passengers!C3:N893" "2" "Adams,.*" "D4:D893"</code>
+ * <ul>
+ *     <li>Argument 0: Excel file path to proceed</li>
+ *     <li>Argument 1: range of cells that represent table on some specific sheet</li>
+ *     <li>Argument 2: 1-based table column index</li>
+ *     <li>Argument 3: value pattern that define subset of values that need to be displayed</li>
+ *     <li>Argument 4: range of cells where corresponding values should be looked up using value pattern above</li>
+ * </ul>
  */
 public class Filter extends VBScript {
 
     public static final String VBS_FILE_PATH = "vbscript/filter.vbs";
 
     /**
-     * Construct empty Filter. Methods to add parameters must be used before
-     * perform();
+     * @param table         -
+     * @param columnIndex   -
+     * @param filterPattern - the .Pattern property of the VBScript RegExp Objects.
+     *                      More info on https://developer.rhino3d.com/guides/rhinoscript/vbscript-regexp-objects/
+     * @param valuesRange   -
      */
-    public Filter() {
-        this("", "", "", "");
+    public Filter(CellRange table, int columnIndex, String filterPattern, CellRange valuesRange) {
+        super(VBS_FILE_PATH, table.formatAsString(), "" + columnIndex, filterPattern, valuesRange.formatAsString());
     }
-
-    /**
-     * @param tabName        -
-     * @param filterPattern  the .Pattern property of the VBScript RegExp Objects.
-     *                       More info on
-     *                       https://developer.rhino3d.com/guides/rhinoscript/vbscript-regexp-objects/
-     * @param target         -
-     * @param filterColRange -
-     */
-    public Filter(String tabName, String filterPattern, String target, String filterColRange) {
-        this(tabName, filterPattern, target, filterColRange, "1");
-    }
-
-    public Filter(String tabName, String filterPattern, String target, String filterColRange, String fieldIndex) {
-        super(VBS_FILE_PATH);
-        params(tabName, filterPattern, target, filterColRange, fieldIndex);
-    }
-
-    public Filter tabName(String tabName) {
-        getParameters().set(0, tabName);
-        return this;
-    }
-
-    public Filter pattern(String filterPattern) {
-        getParameters().set(1, filterPattern);
-        return this;
-    }
-
-    public Filter target(String target) {
-        getParameters().set(2, target);
-        return this;
-    }
-
-    public Filter colRange(String filterColRange) {
-        getParameters().set(3, filterColRange);
-        return this;
-    }
-
-    public Filter fieldIndex(int index) {
-        getParameters().set(4, String.valueOf(index));
-        return this;
-    }
-
 }
