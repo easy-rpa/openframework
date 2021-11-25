@@ -15,8 +15,8 @@ public class WorkingWithColumnsModule extends ApModule {
                 .thenCompose(execute(AddInsertColumns.class))
                 .thenCompose(execute(MoveColumns.class))
                 .thenCompose(execute(DeleteColumns.class))
-                .thenCompose(execute(SortColumns.class))
-                .thenCompose(execute(FilterColumns.class))
+                .thenCompose(execute(SortTableColumns.class))
+                .thenCompose(execute(FilterTableColumns.class))
                 .get();
     }
 }

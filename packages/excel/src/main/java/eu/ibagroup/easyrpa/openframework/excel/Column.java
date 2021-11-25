@@ -174,9 +174,9 @@ public class Column implements Iterable<Cell> {
         return parent.getPoiSheet().getLastRowNum();
     }
 
-    public boolean isEmpty(){
-        for(Cell cell : this){
-            if(cell != null && !cell.isEmpty()){
+    public boolean isEmpty() {
+        for (Cell cell : this) {
+            if (cell != null && !cell.isEmpty()) {
                 return false;
             }
         }
@@ -201,18 +201,19 @@ public class Column implements Iterable<Cell> {
 
         @Override
         public boolean hasNext() {
-            return index < cellsCount;
+            if (index < cellsCount) {
+                org.apache.poi.ss.usermodel.Row nextRow = poiSheet.getRow(index);
+                while ((nextRow == null || nextRow.getCell(columnIndex) == null) && index + 1 < cellsCount) {
+                    nextRow = poiSheet.getRow(++index);
+                }
+                return nextRow != null && nextRow.getCell(columnIndex) != null;
+            }
+            return false;
         }
 
         @Override
         public Cell next() {
-            int rowIndex = index++;
-            org.apache.poi.ss.usermodel.Row nextRow = poiSheet.getRow(rowIndex);
-            if (nextRow != null) {
-                org.apache.poi.ss.usermodel.Cell poiCell = nextRow.getCell(columnIndex);
-                return poiCell != null ? new Cell(parent, rowIndex, columnIndex) : null;
-            }
-            return null;
+            return new Cell(parent, index++, columnIndex);
         }
     }
 }

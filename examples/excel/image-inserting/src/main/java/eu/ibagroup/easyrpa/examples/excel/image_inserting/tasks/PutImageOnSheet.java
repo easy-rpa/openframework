@@ -16,22 +16,22 @@ public class PutImageOnSheet extends ApTask {
     @Configuration(value = "source.spreadsheet.file")
     private String sourceSpreadsheetFile;
 
+    @Configuration(value = "output.spreadsheet.file")
+    private String outputSpreadsheetFile;
+
     @Override
     public void execute() {
-
-        String fromCellRef = "A2";
-        String toCellRef = "D5";
-
         log.info("Put image on sheet of spreadsheet document located at '{}'", sourceSpreadsheetFile);
         ExcelDocument doc = new ExcelDocument(sourceSpreadsheetFile);
         Sheet activeSheet = doc.getActiveSheet();
 
-        log.info("Put image '{}' on  sheet '{}' from  cell '{}' to cell '{}'", PATH_TO_IMAGE, activeSheet.getName(), fromCellRef, toCellRef);
-        activeSheet.addImage(PATH_TO_IMAGE, fromCellRef, toCellRef);
-
-        log.info("Save changes for the document.");
-        doc.save();
-
+        log.info("Put image '{}' on  sheet '{}'", PATH_TO_IMAGE, activeSheet.getName());
+        activeSheet.addImage(PATH_TO_IMAGE, "C6");
         log.info("Image has been put successfully.");
+
+        log.info("Save changes to '{}'.", outputSpreadsheetFile);
+        doc.saveAs(outputSpreadsheetFile);
+
+        log.info("Spreadsheet document is saved successfully.");
     }
 }

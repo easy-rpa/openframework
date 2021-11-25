@@ -5,16 +5,19 @@ import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.excel.ExcelDocument;
 import eu.ibagroup.easyrpa.openframework.excel.Sheet;
+import eu.ibagroup.easyrpa.openframework.excel.Table;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
-@ApTaskEntry(name = "Delete Columns")
+@ApTaskEntry(name = "Filter Table Columns")
 @Slf4j
-public class DeleteColumns extends ApTask {
+public class FilterTableColumns extends ApTask {
 
-    private static final String OUTPUT_FILE_NAME = "column_delete_result.xlsx";
+    private static final String OUTPUT_FILE_NAME = "column_filter_result.xlsx";
 
     @Configuration(value = "source.spreadsheet.file")
     private String sourceSpreadsheetFile;
@@ -24,16 +27,15 @@ public class DeleteColumns extends ApTask {
 
     @Override
     public void execute() {
-        String columnToDeleteRef = "D";
 
-        log.info("Delete column of spreadsheet document located at: {}", sourceSpreadsheetFile);
+        log.info("Filter column for spreadsheet document located at: {}", sourceSpreadsheetFile);
         ExcelDocument doc = new ExcelDocument(sourceSpreadsheetFile);
         Sheet activeSheet = doc.getActiveSheet();
 
-        log.info("Delete column '{}' from sheet '{}'", columnToDeleteRef, activeSheet.getName());
-        activeSheet.removeColumn(columnToDeleteRef);
-
-        log.info("Column '{}' has been deleted successfully.", columnToDeleteRef);
+        log.info("Find table on sheet '{}' and filter it's rows", activeSheet.getName());
+        Table<Object> table = activeSheet.findTable(Object.class, "Name");
+        table.trimLeadingAndTrailingSpaces();
+        table.filter(0, "^1..").filter(5, "1");
 
         String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);
         log.info("Save changes to '{}'.", outputFilePath);
@@ -41,4 +43,9 @@ public class DeleteColumns extends ApTask {
 
         log.info("Spreadsheet document is saved successfully.");
     }
+
+    public List<String> getSampleData() {
+        return new ArrayList<>();
+    }
+
 }

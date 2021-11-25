@@ -3,6 +3,7 @@ package eu.ibagroup.easyrpa.examples.excel.working_with_rows.tasks;
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
+import eu.ibagroup.easyrpa.openframework.excel.Cell;
 import eu.ibagroup.easyrpa.openframework.excel.Column;
 import eu.ibagroup.easyrpa.openframework.excel.ExcelDocument;
 import eu.ibagroup.easyrpa.openframework.excel.Sheet;
@@ -17,7 +18,7 @@ public class ReadColumnCells extends ApTask {
 
     @Override
     public void execute() {
-        String columnToReadRef = "A";
+        String columnToReadRef = "D";
 
         log.info("Read column cells of spreadsheet document located at: {}", sourceSpreadsheetFile);
         ExcelDocument doc = new ExcelDocument(sourceSpreadsheetFile);
@@ -25,9 +26,9 @@ public class ReadColumnCells extends ApTask {
 
         log.info("Read cells of column '{}'", columnToReadRef);
         Column column = activeSheet.getColumn(columnToReadRef);
-        column.getCells().forEach(cell -> {
+        for (Cell cell : column) {
             Object value = cell.getValue();
             log.info("Cell value at row '{}': {} ({})", cell.getRowIndex(), value, (value != null ? value.getClass() : "null"));
-        });
+        }
     }
 }

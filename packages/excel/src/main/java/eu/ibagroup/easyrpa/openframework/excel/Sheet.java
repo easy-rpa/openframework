@@ -2,19 +2,23 @@ package eu.ibagroup.easyrpa.openframework.excel;
 
 import eu.ibagroup.easyrpa.openframework.excel.constants.InsertMethod;
 import eu.ibagroup.easyrpa.openframework.excel.constants.MatchMethod;
-import eu.ibagroup.easyrpa.openframework.excel.constants.SortDirection;
 import eu.ibagroup.easyrpa.openframework.excel.exceptions.VBScriptExecutionException;
 import eu.ibagroup.easyrpa.openframework.excel.internal.PoiElementsCache;
+import eu.ibagroup.easyrpa.openframework.excel.utils.FilePathUtils;
 import eu.ibagroup.easyrpa.openframework.excel.utils.TypeUtils;
-import eu.ibagroup.easyrpa.openframework.excel.vbscript.ExportToPDF;
-import eu.ibagroup.easyrpa.openframework.excel.vbscript.PivotTableScript;
+import eu.ibagroup.easyrpa.openframework.excel.vbscript.*;
+import org.apache.commons.io.IOUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.ss.usermodel.DataValidation;
+import org.apache.poi.poifs.filesystem.FileMagic;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -310,13 +314,22 @@ public class Sheet implements Iterable<Row> {
     }
 
     public void addColumn(List<?> values) {
-        List<List<?>> columnData = values.stream().map(Collections::singletonList).collect(Collectors.toList());
-        putRange(0, getLastColumnIndex() + 1, columnData);
+        addColumn(0, values);
     }
 
-    public void insertColumn(InsertMethod method, String startCellRef, List<?> data) {
-        CellRef ref = new CellRef(startCellRef);
-        insertColumn(method, ref.getCol(), ref.getRow(), data);
+    public void addColumn(String startRowRef, List<?> values) {
+        addColumn(new CellRef(startRowRef).getRow(), values);
+    }
+
+    public void addColumn(int startRow, List<?> values) {
+        List<List<?>> columnData = values.stream().map(Collections::singletonList).collect(Collectors.toList());
+        putRange(startRow, getLastColumnIndex() + 1, columnData);
+    }
+
+    public void insertColumn(InsertMethod method, String columnRef, String startRowRef, List<?> data) {
+        CellRef cRef = new CellRef(columnRef);
+        CellRef srRef = new CellRef(startRowRef);
+        insertColumn(method, cRef.getCol(), srRef.getRow(), data);
     }
 
     public void insertColumn(InsertMethod method, int columnPos, int startRow, List<?> values) {
@@ -328,19 +341,32 @@ public class Sheet implements Iterable<Row> {
         List<List<?>> columnData = values.stream().map(Collections::singletonList).collect(Collectors.toList());
 
         if (columnIndex <= getLastColumnIndex()) {
-            shiftColumns(columnIndex, 1);
+            getDocument().runScript(new ColumnInsert(new CellRef(getName(), -1, columnIndex)));
         }
         putRange(startRow, columnIndex, columnData);
     }
-
 
     public void moveColumn(String columnToMoveRef, InsertMethod method, String toPositionRef) {
         moveColumn(new CellRef(columnToMoveRef).getCol(), method, new CellRef(toPositionRef).getCol());
     }
 
+    public void moveColumn(String columnToMoveRef, InsertMethod method, int toPositionIndex) {
+        moveColumn(new CellRef(columnToMoveRef).getCol(), method, toPositionIndex);
+    }
+
+    public void moveColumn(int columnToMoveIndex, InsertMethod method, String toPositionRef) {
+        moveColumn(columnToMoveIndex, method, new CellRef(toPositionRef).getCol());
+    }
+
     public void moveColumn(int columnToMoveIndex, InsertMethod method, int toPositionIndex) {
-        //TODO Implement this
-        // via VBS
+        if (columnToMoveIndex < 0 || columnToMoveIndex > getLastColumnIndex() || toPositionIndex < 0) {
+            return;
+        }
+        int pos = method == null || method == InsertMethod.BEFORE ? toPositionIndex : toPositionIndex + 1;
+        if (pos != columnToMoveIndex) {
+            CellRange columnsRange = new CellRange(getName(), -1, columnToMoveIndex, -1, columnToMoveIndex);
+            getDocument().runScript(new ColumnsMove(columnsRange, new CellRef(-1, pos)));
+        }
     }
 
     public void removeColumn(String colRef) {
@@ -359,7 +385,8 @@ public class Sheet implements Iterable<Row> {
         if (colIndex == lastColumnIndex) {
             cleanColumn(colIndex);
         } else {
-            shiftColumns(colIndex, -1);
+            CellRange columnsRange = new CellRange(getName(), -1, colIndex, -1, colIndex);
+            getDocument().runScript(new ColumnsDelete(columnsRange));
         }
     }
 
@@ -391,16 +418,6 @@ public class Sheet implements Iterable<Row> {
             throw new IllegalArgumentException("Column width cannot be more than 255.");
         }
         getPoiSheet().setColumnWidth(columnIndex, width * 256);
-    }
-
-    public void filterColumn(String columnRef, List<Object> valuesToFilter, MatchMethod exact) {
-        //TODO Implement this
-        // via VBS
-    }
-
-    public void sortColumn(String columnRef, SortDirection direction) {
-        //TODO Implement this
-        // via VBS
     }
 
     public int getFirstColumnIndex() {
@@ -504,8 +521,57 @@ public class Sheet implements Iterable<Row> {
         parent.runScript(new ExportToPDF(getName(), pdfFilePath));
     }
 
+    public void addImage(String pathToImage, String positionRef) {
+        addImage(pathToImage, positionRef, null);
+    }
+
     public void addImage(String pathToImage, String fromCellRef, String toCellRef) {
-        //TODO Implement this
+        File imageFile = FilePathUtils.getFile(pathToImage);
+        if (imageFile == null) {
+            throw new IllegalArgumentException("Image path is not specified.");
+        }
+
+        byte[] imageData;
+        int imageFormat;
+        try {
+            imageData = IOUtils.toByteArray(new FileInputStream(imageFile));
+            final FileMagic fm = FileMagic.valueOf(imageData);
+            if (fm == FileMagic.PNG) {
+                imageFormat = Workbook.PICTURE_TYPE_PNG;
+            } else if (fm == FileMagic.JPEG) {
+                imageFormat = Workbook.PICTURE_TYPE_JPEG;
+            } else if (fm == FileMagic.EMF) {
+                imageFormat = Workbook.PICTURE_TYPE_EMF;
+            } else if (fm == FileMagic.WMF) {
+                imageFormat = Workbook.PICTURE_TYPE_WMF;
+            } else {
+                throw new IllegalArgumentException("Unknown image file format. Only JPEG, PNG, EMF and WMF are supported.");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        org.apache.poi.ss.usermodel.Sheet poiSheet = getPoiSheet();
+        Workbook poiWb = poiSheet.getWorkbook();
+        int pictureIdx = poiWb.addPicture(imageData, imageFormat);
+        Drawing<?> drawing = poiSheet.createDrawingPatriarch();
+
+        ClientAnchor anchor = poiWb.getCreationHelper().createClientAnchor();
+        anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_AND_RESIZE);
+
+        CellRef fromRef = new CellRef(fromCellRef);
+        anchor.setRow1(Math.max(fromRef.getRow(), 0));
+        anchor.setCol1(Math.max(fromRef.getCol(), 0));
+        if (toCellRef != null) {
+            CellRef toRef = new CellRef(toCellRef);
+            anchor.setRow2(Math.max(toRef.getRow(), 0));
+            anchor.setCol2(Math.max(toRef.getCol(), 0));
+        }
+
+        Picture picture = drawing.createPicture(anchor, pictureIdx);
+        if (toCellRef == null) {
+            picture.resize();
+        }
     }
 
     public void updatePivotTable(String pTableName) {
@@ -536,11 +602,6 @@ public class Sheet implements Iterable<Row> {
 
     public org.apache.poi.ss.usermodel.Sheet getPoiSheet() {
         return PoiElementsCache.getPoiSheet(documentId, sheetIndex);
-    }
-
-    private void shiftColumns(int startCol, int columnsCount) {
-        //TODO Implement this
-        // via VBS
     }
 
     private void shiftRows(int startRow, int rowsCount) {

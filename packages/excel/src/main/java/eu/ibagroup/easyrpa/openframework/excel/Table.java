@@ -1,7 +1,10 @@
 package eu.ibagroup.easyrpa.openframework.excel;
 
 import eu.ibagroup.easyrpa.openframework.excel.constants.InsertMethod;
+import eu.ibagroup.easyrpa.openframework.excel.constants.SortDirection;
 import eu.ibagroup.easyrpa.openframework.excel.internal.RecordTypeHelper;
+import eu.ibagroup.easyrpa.openframework.excel.vbscript.Filter;
+import eu.ibagroup.easyrpa.openframework.excel.vbscript.Sorter;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -273,6 +276,30 @@ public class Table<T> implements Iterable<T> {
         while (parent.getColumn(getHeaderRightCol()).isEmpty()) {
             setHeaderRightCol(getHeaderRightCol() - 1);
         }
+    }
+
+    public Table<T> filter(int columnIndex, String filterPattern) {
+        int lastColumnIndex = hRightCol - hLeftCol;
+        if (columnIndex < 0 || columnIndex > lastColumnIndex) {
+            return this;
+        }
+        CellRange tableRange = new CellRange(getSheet().getName(), hTopRow, hLeftCol, getBottomRow(), hRightCol);
+        CellRange valuesRange = new CellRange(hBottomRow + 1, hLeftCol + columnIndex,
+                getBottomRow(), hLeftCol + columnIndex);
+        getDocument().runScript(new Filter(tableRange, columnIndex + 1, filterPattern, valuesRange));
+        return this;
+    }
+
+    public Table<T> sort(int columnIndex, SortDirection direction) {
+        int lastColumnIndex = hRightCol - hLeftCol;
+        if (columnIndex < 0 || columnIndex > lastColumnIndex) {
+            return this;
+        }
+        direction = direction != null ? direction : SortDirection.ASC;
+        CellRange columnRange = new CellRange(getSheet().getName(), hTopRow, hLeftCol + columnIndex,
+                getBottomRow(), hLeftCol + columnIndex);
+        getDocument().runScript(new Sorter(columnRange, direction));
+        return this;
     }
 
     @Override

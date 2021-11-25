@@ -1,73 +1,27 @@
 package eu.ibagroup.easyrpa.openframework.excel.vbscript;
 
-import eu.ibagroup.easyrpa.openframework.excel.SpreadsheetDocument;
-import org.apache.poi.ss.util.CellReference;
+import eu.ibagroup.easyrpa.openframework.excel.CellRange;
+import eu.ibagroup.easyrpa.openframework.excel.constants.SortDirection;
 
 /**
- * Sort column in the tab specified.
- * <p>
- * 'script call example 'cscript sort.vbs
- * "C:\Scripts\VBS\ChartofAccounts984.xlsx" "ChartofAccounts" "B1:B459" "ZtoA"
+ * VB script to sort cells on Excel file sheet.
+ * <br>
+ * This class uses <code>sort.vbs</code> script.
+ * <br><br>
+ * Example of cscript command that this class initiate:
+ * <br><br>
+ * <code>cscript "C:/scripts/sort.vbs" "C:/Users/user1/AppData/Local/Temp/document.xlsx" "Sheet0!D1:D893" "ASC"</code>
+ * <ul>
+ *     <li>Argument 0: Excel file path to proceed</li>
+ *     <li>Argument 1: range of cells that should be sorted</li>
+ *     <li>Argument 2: sort direction. Possible values: 'ASC' or 'DESC'</li>
+ * </ul>
  */
 public class Sorter extends VBScript {
 
     public static final String VBS_FILE_PATH = "vbscript/sort.vbs";
 
-    /**
-     * Construct empty Sorter script. Methods to add parameters must be used before
-     * perform();
-     */
-    public Sorter() {
-        this("", "");
+    public Sorter(CellRange range, SortDirection direction) {
+        super(VBS_FILE_PATH, range.formatAsString(), direction.toString());
     }
-
-    /**
-     * Sort sheet and range specified
-     *
-     * @param tabName -
-     * @param target  -
-     */
-    public Sorter(String tabName, String target) {
-        this(tabName, target, SortingType.AtoZ);
-    }
-
-    public Sorter(String tabName, String target, SortingType sortType) {
-        super(VBS_FILE_PATH);
-        params(tabName, target, sortType.toString());
-    }
-
-    public Sorter(String tabName, String headerCellRef, SortingType sortType, SpreadsheetDocument spreadsheet) {
-        this(tabName, getTarget(headerCellRef, spreadsheet), sortType);
-    }
-
-    public Sorter tabName(String tabName) {
-        getParameters().set(0, tabName);
-        return this;
-    }
-
-    public Sorter target(String target) {
-        getParameters().set(1, target);
-        return this;
-    }
-
-    public Sorter sortAtoZ() {
-        getParameters().set(2, SortingType.AtoZ.toString());
-        return this;
-    }
-
-    public Sorter sortZtoA() {
-        getParameters().set(2, SortingType.ZtoA.toString());
-        return this;
-    }
-
-    public enum SortingType {
-        AtoZ, ZtoA
-    }
-
-    private static String getTarget(String headerCellRef, SpreadsheetDocument spreadsheet) {
-        String lastCellRef = new CellReference(CellReference.convertColStringToIndex(headerCellRef),
-                spreadsheet.getActiveSheet().getLastRowNum()).formatAsString();
-        return headerCellRef + ':' + lastCellRef;
-    }
-
 }
