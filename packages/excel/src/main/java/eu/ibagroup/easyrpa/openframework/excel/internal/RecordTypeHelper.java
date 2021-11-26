@@ -7,7 +7,7 @@ import eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelTable;
 import eu.ibagroup.easyrpa.openframework.excel.function.ColumnFormatter;
 import eu.ibagroup.easyrpa.openframework.excel.function.FieldMapper;
 import eu.ibagroup.easyrpa.openframework.excel.function.TableFormatter;
-import eu.ibagroup.easyrpa.openframework.excel.utils.TypeUtils;
+import eu.ibagroup.easyrpa.openframework.core.utils.TypeUtils;
 
 import java.lang.reflect.Field;
 import java.util.*;

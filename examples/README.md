@@ -55,9 +55,7 @@
  - [Reading data from given sheet](excel/sheet-data-reading)
     * Read as range of data
     * Read as list of records    
-    
- - [TODO] Reading data from large Excel files (excel/large-files-reading)
- 
+
  - [Editing of existing Excel file](excel/excel-file-editing) 
      * Edit cells
      * Edit records   
@@ -104,6 +102,8 @@
  - [Running of macros](excel/macros-running)
  
  - [Running of custom VB script](excel/custom-vbs-running)
+ 
+ - [TODO] Reading data from large Excel files (excel/working-with-large-files)
  
 ## CSV
 
