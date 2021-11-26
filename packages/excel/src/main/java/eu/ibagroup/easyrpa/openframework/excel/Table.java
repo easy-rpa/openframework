@@ -201,9 +201,10 @@ public class Table<T> implements Iterable<T> {
         parent.insertRows(method, recordIndex + hBottomRow + 1, hLeftCol, data);
 
         int insertPos = method == null || method == InsertMethod.BEFORE ? recordIndex : recordIndex + 1;
-        if (this.records != null) {
-            this.records.addAll(insertPos, records);
+        if (this.records == null) {
+            this.records = new ArrayList<>(Collections.nCopies(getRecordsCount(), null));
         }
+        this.records.addAll(insertPos, records);
         if (bottomRow >= 0) {
             bottomRow += records.size();
         }

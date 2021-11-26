@@ -3,6 +3,7 @@ package eu.ibagroup.easyrpa.openframework.excel;
 import eu.ibagroup.easyrpa.openframework.excel.constants.MatchMethod;
 import eu.ibagroup.easyrpa.openframework.excel.exceptions.VBScriptExecutionException;
 import eu.ibagroup.easyrpa.openframework.excel.internal.PoiElementsCache;
+import eu.ibagroup.easyrpa.openframework.excel.internal.poi.POIExtension;
 import eu.ibagroup.easyrpa.openframework.excel.utils.FilePathUtils;
 import eu.ibagroup.easyrpa.openframework.excel.vbscript.MacroRunner;
 import eu.ibagroup.easyrpa.openframework.excel.vbscript.VBScript;
@@ -558,7 +559,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      */
     private void initWorkbook(InputStream is) {
         try {
-            //override XSSFSheet in _table of XSSFRelation
+//            POIExtension.init();
 //            POIXMLTypeLoader.DEFAULT_XML_OPTIONS.setLoadUseXMLReader(SAXParserFactory.newInstance().newSAXParser().getXMLReader());
             if (is == null) {
                 workbook = new XSSFWorkbook();

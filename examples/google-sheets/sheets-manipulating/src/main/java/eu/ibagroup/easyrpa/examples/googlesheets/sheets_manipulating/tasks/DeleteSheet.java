@@ -31,6 +31,5 @@ public class DeleteSheet extends ApTask {
         spreadsheet.removeSheet(lastSheetName);
 
         log.info("Sheet '{}' has been deleted successfully.", lastSheetName);
-
     }
 }
