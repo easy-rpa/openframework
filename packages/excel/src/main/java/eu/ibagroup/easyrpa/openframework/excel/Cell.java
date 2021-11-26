@@ -5,7 +5,7 @@ import org.apache.poi.ss.usermodel.*;
 
 import java.util.Date;
 
-//TODO Supports cell constraints (validation) ???
+//TODO Supporting of cell constraints (data validation)
 public class Cell {
 
     private String id;

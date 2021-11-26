@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-//TODO Supports merged regions???
+//TODO Supporting of styles coping per row (getting of while row style and applying to another row)
 public class Row implements Iterable<Cell> {
 
     private String id;
@@ -206,14 +206,19 @@ public class Row implements Iterable<Cell> {
 
         @Override
         public boolean hasNext() {
-            return index < cellsCount;
+            if (index < cellsCount) {
+                org.apache.poi.ss.usermodel.Cell nextCell = poiRow.getCell(index);
+                while (nextCell == null && index + 1 < cellsCount) {
+                    nextCell = poiRow.getCell(++index);
+                }
+                return nextCell != null;
+            }
+            return false;
         }
 
         @Override
         public Cell next() {
-            int cellIndex = index++;
-            org.apache.poi.ss.usermodel.Cell poiCell = poiRow.getCell(cellIndex);
-            return poiCell != null ? new Cell(parent, rowIndex, cellIndex) : null;
+            return new Cell(parent, rowIndex, index++);
         }
     }
 }
