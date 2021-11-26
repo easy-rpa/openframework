@@ -31,5 +31,7 @@ public class RenameSheet extends ApTask {
         log.info("Current name of active sheet: '{}'. Rename it to '{}'.", activeSheet.getName(), newSheetName);
         activeSheet.rename(newSheetName);
         log.info("Sheet has been renamed successfully. Current name of active sheet: '{}'", activeSheet.getName());
+
+        service.update(spreadsheet);
     }
 }

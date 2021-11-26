@@ -12,12 +12,12 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
-import com.google.api.services.sheets.v4.model.CopySheetToAnotherSpreadsheetRequest;
-import com.google.api.services.sheets.v4.model.SheetProperties;
+import com.google.api.services.sheets.v4.model.*;
 import eu.ibagroup.easyrpa.openframework.core.sevices.RPAServicesAccessor;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.GoogleSheetsInstanceCreationException;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SpreadsheetNotFound;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SpreadsheetRequestFailed;
+import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.UpdateException;
 import eu.ibagroup.easyrpa.openframework.googlesheets.spreadsheet.Spreadsheet;
 
 import javax.inject.Inject;
@@ -73,13 +73,13 @@ public class GoogleSheets {
         } catch (IOException e) {
             throw new SpreadsheetNotFound("Spreadsheet with such id not found");
         }
-        if(spreadsheet == null){
+        if (spreadsheet == null) {
             throw new SpreadsheetRequestFailed("Some errors occurred");
         }
-        return new Spreadsheet(spreadsheet);
+        return new Spreadsheet(spreadsheet, this);
     }
 
-    public Spreadsheet copySheet(String spreadsheetId,int sheetId, String destSpreadsheetId){
+    public Spreadsheet copySheet(String spreadsheetId, int sheetId, String destSpreadsheetId) {
         //incorrect idea!
 
         CopySheetToAnotherSpreadsheetRequest requestBody = new CopySheetToAnotherSpreadsheetRequest();
@@ -95,7 +95,25 @@ public class GoogleSheets {
         }
 
         System.out.println(response);
-        return  null;
+        return null;
+    }
+
+    public BatchUpdateSpreadsheetResponse update(Spreadsheet spreadsheet) {
+        List<Request> requests = spreadsheet.getRequests();
+        if (requests.size() > 0) {
+            BatchUpdateSpreadsheetRequest body =
+                    new BatchUpdateSpreadsheetRequest().setRequests(requests);
+
+            try {
+                BatchUpdateSpreadsheetResponse response = service.spreadsheets().batchUpdate(spreadsheet.getId(), body).execute();
+                requests.clear();
+                return response;
+            } catch (IOException e) {
+                throw new UpdateException(e.getMessage());
+            }
+        }
+        //return null if there were no updates
+        return null;
     }
 
     private void connect() {
