@@ -1,10 +1,13 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets.spreadsheet;
 
+import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.*;
 import eu.ibagroup.easyrpa.openframework.googlesheets.GoogleSheets;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SheetNameAlreadyExist;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SheetNotFound;
+import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.UpdateException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,12 +18,12 @@ public class Spreadsheet {
 
     private int activeSheetIndex;
 
-    private GoogleSheets service;
+    private Sheets service;
 
     //todo requests(update) via set
     private List<Request> requests;
 
-    public Spreadsheet(com.google.api.services.sheets.v4.model.Spreadsheet spreadsheet, GoogleSheets service) {
+    public Spreadsheet(com.google.api.services.sheets.v4.model.Spreadsheet spreadsheet, Sheets service) {
         this.googleSpreadsheet = spreadsheet;
         this.service = service;
         activeSheetIndex = 0;
@@ -72,7 +75,7 @@ public class Spreadsheet {
                         .setProperties(googleSpreadsheet.getProperties())
                         .setFields("*")
         ));
-        service.update(this);
+        commit();
     }
 
     public String getName() {
@@ -80,7 +83,7 @@ public class Spreadsheet {
     }
 
     public Sheet cloneSheet(String sheetName) {
-        com.google.api.services.sheets.v4.model.Sheet sheet = getSheet(sheetName).clone();
+        com.google.api.services.sheets.v4.model.Sheet sheet = getGoogleSheet(sheetName).clone();
 
         int newSheetIndex = googleSpreadsheet.getSheets().size();
         sheet.getProperties().setIndex(newSheetIndex);
@@ -95,7 +98,7 @@ public class Spreadsheet {
                         .setSourceSheetId(sheet.getProperties().getSheetId())
         ));
 
-        BatchUpdateSpreadsheetResponse response = service.update(this);
+        BatchUpdateSpreadsheetResponse response = commit();
         SheetProperties properties = response
                 .getReplies()
                 .get(response.getReplies().size() - 1)
@@ -106,26 +109,51 @@ public class Spreadsheet {
     }
 
     public void removeSheet(String sheetName) {
-        com.google.api.services.sheets.v4.model.Sheet sheet = getSheet(sheetName);
+        com.google.api.services.sheets.v4.model.Sheet sheet = getGoogleSheet(sheetName);
         googleSpreadsheet.getSheets().remove(sheet);
 
         requests.add(new Request().setDeleteSheet(
                 new DeleteSheetRequest()
                         .setSheetId(sheet.getProperties().getSheetId())
         ));
-        service.update(this);
+        commit();
     }
 
     public List<Request> getRequests() {
         return this.requests;
     }
 
-    private com.google.api.services.sheets.v4.model.Sheet getSheet(String sheetName) {
+    public void setProperties(SpreadsheetProperties properties) {
+        googleSpreadsheet.setProperties(properties);
+    }
+
+    public SpreadsheetProperties getProperties() {
+        return googleSpreadsheet.getProperties();
+    }
+
+    public com.google.api.services.sheets.v4.model.Sheet getGoogleSheet(String sheetName) {
         return googleSpreadsheet.getSheets()
                 .stream()
                 .filter(sheet -> sheetName.equals(sheet.getProperties().getTitle()))
                 .findFirst()
                 .orElseThrow(() -> new SheetNotFound("Sheet with this name not found"));
+    }
+
+    public BatchUpdateSpreadsheetResponse commit() {
+        if (requests.size() > 0) {
+            BatchUpdateSpreadsheetRequest body =
+                    new BatchUpdateSpreadsheetRequest().setRequests(requests);
+
+            try {
+                BatchUpdateSpreadsheetResponse response = service.spreadsheets().batchUpdate(googleSpreadsheet.getSpreadsheetId(), body).execute();
+                requests.clear();
+                return response;
+            } catch (IOException e) {
+                throw new UpdateException(e.getMessage());
+            }
+        }
+        //return null if there were no updates
+        return null;
     }
 
     private String getClonedTitle(String title) {

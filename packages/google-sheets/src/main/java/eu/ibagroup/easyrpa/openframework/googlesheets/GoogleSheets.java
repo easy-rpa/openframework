@@ -12,16 +12,22 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
-import com.google.api.services.sheets.v4.model.*;
+import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest;
+import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetResponse;
+import com.google.api.services.sheets.v4.model.CopySheetToAnotherSpreadsheetRequest;
+import com.google.api.services.sheets.v4.model.Request;
+import com.google.api.services.sheets.v4.model.SheetProperties;
 import eu.ibagroup.easyrpa.openframework.core.sevices.RPAServicesAccessor;
-import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.GoogleSheetsInstanceCreationException;
-import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SpreadsheetNotFound;
-import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SpreadsheetRequestFailed;
-import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.UpdateException;
+import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.*;
+import eu.ibagroup.easyrpa.openframework.googlesheets.spreadsheet.Sheet;
 import eu.ibagroup.easyrpa.openframework.googlesheets.spreadsheet.Spreadsheet;
 
 import javax.inject.Inject;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,44 +84,17 @@ public class GoogleSheets {
         if (spreadsheet == null) {
             throw new SpreadsheetRequestFailed("Some errors occurred");
         }
-        return new Spreadsheet(spreadsheet, this);
+        return new Spreadsheet(spreadsheet, service);
     }
 
-    public Spreadsheet copySheet(String spreadsheetId, int sheetId, String destSpreadsheetId) {
-        //incorrect idea!
-
+    public void copySheet(Spreadsheet spreadsheetFrom, Sheet sheet, Spreadsheet spreadsheetTo) {
         CopySheetToAnotherSpreadsheetRequest requestBody = new CopySheetToAnotherSpreadsheetRequest();
-        requestBody.setDestinationSpreadsheetId(destSpreadsheetId);
-
-        Sheets.Spreadsheets.SheetsOperations.CopyTo request;
-        SheetProperties response = null;
+        requestBody.setDestinationSpreadsheetId(spreadsheetTo.getId());
         try {
-            request = service.spreadsheets().sheets().copyTo(spreadsheetId, sheetId, requestBody);
-            response = request.execute();
+            service.spreadsheets().sheets().copyTo(spreadsheetFrom.getId(), sheet.getId(), requestBody).execute();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new CopySheetException(e.getMessage());
         }
-
-        System.out.println(response);
-        return null;
-    }
-
-    public BatchUpdateSpreadsheetResponse update(Spreadsheet spreadsheet) {
-        List<Request> requests = spreadsheet.getRequests();
-        if (requests.size() > 0) {
-            BatchUpdateSpreadsheetRequest body =
-                    new BatchUpdateSpreadsheetRequest().setRequests(requests);
-
-            try {
-                BatchUpdateSpreadsheetResponse response = service.spreadsheets().batchUpdate(spreadsheet.getId(), body).execute();
-                requests.clear();
-                return response;
-            } catch (IOException e) {
-                throw new UpdateException(e.getMessage());
-            }
-        }
-        //return null if there were no updates
-        return null;
     }
 
     private void connect() {

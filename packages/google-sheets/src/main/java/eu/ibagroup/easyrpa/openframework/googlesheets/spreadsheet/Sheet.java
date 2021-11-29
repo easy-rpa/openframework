@@ -15,8 +15,11 @@ public class Sheet {
     }
 
     public String getName() {
-        // googleSheet.getProperties().getSheetId();
         return googleSheet.getProperties().getTitle();
+    }
+
+    public int getId(){
+        return googleSheet.getProperties().getSheetId();
     }
 
     public void rename(String name) {
