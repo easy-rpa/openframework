@@ -1,4 +1,4 @@
-# Copying of sheet from one Excel file to another
+# Copying of sheet from one GoogleSheet to another
 
 This process example demonstrates how copy sheet from one spreadsheet file to another with preserving 
 of all original styles.  
@@ -10,10 +10,15 @@ All necessary configuration files can be found in <code>src/main/resources</code
 
 | Parameter     | Value         |
 | ------------- |---------------|
-| `source.spreadsheet.file` | Path to source spreadsheet file. It can be path on local file system or within resources of this project. |
-| `source.sheet.name` | Name of sheet in the source spreadsheet file that has to be copied. |
-| `target.spreadsheet.file` | Path to target spreadsheet file where the sheet has to be copied. It can be path on local file system or within resources of this project. |
-| `output.files.dir` | Path to directory on local file system where robot will put all modified within this process spreadsheet files. |
+| `spreadsheet.id.copyFrom` | A unique spreadsheet id of Google Spreadsheet to copy from. |
+| `spreadsheet.id.copyTo` | A unique spreadsheet id of Google Spreadsheet to copy to. |
+| `sheet.name` |Name of the sheet that should be coped from `spreadsheet.id.copyFrom` . |
+| 
+**vault.properties**
+
+| Alias     | Value         |
+| ------------- |---------------|
+| `google.credentials` | Json with credentials in encoded with Base64.|
 
 ## Running
 

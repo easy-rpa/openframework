@@ -37,6 +37,6 @@ public class CloneSheet extends ApTask {
         log.info("Rename cloned sheet to '{}'.", clonedSheetName);
         clonedSheet.rename(clonedSheetName);
 
-        service.update(spreadsheet);
+        spreadsheet.commit();
     }
 }
