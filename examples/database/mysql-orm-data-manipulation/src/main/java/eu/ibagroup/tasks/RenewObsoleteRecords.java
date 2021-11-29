@@ -1,0 +1,48 @@
+package eu.ibagroup.tasks;
+
+import com.j256.ormlite.dao.Dao;
+import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
+import eu.ibagroup.easyrpa.engine.annotation.Input;
+import eu.ibagroup.easyrpa.engine.apflow.ApTask;
+import eu.ibagroup.easyrpa.openframework.database.service.MySqlService;
+import eu.ibagroup.entity.MySqlInvoice;
+import lombok.extern.slf4j.Slf4j;
+
+import javax.inject.Inject;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+
+import static eu.ibagroup.constants.Constants.DB_DATE_PATTERN;
+
+@Slf4j
+@ApTaskEntry(name = "Set current date as invoiceDate in the outdated invoices")
+public class RenewObsoleteRecords extends ApTask {
+    @Input
+    private List<MySqlInvoice> outdatedInvoices;
+
+    @Inject
+    MySqlService dbService;
+
+    @Override
+    public void execute() throws Exception {
+        log.info("Renew obsolete invoices' invoice_date to current date");
+        SimpleDateFormat f = new SimpleDateFormat(DB_DATE_PATTERN);
+        Calendar c = Calendar.getInstance();
+        for(MySqlInvoice invoice : outdatedInvoices){
+            log.info("Invoice # {}: update invoice date {} -> {}", invoice.getInvoiceNumber(),
+                    f.format(invoice.getInvoiceDate()), f.format(c.getTime()));
+            invoice.setInvoiceDate(c.getTime());
+        }
+        dbService.withTransaction(MySqlInvoice.class, (ex) ->{
+            List<Dao.CreateOrUpdateStatus> ret = new ArrayList<>();
+            int linesChanged = 0;
+            for(MySqlInvoice invoice : outdatedInvoices){
+                linesChanged += ex.createOrUpdate(invoice).getNumLinesChanged();
+            }
+            return linesChanged;
+        });
+
+    }
+}
