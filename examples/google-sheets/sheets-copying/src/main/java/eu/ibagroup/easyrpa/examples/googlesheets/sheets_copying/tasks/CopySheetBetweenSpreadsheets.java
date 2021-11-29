@@ -34,8 +34,8 @@ public class CopySheetBetweenSpreadsheets extends ApTask {
         Spreadsheet spreadsheetTo = service.getSpreadsheet(spreadsheetIdTo);
 
         Sheet sourceSheet = spreadsheetFrom.selectSheet(sheetName);
-        service.copySheet(spreadsheetFrom,sourceSheet,spreadsheetTo);
-        log.info("Sheet '{}' has been copied successfully.", sheetName);
 
+        spreadsheetTo.copySheet(sourceSheet);
+        log.info("Sheet '{}' has been copied successfully.", sheetName);
     }
 }
