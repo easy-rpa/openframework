@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -123,5 +125,59 @@ public class GoogleSheets {
                 .build();
         LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+    }
+
+    public ValueRange getValues(String spreadsheetId, String range) throws IOException {
+        Sheets service = this.service;
+        ValueRange result = service.spreadsheets().values().get(spreadsheetId, range).execute();
+        int numRows = result.getValues() != null ? result.getValues().size() : 0;
+        System.out.printf("%d rows retrieved.", numRows);
+        return result;
+    }
+
+    public UpdateValuesResponse updateValues(String spreadsheetId, String range,
+                                             String valueInputOption, List<List<Object>> _values)
+            throws IOException {
+        Sheets service = this.service;
+        List<List<Object>> values = Arrays.asList(
+                Arrays.asList(
+                )
+        );
+        values = _values;
+        ValueRange body = new ValueRange()
+                .setValues(values);
+
+        UpdateValuesResponse result =
+                service.spreadsheets().values().update(spreadsheetId, range, body)
+                        .setValueInputOption(valueInputOption)
+                        .execute();
+        return result;
+    }
+
+    public BatchUpdateValuesResponse batchUpdateValues(String spreadsheetId, String range,
+                                                       String valueInputOption,
+                                                       List<List<Object>> _values)
+            throws IOException {
+        Sheets service = this.service;
+        // [START sheets_batch_update_values]
+        List<List<Object>> values = Arrays.asList(
+                Arrays.asList(
+                )
+        );
+        values = _values;
+        // [END_EXCLUDE]
+        List<ValueRange> data = new ArrayList<>();
+        data.add(new ValueRange()
+                .setRange(range)
+                .setValues(values));
+        // Additional ranges to update ...
+
+        BatchUpdateValuesRequest body = new BatchUpdateValuesRequest()
+                .setValueInputOption(valueInputOption)
+                .setData(data);
+        BatchUpdateValuesResponse result =
+                service.spreadsheets().values().batchUpdate(spreadsheetId, body).execute();
+        System.out.printf("%d cells updated.", result.getTotalUpdatedCells());
+        return result;
     }
 }

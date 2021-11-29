@@ -1,11 +1,11 @@
 package eu.ibagroup.easyrpa.openframework.excel;
 
+import eu.ibagroup.easyrpa.openframework.core.utils.TypeUtils;
 import eu.ibagroup.easyrpa.openframework.excel.constants.InsertMethod;
 import eu.ibagroup.easyrpa.openframework.excel.constants.MatchMethod;
 import eu.ibagroup.easyrpa.openframework.excel.exceptions.VBScriptExecutionException;
 import eu.ibagroup.easyrpa.openframework.excel.internal.PoiElementsCache;
 import eu.ibagroup.easyrpa.openframework.excel.utils.FilePathUtils;
-import eu.ibagroup.easyrpa.openframework.excel.utils.TypeUtils;
 import eu.ibagroup.easyrpa.openframework.excel.vbscript.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -19,12 +19,16 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+//TODO Supporting of merged regions
+//TODO Supporting of full copying of range of cells to another
+// excel document (including styles, merged regions, data validations, comments etc.)
 public class Sheet implements Iterable<Row> {
 
     private ExcelDocument parent;
@@ -70,13 +74,7 @@ public class Sheet implements Iterable<Row> {
             matchMethod = MatchMethod.EXACT;
         }
         for (Row row : this) {
-            if (row == null) {
-                continue;
-            }
             for (Cell cell : row) {
-                if (cell == null) {
-                    continue;
-                }
                 if (matchMethod.match(cell.getValue(String.class), value)) {
                     return cell;
                 }
@@ -200,16 +198,10 @@ public class Sheet implements Iterable<Row> {
             matchMethod = MatchMethod.EXACT;
         }
         for (Row row : this) {
-            if (row == null) {
-                continue;
-            }
             boolean matchesFound = false;
             for (String key : values) {
                 matchesFound = false;
                 for (Cell cell : row) {
-                    if (cell == null) {
-                        continue;
-                    }
                     matchesFound = matchMethod.match(cell.getValue(String.class), key);
                     if (matchesFound) {
                         break;
@@ -530,11 +522,25 @@ public class Sheet implements Iterable<Row> {
         if (imageFile == null) {
             throw new IllegalArgumentException("Image path is not specified.");
         }
+        try {
+            addImage(new FileInputStream(imageFile), fromCellRef, toCellRef);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    public void addImage(InputStream imageIS, String positionRef) {
+        addImage(imageIS, positionRef, null);
+    }
+
+    public void addImage(InputStream imageIS, String fromCellRef, String toCellRef) {
+        if (imageIS == null) {
+            throw new IllegalArgumentException("Image input stream cannot be null.");
+        }
         byte[] imageData;
         int imageFormat;
         try {
-            imageData = IOUtils.toByteArray(new FileInputStream(imageFile));
+            imageData = IOUtils.toByteArray(imageIS);
             final FileMagic fm = FileMagic.valueOf(imageData);
             if (fm == FileMagic.PNG) {
                 imageFormat = Workbook.PICTURE_TYPE_PNG;
@@ -664,14 +670,19 @@ public class Sheet implements Iterable<Row> {
 
         @Override
         public boolean hasNext() {
-            return index < rowsCount;
+            if (index < rowsCount) {
+                org.apache.poi.ss.usermodel.Row nextRow = poiSheet.getRow(index);
+                while (nextRow == null && index + 1 < rowsCount) {
+                    nextRow = poiSheet.getRow(++index);
+                }
+                return nextRow != null;
+            }
+            return false;
         }
 
         @Override
         public Row next() {
-            int rowIndex = index++;
-            org.apache.poi.ss.usermodel.Row nextRow = poiSheet.getRow(rowIndex);
-            return nextRow != null ? new Row(Sheet.this, rowIndex) : null;
+            return new Row(Sheet.this, index++);
         }
     }
 }
