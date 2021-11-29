@@ -28,23 +28,23 @@ public abstract class DatabaseService {
         return rpaServices;
     }
 
-    public <T> T withConnection(CheckedFunction<QueryExecutionService, T> executor) throws Exception {
+    public <T> T withConnection(CheckedFunction<QueryDbUtils, T> executor) throws Exception {
 
         initJdbcConnection();
-        QueryExecutionService service = new QueryExecutionService(this.connectionKeeper);
+        QueryDbUtils service = new QueryDbUtils(this.connectionKeeper);
         try {
             T transactionResult = (T) executor.apply(service);
             return transactionResult;
         } catch (Exception e) {
             throw e;
         } finally {
-            closeJdbcConnection();
+            service.closeConnection();
         }
     }
 
-    public <T> T withTransaction(CheckedFunction<QueryExecutionService, T> executor) throws Exception {
+    public <T> T withTransaction(CheckedFunction<QueryDbUtils, T> executor) throws Exception {
         initJdbcConnection();
-        QueryExecutionService service = new QueryExecutionService(this.connectionKeeper);
+        QueryDbUtils service = new QueryDbUtils(this.connectionKeeper);
         service.beginTransaction();
         try {
             T transactionResult = executor.apply(service);
@@ -54,26 +54,26 @@ public abstract class DatabaseService {
             service.rollbackTransaction();
             throw e;
         } finally {
-            closeJdbcConnection();
+            service.closeConnection();
         }
     }
 
-    public <T, R> T withConnection(Class<R> entityClass, CheckedFunction<QueryExecutionService, T> executor) throws Exception {
+    public <T, R> T withConnection(Class<R> entityClass, CheckedFunction<OrmDbUtils, T> executor) throws Exception {
         initOrmConnection();
-        QueryExecutionService service = new QueryExecutionService(this.connectionKeeper);
+        OrmDbUtils service = new OrmDbUtils(this.connectionKeeper);
         try {
             T transactionResult = executor.apply(service);
             return transactionResult;
         } catch (SQLException e) {
             throw e;
         } finally {
-            closeOrmConnection();
+            service.closeConnection();
         }
     }
 
-    public <T, R> T withTransaction(Class<R> entityClass, CheckedFunction<QueryExecutionService, T> executor) throws Exception {
+    public <T, R> T withTransaction(Class<R> entityClass, CheckedFunction<OrmDbUtils, T> executor) throws Exception {
         initOrmConnection();
-        QueryExecutionService service = new QueryExecutionService(this.connectionKeeper);
+        OrmDbUtils service = new OrmDbUtils(this.connectionKeeper);
         service.beginTransaction(entityClass);
         try {
             T transactionResult = executor.apply(service);
@@ -83,16 +83,7 @@ public abstract class DatabaseService {
             service.rollbackTransaction(entityClass);
             throw e;
         } finally {
-            closeOrmConnection();
+            service.closeConnection();
         }
     }
-
-    private void closeOrmConnection() throws SQLException {
-        ConnectionKeeper.closeOrmConnection();
-    }
-
-    private void closeJdbcConnection() throws Exception {
-        ConnectionKeeper.closeSessionConnection();
-    }
-
 }
