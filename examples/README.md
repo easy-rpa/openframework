@@ -60,6 +60,10 @@
      * Edit cells
      * Edit records   
  
+ - [Working with large Excel files](excel/working-with-large-files)
+     * Read records   
+     * Edit records
+ 
  - [Copying of sheet from one Excel file to another](excel/sheets-copying)    
  
  - [Sheets manipulating](excel/sheets-manipulating)
@@ -102,8 +106,6 @@
  - [Running of macros](excel/macros-running)
  
  - [Running of custom VB script](excel/custom-vbs-running)
- 
- - [TODO] Reading data from large Excel files (excel/working-with-large-files)
  
 ## CSV
 

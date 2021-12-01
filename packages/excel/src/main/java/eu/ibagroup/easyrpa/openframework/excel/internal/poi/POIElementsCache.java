@@ -1,38 +1,42 @@
-package eu.ibagroup.easyrpa.openframework.excel.internal;
+package eu.ibagroup.easyrpa.openframework.excel.internal.poi;
 
 import org.apache.poi.ss.usermodel.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class PoiElementsCache {
+public class POIElementsCache {
 
-    private static PoiElementsCache INSTANCE;
+    private static POIElementsCache INSTANCE;
 
-    private static PoiElementsCache getInstance() {
+    private static POIElementsCache getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new PoiElementsCache();
+            INSTANCE = new POIElementsCache();
         }
         return INSTANCE;
     }
 
     public static void register(int excelDocumentId, Workbook workbook) {
-        PoiElementsCache cache = getInstance();
+        POIElementsCache cache = getInstance();
         cache.workbooks.put(excelDocumentId, workbook);
         cache.formulaEvaluators.put(excelDocumentId, workbook.getCreationHelper().createFormulaEvaluator());
         cache.dataFormatters.put(excelDocumentId, new DataFormatter());
-        cache.sheetsCache.put(excelDocumentId, new HashMap<>());
-        cache.rowsCache.put(excelDocumentId, new HashMap<>());
-        cache.cellsCache.put(excelDocumentId, new HashMap<>());
+        if (!POISaveMemoryExtension.isInitialized()) {
+            cache.sheetsCache.put(excelDocumentId, new HashMap<>());
+            cache.rowsCache.put(excelDocumentId, new HashMap<>());
+            cache.cellsCache.put(excelDocumentId, new HashMap<>());
+        }
     }
 
     public static void unregister(int excelDocumentId) {
-        PoiElementsCache cache = getInstance();
+        POIElementsCache cache = getInstance();
         cache.formulaEvaluators.remove(excelDocumentId);
         cache.dataFormatters.remove(excelDocumentId);
-        cache.sheetsCache.remove(excelDocumentId);
-        cache.rowsCache.remove(excelDocumentId);
-        cache.cellsCache.remove(excelDocumentId);
+        if (!POISaveMemoryExtension.isInitialized()) {
+            cache.sheetsCache.remove(excelDocumentId);
+            cache.rowsCache.remove(excelDocumentId);
+            cache.cellsCache.remove(excelDocumentId);
+        }
         cache.workbooks.remove(excelDocumentId);
     }
 
@@ -49,7 +53,10 @@ public class PoiElementsCache {
     }
 
     public static Sheet getPoiSheet(int excelDocumentId, int sheetIndex) {
-        PoiElementsCache cache = getInstance();
+        POIElementsCache cache = getInstance();
+        if (POISaveMemoryExtension.isInitialized()) {
+            return cache.workbooks.get(excelDocumentId).getSheetAt(sheetIndex);
+        }
         Map<Integer, Sheet> sheetsCache = cache.sheetsCache.get(excelDocumentId);
         Sheet poiSheet = sheetsCache.get(sheetIndex);
         if (poiSheet == null) {
@@ -60,7 +67,10 @@ public class PoiElementsCache {
     }
 
     public static Row getPoiRow(int excelDocumentId, String rowId, int sheetIndex, int rowIndex) {
-        PoiElementsCache cache = getInstance();
+        POIElementsCache cache = getInstance();
+        if (POISaveMemoryExtension.isInitialized()) {
+            return cache.workbooks.get(excelDocumentId).getSheetAt(sheetIndex).getRow(rowIndex);
+        }
         Map<String, Row> rowsCache = cache.rowsCache.get(excelDocumentId);
         Row poiRow = rowsCache.get(rowId);
         if (poiRow == null) {
@@ -73,7 +83,10 @@ public class PoiElementsCache {
     }
 
     public static Cell getPoiCell(int excelDocumentId, String cellId, int sheetIndex, int rowIndex, int columnIndex) {
-        PoiElementsCache cache = getInstance();
+        POIElementsCache cache = getInstance();
+        if (POISaveMemoryExtension.isInitialized()) {
+            return cache.workbooks.get(excelDocumentId).getSheetAt(sheetIndex).getRow(rowIndex).getCell(columnIndex);
+        }
         Map<String, Cell> cellsCache = cache.cellsCache.get(excelDocumentId);
         Cell poiCell = cellsCache.get(cellId);
         if (poiCell == null) {
@@ -86,9 +99,11 @@ public class PoiElementsCache {
     }
 
     public static void clearRowsAndCellsCache(int excelDocumentId) {
-        PoiElementsCache cache = getInstance();
-        cache.rowsCache.get(excelDocumentId).clear();
-        cache.cellsCache.get(excelDocumentId).clear();
+        if (!POISaveMemoryExtension.isInitialized()) {
+            POIElementsCache cache = getInstance();
+            cache.rowsCache.get(excelDocumentId).clear();
+            cache.cellsCache.get(excelDocumentId).clear();
+        }
     }
 
     private Map<Integer, Workbook> workbooks = new HashMap<>();
@@ -99,7 +114,7 @@ public class PoiElementsCache {
     private Map<Integer, Map<String, Row>> rowsCache = new HashMap<>();
     private Map<Integer, Map<String, Cell>> cellsCache = new HashMap<>();
 
-    private PoiElementsCache() {
+    private POIElementsCache() {
     }
 }
 

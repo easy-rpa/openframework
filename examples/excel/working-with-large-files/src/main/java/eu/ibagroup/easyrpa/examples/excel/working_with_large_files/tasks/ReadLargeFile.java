@@ -19,8 +19,12 @@ public class ReadLargeFile extends ApTask {
 
     @Override
     public void execute() {
+        int startIndex = 350000;
+        int endIndex = 360000;
+        int eachNth = 1000;
+
         log.info("Read list of records from large spreadsheet document located at: {}", sourceSpreadsheetFile);
-        ExcelDocument doc = new ExcelDocument(sourceSpreadsheetFile);
+        ExcelDocument doc = new ExcelDocument(sourceSpreadsheetFile, true);
         Sheet activeSheet = doc.getActiveSheet();
 
         log.info("Find table on sheet '{}'.", activeSheet.getName());
@@ -28,9 +32,10 @@ public class ReadLargeFile extends ApTask {
 
         if (passengersTable != null) {
 
-            log.info("Table is found. List each 10000th record.");
-            for (Passenger p : passengersTable) {
-                if (p.getPassengerId() % 10000 == 0) {
+            log.info("Table is found. List each record with {}th PassengerId between '{}' and '{}'.", eachNth, startIndex, endIndex);
+            for (int i = startIndex; i <= endIndex; i++) {
+                Passenger p = passengersTable.getRecord(i);
+                if (p.getPassengerId() % eachNth == 0) {
                     log.info("{}", p);
                 }
             }

@@ -1,6 +1,6 @@
 package eu.ibagroup.easyrpa.openframework.excel;
 
-import eu.ibagroup.easyrpa.openframework.excel.internal.PoiElementsCache;
+import eu.ibagroup.easyrpa.openframework.excel.internal.poi.POIElementsCache;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -190,7 +190,7 @@ public class Row implements Iterable<Cell> {
     }
 
     public org.apache.poi.ss.usermodel.Row getPoiRow() {
-        return PoiElementsCache.getPoiRow(documentId, id, sheetIndex, rowIndex);
+        return POIElementsCache.getPoiRow(documentId, id, sheetIndex, rowIndex);
     }
 
     private class CellIterator implements Iterator<Cell> {

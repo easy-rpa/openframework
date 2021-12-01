@@ -4,9 +4,11 @@ import eu.ibagroup.easyrpa.openframework.core.utils.TypeUtils;
 import org.apache.poi.ooxml.POIXMLRelation;
 import org.apache.poi.xssf.usermodel.XSSFRelation;
 
-public class POIExtension {
+public class POISaveMemoryExtension {
 
     private static boolean initialized;
+
+    private static int rowsCacheMaxSize = 1000;
 
     public static void init() {
         if (!initialized) {
@@ -20,5 +22,17 @@ public class POIExtension {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static boolean isInitialized() {
+        return initialized;
+    }
+
+    public static int getRowsCacheMaxSize() {
+        return rowsCacheMaxSize;
+    }
+
+    public static void setRowsCacheMaxSize(int rowsCacheMaxSize) {
+        POISaveMemoryExtension.rowsCacheMaxSize = rowsCacheMaxSize;
     }
 }

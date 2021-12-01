@@ -4,7 +4,8 @@ import eu.ibagroup.easyrpa.openframework.core.utils.TypeUtils;
 import eu.ibagroup.easyrpa.openframework.excel.constants.InsertMethod;
 import eu.ibagroup.easyrpa.openframework.excel.constants.MatchMethod;
 import eu.ibagroup.easyrpa.openframework.excel.exceptions.VBScriptExecutionException;
-import eu.ibagroup.easyrpa.openframework.excel.internal.PoiElementsCache;
+import eu.ibagroup.easyrpa.openframework.excel.internal.poi.POIElementsCache;
+import eu.ibagroup.easyrpa.openframework.excel.internal.poi.XSSFSheetExt;
 import eu.ibagroup.easyrpa.openframework.excel.utils.FilePathUtils;
 import eu.ibagroup.easyrpa.openframework.excel.vbscript.*;
 import org.apache.commons.io.IOUtils;
@@ -430,8 +431,13 @@ public class Sheet implements Iterable<Row> {
         int lastColIndex = -1;
         int firstRowNum = poiSheet.getFirstRowNum();
         if (firstRowNum >= 0) {
-            for (org.apache.poi.ss.usermodel.Row row : poiSheet) {
-                lastColIndex = Math.max(lastColIndex, row.getLastCellNum());
+            if (poiSheet instanceof XSSFSheetExt) {
+                CellRangeAddress sheetDimension = ((XSSFSheetExt) poiSheet).getSheetDimension();
+                lastColIndex = sheetDimension.getLastColumn();
+            } else {
+                for (org.apache.poi.ss.usermodel.Row row : poiSheet) {
+                    lastColIndex = Math.max(lastColIndex, row.getLastCellNum());
+                }
             }
         }
         return lastColIndex;
@@ -607,7 +613,7 @@ public class Sheet implements Iterable<Row> {
     }
 
     public org.apache.poi.ss.usermodel.Sheet getPoiSheet() {
-        return PoiElementsCache.getPoiSheet(documentId, sheetIndex);
+        return POIElementsCache.getPoiSheet(documentId, sheetIndex);
     }
 
     private void shiftRows(int startRow, int rowsCount) {
@@ -622,7 +628,7 @@ public class Sheet implements Iterable<Row> {
 
         //Rows have been shifted and their positions changed. We need to cleanup
         // caches to get actual poi elements.
-        PoiElementsCache.clearRowsAndCellsCache(documentId);
+        POIElementsCache.clearRowsAndCellsCache(documentId);
 
         // Shift data validation ranges separately since by default shifting of rows
         // doesn't affect position of data validation

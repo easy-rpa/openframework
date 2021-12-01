@@ -1,6 +1,6 @@
 package eu.ibagroup.easyrpa.openframework.excel;
 
-import eu.ibagroup.easyrpa.openframework.excel.internal.PoiElementsCache;
+import eu.ibagroup.easyrpa.openframework.excel.internal.poi.POIElementsCache;
 import org.apache.poi.ss.usermodel.*;
 
 import java.util.Date;
@@ -101,7 +101,7 @@ public class Cell {
             case STRING:
                 return poiCell.getStringCellValue().isEmpty();
             case FORMULA:
-                FormulaEvaluator evaluator = PoiElementsCache.getEvaluator(documentId);
+                FormulaEvaluator evaluator = POIElementsCache.getEvaluator(documentId);
                 if (evaluator == null) {
                     evaluator = poiCell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
                 }
@@ -137,7 +137,7 @@ public class Cell {
     }
 
     public org.apache.poi.ss.usermodel.Cell getPoiCell() {
-        return PoiElementsCache.getPoiCell(documentId, id, sheetIndex, rowIndex, columnIndex);
+        return POIElementsCache.getPoiCell(documentId, id, sheetIndex, rowIndex, columnIndex);
     }
 
     private Object getTypedValue() {
@@ -162,7 +162,7 @@ public class Cell {
                 break;
             case FORMULA:
                 try {
-                    FormulaEvaluator evaluator = PoiElementsCache.getEvaluator(documentId);
+                    FormulaEvaluator evaluator = POIElementsCache.getEvaluator(documentId);
                     if (evaluator == null) {
                         evaluator = poiCell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
                     }
@@ -227,11 +227,11 @@ public class Cell {
                 if (formatString == null) {
                     formatString = BuiltinFormats.getBuiltinFormat(formatIndex);
                 }
-                return PoiElementsCache.getDataFormatter(documentId)
+                return POIElementsCache.getDataFormatter(documentId)
                         .formatRawCellContents(poiCell.getNumericCellValue(), formatIndex, formatString);
             case FORMULA:
                 try {
-                    FormulaEvaluator evaluator = PoiElementsCache.getEvaluator(documentId);
+                    FormulaEvaluator evaluator = POIElementsCache.getEvaluator(documentId);
                     if (evaluator == null) {
                         evaluator = poiCell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
                     }
@@ -244,7 +244,7 @@ public class Cell {
                             if (formatString == null) {
                                 formatString = BuiltinFormats.getBuiltinFormat(formatIndex);
                             }
-                            return PoiElementsCache.getDataFormatter(documentId)
+                            return POIElementsCache.getDataFormatter(documentId)
                                     .formatRawCellContents(cellValue.getNumberValue(), formatIndex, formatString);
                         case BOOLEAN:
                             return Boolean.toString(cellValue.getBooleanValue());
@@ -274,7 +274,7 @@ public class Cell {
                 return poiCell.getNumericCellValue();
             case FORMULA:
                 try {
-                    FormulaEvaluator evaluator = PoiElementsCache.getEvaluator(documentId);
+                    FormulaEvaluator evaluator = POIElementsCache.getEvaluator(documentId);
                     if (evaluator == null) {
                         evaluator = poiCell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
                     }
