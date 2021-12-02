@@ -1,19 +1,24 @@
 package eu.ibagroup.easyrpa.openframework.excel.internal.poi;
 
 import eu.ibagroup.easyrpa.openframework.core.utils.TypeUtils;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.xmlbeans.XmlOptions;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTRow;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTSheetData;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTWorksheet;
 
+import javax.xml.namespace.QName;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,6 +30,7 @@ public class SheetRowsProvider implements SheetRowsWriter {
     private static final Pattern ROW_OUTLINE_LEVEL_REGEXP = Pattern.compile("\\soutlineLevel=\"(\\d+)\"\\s");
     private static final Pattern CELL_REF_REGEXP = Pattern.compile("\\sr=\"([a-zA-Z]+\\d+)\"\\s");
     private static final String CELL_XML_START = "<c ";
+    private static final String CELL_FORMULA_START = "<f>";
     private static final String[] ROW_NS_APPENDER = new String[]{
             "<row",
             "<row xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" " +
@@ -38,6 +44,7 @@ public class SheetRowsProvider implements SheetRowsWriter {
         nsMap.put("", "http://schemas.openxmlformats.org/spreadsheetml/2006/main");
         nsMap.put("x14ac", "http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac");
         ROW_SERIALIZATION_OPTIONS.setSaveImplicitNamespaces(nsMap);
+        ROW_SERIALIZATION_OPTIONS.setSaveSyntheticDocumentElement(new QName(CTRow.type.getName().getNamespaceURI(), "row"));
     }
 
     private final XSSFSheet sheet;
@@ -52,13 +59,16 @@ public class SheetRowsProvider implements SheetRowsWriter {
         for (String rowXML : rowXMLs) {
             Matcher rowNumMatcher = ROW_NUM_REGEXP.matcher(rowXML);
             if (rowNumMatcher.find()) {
-                this.rowXMLs.put(Integer.valueOf(rowNumMatcher.group(1)), rowXML);
+                this.rowXMLs.put(Integer.parseInt(rowNumMatcher.group(1)) - 1, rowXML);
             } else {
                 throw new IllegalArgumentException("Attribute 'r' must be defined for row");
             }
         }
     }
 
+    /**
+     * @param rowNum - 0-based row number.
+     */
     public XSSFRowExt getRow(int rowNum) {
         //noinspection UnnecessaryBoxing
         final Integer num = Integer.valueOf(rowNum);
@@ -78,26 +88,36 @@ public class SheetRowsProvider implements SheetRowsWriter {
         return row;
     }
 
+    /**
+     * @param rowNum - 0-based row number.
+     */
     public XSSFRowExt createRow(int rowNum) {
         removeRow(rowNum);
         XSSFRowExt r = new XSSFRowExt(CTRow.Factory.newInstance(), sheet);
         r.setRowNum(rowNum);
-        rowXMLs.put(rowNum, serializeRow(r));
+        //noinspection UnnecessaryBoxing
+        final Integer num = Integer.valueOf(rowNum);
+        rowXMLs.put(num, serializeRow(r));
         freeUpRowsCacheIfNeeded();
-        rowsCache.put(rowNum, r);
-        rowsCacheQueue.add(rowNum);
-        updateSheetDimension(true, false);
+        rowsCache.put(num, r);
+        rowsCacheQueue.add(num);
+        resetSheetDimension();
         return r;
     }
 
-    public void removeRow(int rowNmm) {
-        if (rowsCacheQueue.contains(rowNmm)) {
-            rowsCacheQueue.remove(rowNmm);
-            XSSFRowExt row = rowsCache.remove(rowNmm);
+    /**
+     * @param rowNum - 0-based row number.
+     */
+    public void removeRow(int rowNum) {
+        //noinspection UnnecessaryBoxing
+        final Integer num = Integer.valueOf(rowNum);
+        if (rowsCacheQueue.contains(num)) {
+            rowsCacheQueue.remove(num);
+            XSSFRowExt row = rowsCache.remove(num);
             row.setStale();
         }
-        rowXMLs.remove(rowNmm);
-        updateSheetDimension(true, false);
+        rowXMLs.remove(num);
+        resetSheetDimension();
     }
 
     public Set<Integer> getRowNumbers() {
@@ -108,17 +128,46 @@ public class SheetRowsProvider implements SheetRowsWriter {
         return rowXMLs.size();
     }
 
-    public int getFirstRowNum() {
+    /**
+     * @return 0-based row index
+     */
+    public int getFirstRowIndex() {
         return rowXMLs.isEmpty() ? -1 : rowXMLs.firstKey();
     }
 
-    public int getLastRowNum() {
+    /**
+     * @return 0-based row index
+     */
+    public int getLastRowIndex() {
         return rowXMLs.isEmpty() ? -1 : rowXMLs.lastKey();
     }
 
     public CellRangeAddress getSheetDimension() {
         if (sheetDimension == null) {
-            updateSheetDimension(true, true);
+            int minColNum = Integer.MAX_VALUE;
+            int maxColNum = -1;
+            for (Integer rowNum : rowXMLs.keySet()) {
+                XSSFRow row = rowsCache.get(rowNum);
+                if (row == null) {
+                    String rowXml = rowXMLs.get(rowNum);
+                    Matcher cellRefMatcher = CELL_REF_REGEXP.matcher(rowXml);
+                    if (cellRefMatcher.find()) {
+                        CellAddress cellRef = new CellAddress(cellRefMatcher.group(1));
+                        minColNum = Math.min(minColNum, cellRef.getColumn());
+                    }
+                    int lastCellStart = rowXml.lastIndexOf(CELL_XML_START);
+                    if (lastCellStart > 0 && cellRefMatcher.find(lastCellStart)) {
+                        CellAddress cellRef = new CellAddress(cellRefMatcher.group(1));
+                        maxColNum = Math.max(maxColNum, cellRef.getColumn());
+                    }
+                } else {
+                    minColNum = Math.min(minColNum, row.getFirstCellNum());
+                    maxColNum = Math.max(maxColNum, row.getLastCellNum());
+                }
+            }
+            if (minColNum != Integer.MAX_VALUE) {
+                sheetDimension = new CellRangeAddress(getFirstRowIndex(), getLastRowIndex(), minColNum, maxColNum);
+            }
         }
         return sheetDimension;
     }
@@ -153,10 +202,11 @@ public class SheetRowsProvider implements SheetRowsWriter {
             if (row == null) {
                 Matcher rowNumMatcher = ROW_NUM_REGEXP.matcher(rowXml);
                 if (rowNumMatcher.find()) {
-                    reorderedRowXMLs.put(Integer.valueOf(rowNumMatcher.group(1)), rowXml);
+                    Integer actualRowNum = Integer.parseInt(rowNumMatcher.group(1)) - 1;
+                    reorderedRowXMLs.put(actualRowNum, rowXml);
                 }
             } else {
-                Integer actualRowNum = Math.toIntExact(row.getCTRow().getR());
+                Integer actualRowNum = row.getRowNum();
                 reorderedRowXMLs.put(actualRowNum, rowXml);
                 reorderedRowsCache.put(actualRowNum, row);
                 reorderedRowsCacheQueue.add(actualRowNum);
@@ -169,7 +219,7 @@ public class SheetRowsProvider implements SheetRowsWriter {
         rowsCacheQueue.clear();
         rowsCacheQueue.addAll(reorderedRowsCacheQueue);
 
-        updateSheetDimension(true, false);
+        resetSheetDimension();
     }
 
     public short getMaxOutlineLevelRows() {
@@ -189,41 +239,27 @@ public class SheetRowsProvider implements SheetRowsWriter {
         return (short) outlineLevel;
     }
 
-    protected void updateSheetDimension(boolean updateRows, boolean updateColumns) {
-        if (sheetDimension == null) {
-            sheetDimension = new CellRangeAddress(-1, -1, -1, -1);
-        }
-        if (updateRows) {
-            sheetDimension.setFirstRow(getFirstRowNum());
-            sheetDimension.setLastRow(getLastRowNum());
-        }
-        if (updateColumns) {
-            int minColNum = Integer.MAX_VALUE;
-            int maxColNum = -1;
-            for (Integer rowNum : rowXMLs.keySet()) {
-                XSSFRow row = rowsCache.get(rowNum);
-                if (row == null) {
-                    String rowXml = rowXMLs.get(rowNum);
-                    Matcher cellRefMatcher = CELL_REF_REGEXP.matcher(rowXml);
-                    if (cellRefMatcher.find()) {
-                        CellAddress cellRef = new CellAddress(cellRefMatcher.group(1));
-                        minColNum = Math.min(minColNum, cellRef.getColumn());
-                    }
-                    int lastCellStart = rowXml.lastIndexOf(CELL_XML_START);
-                    if (lastCellStart > 0 && cellRefMatcher.find(lastCellStart)) {
-                        CellAddress cellRef = new CellAddress(cellRefMatcher.group(1));
-                        maxColNum = Math.max(maxColNum, cellRef.getColumn());
-                    }
-                } else {
-                    minColNum = Math.min(minColNum, row.getFirstCellNum());
-                    maxColNum = Math.max(maxColNum, row.getLastCellNum());
+    public void forEachFormula(BiConsumer<XSSFRow, XSSFCell> action) {
+        for (Integer rowNum : rowXMLs.keySet()) {
+            XSSFRowExt row = rowsCache.get(rowNum);
+            if (row == null) {
+                String rowXml = rowXMLs.get(rowNum);
+                if (rowXml.indexOf(CELL_FORMULA_START) > 0) {
+                    row = getRow(rowNum);
                 }
             }
-            if (minColNum != Integer.MAX_VALUE) {
-                sheetDimension.setFirstColumn(minColNum);
-                sheetDimension.setLastColumn(maxColNum);
+            if (row != null) {
+                for (Cell cell : row) {
+                    if (cell instanceof XSSFCell && ((XSSFCell) cell).getCTCell().isSetF()) {
+                        action.accept(row, (XSSFCell) cell);
+                    }
+                }
             }
         }
+    }
+
+    protected void resetSheetDimension() {
+        sheetDimension = null;
     }
 
     private void freeUpRowsCacheIfNeeded() {

@@ -30,7 +30,7 @@ public class XSSFRowExt extends XSSFRow {
         boolean isFirstCell = cell.getColumnIndex() == super.getFirstCellNum();
         boolean isLastCell = cell.getColumnIndex() == super.getLastCellNum();
         if (isFirstCell || isLastCell) {
-            ((XSSFSheetExt) getSheet()).getRowsProvider().updateSheetDimension(false, true);
+            ((XSSFSheetExt) getSheet()).getRowsProvider().resetSheetDimension();
         }
         return cell;
     }
@@ -84,7 +84,7 @@ public class XSSFRowExt extends XSSFRow {
         boolean isLastCell = cell.getColumnIndex() == super.getLastCellNum();
         super.removeCell(cell);
         if (isFirstCell || isLastCell) {
-            ((XSSFSheetExt) getSheet()).getRowsProvider().updateSheetDimension(false, true);
+            ((XSSFSheetExt) getSheet()).getRowsProvider().resetSheetDimension();
         }
     }
 

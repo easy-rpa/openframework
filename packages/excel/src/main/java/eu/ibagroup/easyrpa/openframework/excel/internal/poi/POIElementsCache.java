@@ -1,6 +1,8 @@
 package eu.ibagroup.easyrpa.openframework.excel.internal.poi;
 
+import eu.ibagroup.easyrpa.openframework.core.utils.TypeUtils;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +21,10 @@ public class POIElementsCache {
     public static void register(int excelDocumentId, Workbook workbook) {
         POIElementsCache cache = getInstance();
         cache.workbooks.put(excelDocumentId, workbook);
-        cache.formulaEvaluators.put(excelDocumentId, workbook.getCreationHelper().createFormulaEvaluator());
+        FormulaEvaluator fe = workbook instanceof XSSFWorkbook
+                ? createFormulaEvaluator((XSSFWorkbook) workbook)
+                : workbook.getCreationHelper().createFormulaEvaluator();
+        cache.formulaEvaluators.put(excelDocumentId, fe);
         cache.dataFormatters.put(excelDocumentId, new DataFormatter());
         if (!POISaveMemoryExtension.isInitialized()) {
             cache.sheetsCache.put(excelDocumentId, new HashMap<>());
@@ -104,6 +109,24 @@ public class POIElementsCache {
             cache.rowsCache.get(excelDocumentId).clear();
             cache.cellsCache.get(excelDocumentId).clear();
         }
+    }
+
+    private static FormulaEvaluator createFormulaEvaluator(XSSFWorkbook workbook) {
+        FormulaEvaluator evaluator = new XSSFFormulaEvaluatorExt(workbook);
+        Map<String, FormulaEvaluator> evaluatorMap = new HashMap<>();
+        evaluatorMap.put("", evaluator);
+        Map<String, Workbook> referencedWorkbooks = TypeUtils.getFieldValue(workbook.getCreationHelper(), "referencedWorkbooks");
+        referencedWorkbooks.forEach((name, otherWorkbook) -> {
+            FormulaEvaluator otherEvaluator;
+            if (otherWorkbook instanceof XSSFWorkbook) {
+                otherEvaluator = createFormulaEvaluator((XSSFWorkbook) otherWorkbook);
+            } else {
+                otherEvaluator = otherWorkbook.getCreationHelper().createFormulaEvaluator();
+            }
+            evaluatorMap.put(name, otherEvaluator);
+        });
+        evaluator.setupReferencedWorkbooks(evaluatorMap);
+        return evaluator;
     }
 
     private Map<Integer, Workbook> workbooks = new HashMap<>();

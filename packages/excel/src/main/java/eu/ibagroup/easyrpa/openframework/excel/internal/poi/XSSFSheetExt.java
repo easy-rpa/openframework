@@ -36,13 +36,6 @@ public class XSSFSheetExt extends XSSFSheet {
         super();
     }
 
-    /**
-     * Creates an XSSFSheet representing the given package part and relationship.
-     * Should only be called by XSSFWorkbook when reading in an existing file.
-     *
-     * @param part - The package part that holds xml data representing this sheet.
-     * @since POI 3.14-Beta1
-     */
     protected XSSFSheetExt(PackagePart part) {
         super(part);
     }
@@ -91,9 +84,6 @@ public class XSSFSheetExt extends XSSFSheet {
         TypeUtils.callMethod(this, "initHyperlinks");
     }
 
-    /**
-     * Initialize worksheet data when creating a new sheet.
-     */
     @Override
     protected void onDocumentCreate() {
         worksheet = TypeUtils.callMethod(this, "newSheet");
@@ -113,12 +103,12 @@ public class XSSFSheetExt extends XSSFSheet {
 
     @Override
     public int getFirstRowNum() {
-        return rowsProvider.getFirstRowNum();
+        return rowsProvider.getFirstRowIndex();
     }
 
     @Override
     public int getLastRowNum() {
-        return rowsProvider.getLastRowNum();
+        return rowsProvider.getLastRowIndex();
     }
 
     @Override
@@ -198,12 +188,12 @@ public class XSSFSheetExt extends XSSFSheet {
         _removeOverwritten(vml, startRow, endRow, n);
         _shiftCommentsAndRows(vml, startRow, endRow, n);
 
-        XSSFRowShifter rowShifter = new XSSFRowShifter(this);
-        rowShifter.shiftMergedRegions(startRow, endRow, n);
-        rowShifter.updateNamedRanges(formulaShifter);
-        rowShifter.updateFormulas(formulaShifter);
-        rowShifter.updateConditionalFormatting(formulaShifter);
-        rowShifter.updateHyperlinks(formulaShifter);
+        new XSSFRowShifter(this).shiftMergedRegions(startRow, endRow, n);
+
+        XSSFRowColExtShifter.updateNamedRanges(this, formulaShifter);
+        XSSFRowColExtShifter.updateFormulas(this, formulaShifter);
+        XSSFRowColExtShifter.updateConditionalFormatting(this, formulaShifter);
+        XSSFRowColExtShifter.updateHyperlinks(this, formulaShifter);
     }
 
     @Override
@@ -220,10 +210,11 @@ public class XSSFSheetExt extends XSSFSheet {
         XSSFColumnShifter columnShifter = new XSSFColumnShifter(this);
         columnShifter.shiftColumns(startColumn, endColumn, n);
         columnShifter.shiftMergedRegions(startColumn, endColumn, n);
-        columnShifter.updateFormulas(formulaShifter);
-        columnShifter.updateConditionalFormatting(formulaShifter);
-        columnShifter.updateHyperlinks(formulaShifter);
-        columnShifter.updateNamedRanges(formulaShifter);
+
+        XSSFRowColExtShifter.updateFormulas(this, formulaShifter);
+        XSSFRowColExtShifter.updateConditionalFormatting(this, formulaShifter);
+        XSSFRowColExtShifter.updateHyperlinks(this, formulaShifter);
+        XSSFRowColExtShifter.updateNamedRanges(this, formulaShifter);
     }
 
     public CellRangeAddress getSheetDimension() {
@@ -415,7 +406,7 @@ public class XSSFSheetExt extends XSSFSheet {
             entry.getKey().setColumn(entry.getValue());
         }
 
-        rowsProvider.updateSheetDimension(false, true);
+        rowsProvider.resetSheetDimension();
     }
 
     // remove all rows which will be overwritten
