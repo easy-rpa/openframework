@@ -9,10 +9,6 @@
  
 ## Email
 
-- [Ways of creating EmailMessage](email/ways-of-message-creating)
-
-- [Ways of creating EmailClient](email/ways-of-client-creating)
-
 - [Sending of simple email message](email/simple-message-sending)
 
 - [Sending of message with attachments](email/message-sending-with-attachments)
@@ -91,6 +87,10 @@
     * Edit cell's formulas
     * Evaluating of cell's formulas
     * Evaluating of cell's formulas with links to external Excel files
+    
+ - [Working with merged cells](excel/working-with-merged-cells)
+    * Read value from merged cells
+    * Merge/unmerge cells 
     
  - [Working with pivot tables](excel/working-with-pivot-tables)
     * Create pivot table

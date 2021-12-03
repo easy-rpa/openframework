@@ -632,7 +632,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
             if (id > 0) {
                 POIElementsCache.unregister(id);
             } else {
-                id = generateId();
+                id = POIElementsCache.generateExcelDocumentId();
             }
 
             POIElementsCache.register(id, workbook);
@@ -676,13 +676,6 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
                 //do nothing
             }
         }
-    }
-
-    /**
-     * @return unique Id for this Excel Document.
-     */
-    private int generateId() {
-        return Integer.parseInt((int) (Math.random() * 100) + "" + (System.currentTimeMillis() % 1000000));
     }
 
     private class SheetIterator implements Iterator<Sheet> {

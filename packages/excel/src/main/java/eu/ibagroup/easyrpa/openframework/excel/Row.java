@@ -24,7 +24,7 @@ public class Row implements Iterable<Cell> {
         this.documentId = parent.getDocument().getId();
         this.sheetIndex = parent.getIndex();
         this.rowIndex = rowIndex;
-        this.id = this.sheetIndex + "|" + this.rowIndex;
+        this.id = POIElementsCache.getId(sheetIndex, rowIndex);
     }
 
     public ExcelDocument getDocument() {
