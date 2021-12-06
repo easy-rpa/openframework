@@ -12,14 +12,9 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
-import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest;
-import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetResponse;
-import com.google.api.services.sheets.v4.model.CopySheetToAnotherSpreadsheetRequest;
-import com.google.api.services.sheets.v4.model.Request;
-import com.google.api.services.sheets.v4.model.SheetProperties;
+import com.google.api.services.sheets.v4.model.*;
 import eu.ibagroup.easyrpa.openframework.core.sevices.RPAServicesAccessor;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.*;
-import eu.ibagroup.easyrpa.openframework.googlesheets.spreadsheet.Sheet;
 import eu.ibagroup.easyrpa.openframework.googlesheets.spreadsheet.Spreadsheet;
 
 import javax.inject.Inject;
@@ -87,16 +82,6 @@ public class GoogleSheets {
         return new Spreadsheet(spreadsheet, service);
     }
 
-    public void copySheet(Spreadsheet spreadsheetFrom, Sheet sheet, Spreadsheet spreadsheetTo) {
-        CopySheetToAnotherSpreadsheetRequest requestBody = new CopySheetToAnotherSpreadsheetRequest();
-        requestBody.setDestinationSpreadsheetId(spreadsheetTo.getId());
-        try {
-            service.spreadsheets().sheets().copyTo(spreadsheetFrom.getId(), sheet.getId(), requestBody).execute();
-        } catch (IOException e) {
-            throw new CopySheetException(e.getMessage());
-        }
-    }
-
     private void connect() {
         if (service == null) {
             try {
@@ -139,10 +124,7 @@ public class GoogleSheets {
                                              String valueInputOption, List<List<Object>> _values)
             throws IOException {
         Sheets service = this.service;
-        List<List<Object>> values = Arrays.asList(
-                Arrays.asList(
-                )
-        );
+        List<List<Object>> values;
         values = _values;
         ValueRange body = new ValueRange()
                 .setValues(values);
@@ -176,7 +158,7 @@ public class GoogleSheets {
                 .setValueInputOption(valueInputOption)
                 .setData(data);
         BatchUpdateValuesResponse result =
-                service.spreadsheets().values().batchUpdate(spreadsheetId, body).execute();
+            service.spreadsheets().values().batchUpdate(spreadsheetId, body).execute();
         System.out.printf("%d cells updated.", result.getTotalUpdatedCells());
         return result;
     }

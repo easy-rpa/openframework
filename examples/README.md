@@ -52,7 +52,7 @@
 
  - [Creating of new Excel file](excel/excel-file-creating)
  
- - [Reading data from given sheet](excel/sheet-data-reading)
+ - [Reading data from given GSheet](excel/GSheet-data-reading)
     * Read as range of data
     * Read as list of records    
 
@@ -60,22 +60,22 @@
      * Edit cells
      * Edit records   
  
- - [Copying of sheet from one Excel file to another](excel/sheets-copying)    
+ - [Copying of GSheet from one Excel file to another](excel/sheets-copying)    
  
  - [Sheets manipulating](excel/sheets-manipulating)
     * List existing sheets
-    * Activate sheet
-    * Rename sheet
-    * Move sheet
-    * Clone sheet
-    * Delete sheet 
+    * Activate GSheet
+    * Rename GSheet
+    * Move GSheet
+    * Clone GSheet
+    * Delete GSheet 
     
- - [Working with sheet rows](excel/working-with-rows)
+ - [Working with GSheet rows](excel/working-with-rows)
     * Lookup and edit rows
     * Insert new rows
     * Delete rows
   
- - [Working with sheet columns](excel/working-with-columns)
+ - [Working with GSheet columns](excel/working-with-columns)
     * Read column cells
     * Add/insert new columns
     * Move columns
@@ -95,7 +95,7 @@
         
  - [Changing cells style (fonts, colors etc.)](excel/cell-style-changing)
  
- - [Inserting image to sheet](excel/image-inserting)
+ - [Inserting image to GSheet](excel/image-inserting)
  
  - [Exporting Excel file to PDF](excel/export-to-pdf)
  
@@ -125,23 +125,23 @@
     * Rename folder
     * Delete folder
  - [Getting information about selected file/directory](google-drive/file-dir-info)
- - [Creating Google Sheet](google-drive/google-sheet-creating)
+ - [Creating Google Sheet](google-drive/google-GSheet-creating)
 
 ## Google Sheets
 
  - Downloading a spreadsheet as an XLSX or PDF file (sheets/spreadsheet-downloading)
- - Sheet manipulations (sheets/sheet-manipulation)
-    * Create sheet
-    * Delete sheet
-    * Rename sheet
-    * Clone sheet
-    * Activate sheet
+ - Sheet manipulations (sheets/GSheet-manipulation)
+    * Create GSheet
+    * Delete GSheet
+    * Rename GSheet
+    * Clone GSheet
+    * Activate GSheet
     * Get list of all sheets
- - Working with sheet rows (sheets/working-with-rows)
+ - Working with GSheet rows (sheets/working-with-rows)
      * Lookup and edit rows
      * Add/insert new rows
      * Delete rows
- - Working with sheet columns (sheets/working-with-columns)
+ - Working with GSheet columns (sheets/working-with-columns)
    * Read column cells
    * Add/insert new columns
    * Move columns
@@ -154,8 +154,8 @@
     * Recalculation cell formula
  - Working with data range (sheets/working-with-data-range)
     * Reading a range of data
-    * Adding data range on sheet
-    * Removing data range from sheet
+    * Adding data range on GSheet
+    * Removing data range from GSheet
  
 ## Database
   

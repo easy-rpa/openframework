@@ -4,7 +4,7 @@ import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.googlesheets.GoogleSheets;
-import eu.ibagroup.easyrpa.openframework.googlesheets.spreadsheet.Sheet;
+import eu.ibagroup.easyrpa.openframework.googlesheets.spreadsheet.GSheet;
 import eu.ibagroup.easyrpa.openframework.googlesheets.spreadsheet.Spreadsheet;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,11 +26,11 @@ public class RenameSheet extends ApTask {
 
         log.info("Rename active by default sheet to '{}' for spreadsheet with id: {}", newSheetName, spreadsheetId);
         Spreadsheet spreadsheet = service.getSpreadsheet(spreadsheetId);
-        Sheet activeSheet = spreadsheet.getActiveSheet();
+        GSheet activeGSheet = spreadsheet.getActiveSheet();
 
-        log.info("Current name of active sheet: '{}'. Rename it to '{}'.", activeSheet.getName(), newSheetName);
-        activeSheet.rename(newSheetName);
-        log.info("Sheet has been renamed successfully. Current name of active sheet: '{}'", activeSheet.getName());
+        log.info("Current name of active sheet: '{}'. Rename it to '{}'.", activeGSheet.getName(), newSheetName);
+        activeGSheet.rename(newSheetName);
+        log.info("Sheet has been renamed successfully. Current name of active sheet: '{}'", activeGSheet.getName());
 
         spreadsheet.commit();
     }

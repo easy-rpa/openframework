@@ -4,7 +4,7 @@ import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.googlesheets.GoogleSheets;
-import eu.ibagroup.easyrpa.openframework.googlesheets.spreadsheet.Sheet;
+import eu.ibagroup.easyrpa.openframework.googlesheets.spreadsheet.GSheet;
 import eu.ibagroup.easyrpa.openframework.googlesheets.spreadsheet.Spreadsheet;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,9 +33,9 @@ public class CopySheetBetweenSpreadsheets extends ApTask {
         Spreadsheet spreadsheetFrom = service.getSpreadsheet(spreadsheetIdFrom);
         Spreadsheet spreadsheetTo = service.getSpreadsheet(spreadsheetIdTo);
 
-        Sheet sourceSheet = spreadsheetFrom.selectSheet(sheetName);
+        GSheet sourceGSheet = spreadsheetFrom.selectSheet(sheetName);
 
-        spreadsheetTo.copySheet(sourceSheet);
+        spreadsheetTo.copySheet(sourceGSheet);
         log.info("Sheet '{}' has been copied successfully.", sheetName);
     }
 }
