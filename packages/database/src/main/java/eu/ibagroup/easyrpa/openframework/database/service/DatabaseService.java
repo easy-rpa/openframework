@@ -11,6 +11,10 @@ public abstract class DatabaseService {
     ConnectionKeeper connectionKeeper = null;
 
     RPAServicesAccessor rpaServices;
+    String connectionString;
+    String userName;
+    String password;
+
 
     abstract DatabaseService initJdbcConnection() throws SQLException, ClassNotFoundException;
 
@@ -18,6 +22,13 @@ public abstract class DatabaseService {
 
     public DatabaseService(RPAServicesAccessor rpaServices) {
         this.rpaServices = rpaServices;
+    }
+
+    public DatabaseService(String connectionString, String userName, String password) {
+        this.rpaServices = null;
+        this.connectionString = connectionString;
+        this.userName = userName;
+        this.password = password;
     }
 
     protected void setSession(DatabaseSession session) throws SQLException {
@@ -33,8 +44,7 @@ public abstract class DatabaseService {
         initJdbcConnection();
         QueryDbUtils service = new QueryDbUtils(this.connectionKeeper);
         try {
-            T transactionResult = (T) executor.apply(service);
-            return transactionResult;
+            return (T) executor.apply(service);
         } catch (Exception e) {
             throw e;
         } finally {
@@ -62,8 +72,7 @@ public abstract class DatabaseService {
         initOrmConnection();
         OrmDbUtils service = new OrmDbUtils(this.connectionKeeper);
         try {
-            T transactionResult = executor.apply(service);
-            return transactionResult;
+            return executor.apply(service);
         } catch (SQLException e) {
             throw e;
         } finally {

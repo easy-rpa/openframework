@@ -17,15 +17,18 @@ public class SQLServerService extends DatabaseService {
     @Inject
     public SQLServerService(RPAServicesAccessor rpaServices) {
         super(rpaServices);
+        this.connectionString = getRpaServices().getConfigParam(MSSQL_URL_CONF_FIELD);
+        this.userName = getRpaServices().getCredentials(MSSQL_SECRET_VAULT).getUser();
+        this.password = getRpaServices().getCredentials(MSSQL_SECRET_VAULT).getPassword();
+    }
+
+    public SQLServerService(String connectionString, String userName, String password) {
+        super(connectionString, userName, password);
     }
 
     @Override
     SQLServerService initJdbcConnection() throws SQLException, ClassNotFoundException {
         if (connectionKeeper == null || !ConnectionKeeper.sessionAlive()) {
-            String connectionString = this.rpaServices.getConfigParam(MSSQL_URL_CONF_FIELD);
-            String userName = rpaServices.getCredentials(MSSQL_SECRET_VAULT).getUser();
-            String password = rpaServices.getCredentials(MSSQL_SECRET_VAULT).getPassword();
-
             SQLServerConnectionHelper.initialize(connectionString, userName, password);
             this.setSession(OpenFrameworkDbConnector.getConnection().getSession());
         }
@@ -35,11 +38,6 @@ public class SQLServerService extends DatabaseService {
     @Override
     SQLServerService initOrmConnection() throws SQLException {
         if (ConnectionKeeper.getOrmConnectionSource() == null || !ConnectionKeeper.getOrmConnectionSource().isOpen()) {
-            String connectionString = this.rpaServices.getConfigParam(MSSQL_URL_CONF_FIELD);
-
-            String userName = rpaServices.getCredentials(MSSQL_SECRET_VAULT).getUser();
-            String password = rpaServices.getCredentials(MSSQL_SECRET_VAULT).getPassword();
-
             ConnectionKeeper.setOrmConnectionSource(new JdbcConnectionSource(connectionString, userName, password));
         }
         return this;
