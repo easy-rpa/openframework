@@ -2,8 +2,8 @@ package eu.ibagroup.easyrpa.openframework.excel;
 
 import eu.ibagroup.easyrpa.openframework.excel.constants.MatchMethod;
 import eu.ibagroup.easyrpa.openframework.excel.exceptions.VBScriptExecutionException;
-import eu.ibagroup.easyrpa.openframework.excel.internal.PoiElementsCache;
-import eu.ibagroup.easyrpa.openframework.excel.internal.poi.POIExtension;
+import eu.ibagroup.easyrpa.openframework.excel.internal.poi.POIElementsCache;
+import eu.ibagroup.easyrpa.openframework.excel.internal.poi.POISaveMemoryExtension;
 import eu.ibagroup.easyrpa.openframework.excel.utils.FilePathUtils;
 import eu.ibagroup.easyrpa.openframework.excel.vbscript.MacroRunner;
 import eu.ibagroup.easyrpa.openframework.excel.vbscript.VBScript;
@@ -46,7 +46,16 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      * Create empty Excel Document.
      */
     public ExcelDocument() {
-        this((InputStream) null);
+        initWorkbook(null, false);
+    }
+
+    /**
+     * Create empty Excel Document.
+     *
+     * @param saveMemoryMode - switch on the mode which works slowly but allows to work with large files.
+     */
+    public ExcelDocument(boolean saveMemoryMode) {
+        initWorkbook(null, saveMemoryMode);
     }
 
     /**
@@ -56,7 +65,18 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      * @param is input stream with Excel workbook content. Creates empty document if it's null.
      */
     public ExcelDocument(InputStream is) {
-        initWorkbook(is);
+        initWorkbook(is, false);
+    }
+
+    /**
+     * Create new Excel Document. Creates and set workbook from input stream
+     * specified. Set first workbook sheet as active sheet.
+     *
+     * @param is             input stream with Excel workbook content. Creates empty document if it's null.
+     * @param saveMemoryMode - switch on the mode which works slowly but allows to work with large files.
+     */
+    public ExcelDocument(InputStream is, boolean saveMemoryMode) {
+        initWorkbook(is, saveMemoryMode);
     }
 
     /**
@@ -66,12 +86,23 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      * @throws IllegalArgumentException if <code>file</code> is null or not exist.
      */
     public ExcelDocument(File file) {
+        this(file, false);
+    }
+
+    /**
+     * Create new Excel Document for specified file.
+     *
+     * @param file           input Excel file that needs to accessed via this document.
+     * @param saveMemoryMode - switch on the mode which works slowly but allows to work with large files.
+     * @throws IllegalArgumentException if <code>file</code> is null or not exist.
+     */
+    public ExcelDocument(File file, boolean saveMemoryMode) {
         if (file == null) {
             throw new IllegalArgumentException("File cannot be null.");
         }
         try {
             setFilePath(file.getAbsolutePath());
-            initWorkbook(new FileInputStream(file));
+            initWorkbook(new FileInputStream(file), saveMemoryMode);
         } catch (FileNotFoundException e) {
             throw new IllegalArgumentException(String.format("File '%s' is not exist.", file.getAbsolutePath()), e);
         }
@@ -84,12 +115,23 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      * @throws IllegalArgumentException if <code>path</code> is null or point to nonexistent file.
      */
     public ExcelDocument(Path path) {
+        this(path, false);
+    }
+
+    /**
+     * Create new Excel Document for file specified using path.
+     *
+     * @param path           the path to input Excel file that needs to accessed via this document.
+     * @param saveMemoryMode - switch on the mode which works slowly but allows to work with large files.
+     * @throws IllegalArgumentException if <code>path</code> is null or point to nonexistent file.
+     */
+    public ExcelDocument(Path path, boolean saveMemoryMode) {
         if (path == null) {
             throw new IllegalArgumentException("Path cannot be null.");
         }
         try {
             setFilePath(path.toAbsolutePath().toString());
-            initWorkbook(Files.newInputStream(path));
+            initWorkbook(Files.newInputStream(path), saveMemoryMode);
         } catch (IOException e) {
             throw new IllegalArgumentException(String.format("Failed to read file '%s'. Perhaps is's not exist.", path), e);
         }
@@ -102,13 +144,24 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      * @throws IllegalArgumentException if <code>filePath</code> is null or point to nonexistent file.
      */
     public ExcelDocument(String filePath) {
+        this(filePath, false);
+    }
+
+    /**
+     * Create new Excel Document for specified file.
+     *
+     * @param filePath       the path to input Excel file that needs to accessed via this document.
+     * @param saveMemoryMode - switch on the mode which works slowly but allows to work with large files.
+     * @throws IllegalArgumentException if <code>filePath</code> is null or point to nonexistent file.
+     */
+    public ExcelDocument(String filePath, boolean saveMemoryMode) {
         if (filePath == null) {
             throw new IllegalArgumentException("File path cannot be null.");
         }
         File file = FilePathUtils.getFile(filePath);
         try {
             setFilePath(file.getAbsolutePath());
-            initWorkbook(new FileInputStream(file));
+            initWorkbook(new FileInputStream(file), saveMemoryMode);
         } catch (FileNotFoundException e) {
             throw new IllegalArgumentException(String.format("File '%s' is not exist.", filePath), e);
         }
@@ -243,7 +296,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      * @param is - input stream with contents.
      */
     public void update(InputStream is) {
-        initWorkbook(is);
+        initWorkbook(is, false);
     }
 
     /**
@@ -275,7 +328,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      * @see org.apache.poi.ss.usermodel.DataFormatter
      */
     public void setDataFormatter(DataFormatter formatter) {
-        PoiElementsCache.setDataFormatter(id, formatter);
+        POIElementsCache.setDataFormatter(id, formatter);
     }
 
     /**
@@ -285,7 +338,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      * @see org.apache.poi.ss.usermodel.DataFormatter
      */
     public DataFormatter getDataFormatter() {
-        return PoiElementsCache.getDataFormatter(id);
+        return POIElementsCache.getDataFormatter(id);
     }
 
 
@@ -535,7 +588,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     @Override
     public void close() {
         if (id > 0) {
-            PoiElementsCache.unregister(id);
+            POIElementsCache.unregister(id);
         }
     }
 
@@ -554,13 +607,16 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      * Creates and set workbook from input stream specified. Set first workbook
      * sheet as active sheet.
      *
-     * @param is - input stream with workbook contents. Creates workbook with empty
-     *           sheet if is is null.
+     * @param is             - input stream with workbook contents. Creates workbook with empty
+     *                       sheet if is is null.
+     * @param saveMemoryMode - switch on the mode which works slowly but allows to work with large files.
      */
-    private void initWorkbook(InputStream is) {
+    private void initWorkbook(InputStream is, boolean saveMemoryMode) {
         try {
-//            POIExtension.init();
-//            POIXMLTypeLoader.DEFAULT_XML_OPTIONS.setLoadUseXMLReader(SAXParserFactory.newInstance().newSAXParser().getXMLReader());
+            if (saveMemoryMode) {
+                POISaveMemoryExtension.init();
+            }
+
             if (is == null) {
                 workbook = new XSSFWorkbook();
                 // New workbook doesn't have a sheet.
@@ -574,15 +630,15 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
             extractAvailableMacros(is);
 
             if (id > 0) {
-                PoiElementsCache.unregister(id);
+                POIElementsCache.unregister(id);
             } else {
-                id = generateId();
+                id = POIElementsCache.generateExcelDocumentId();
             }
 
-            PoiElementsCache.register(id, workbook);
+            POIElementsCache.register(id, workbook);
 
             collaboratingEvaluators.clear();
-            collaboratingEvaluators.put(FilenameUtils.getName(getFilePath()), PoiElementsCache.getEvaluator(id));
+            collaboratingEvaluators.put(FilenameUtils.getName(getFilePath()), POIElementsCache.getEvaluator(id));
 
             // For debug propose
 //            SpreadsheetUtil.outputPOILogsToConsole(1);
@@ -620,13 +676,6 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
                 //do nothing
             }
         }
-    }
-
-    /**
-     * @return unique Id for this Excel Document.
-     */
-    private int generateId() {
-        return Integer.parseInt((int) (Math.random() * 100) + "" + (System.currentTimeMillis() % 1000000));
     }
 
     private class SheetIterator implements Iterator<Sheet> {

@@ -72,10 +72,18 @@ public class ExcelCellStyle {
         rightBorder = cellStyle.getBorderRight();
         bottomBorder = cellStyle.getBorderBottom();
         leftBorder = cellStyle.getBorderLeft();
-        topBorderColor = new ExcelColor(cellStyle.getTopBorderColor());
-        rightBorderColor = new ExcelColor(cellStyle.getRightBorderColor());
-        bottomBorderColor = new ExcelColor(cellStyle.getBottomBorderColor());
-        leftBorderColor = new ExcelColor(cellStyle.getLeftBorderColor());
+        if (cellStyle instanceof XSSFCellStyle) {
+            XSSFCellStyle xssfCellStyle = (XSSFCellStyle) cellStyle;
+            topBorderColor = new ExcelColor(xssfCellStyle.getTopBorderXSSFColor());
+            rightBorderColor = new ExcelColor(xssfCellStyle.getRightBorderXSSFColor());
+            bottomBorderColor = new ExcelColor(xssfCellStyle.getBottomBorderXSSFColor());
+            leftBorderColor = new ExcelColor(xssfCellStyle.getLeftBorderXSSFColor());
+        } else {
+            topBorderColor = new ExcelColor(cellStyle.getTopBorderColor());
+            rightBorderColor = new ExcelColor(cellStyle.getRightBorderColor());
+            bottomBorderColor = new ExcelColor(cellStyle.getBottomBorderColor());
+            leftBorderColor = new ExcelColor(cellStyle.getLeftBorderColor());
+        }
         hidden = cellStyle.getHidden();
         locked = cellStyle.getLocked();
         indention = cellStyle.getIndention();
@@ -412,17 +420,26 @@ public class ExcelCellStyle {
             cellStyle.setBorderRight(rightBorder);
             cellStyle.setBorderBottom(bottomBorder);
             cellStyle.setBorderLeft(leftBorder);
-            if (topBorderColor.isIndexed()) {
-                cellStyle.setTopBorderColor(topBorderColor.getIndex());
-            }
-            if (rightBorderColor.isIndexed()) {
-                cellStyle.setRightBorderColor(rightBorderColor.getIndex());
-            }
-            if (bottomBorderColor.isIndexed()) {
-                cellStyle.setBottomBorderColor(bottomBorderColor.getIndex());
-            }
-            if (leftBorderColor.isIndexed()) {
-                cellStyle.setLeftBorderColor(leftBorderColor.getIndex());
+
+            if (cellStyle instanceof XSSFCellStyle) {
+                XSSFCellStyle xssfCellStyle = (XSSFCellStyle) cellStyle;
+                xssfCellStyle.setTopBorderColor(topBorderColor.toXSSFColor(workbook));
+                xssfCellStyle.setRightBorderColor(rightBorderColor.toXSSFColor(workbook));
+                xssfCellStyle.setBottomBorderColor(bottomBorderColor.toXSSFColor(workbook));
+                xssfCellStyle.setLeftBorderColor(leftBorderColor.toXSSFColor(workbook));
+            } else {
+                if (topBorderColor.isIndexed()) {
+                    cellStyle.setTopBorderColor(topBorderColor.getIndex());
+                }
+                if (rightBorderColor.isIndexed()) {
+                    cellStyle.setRightBorderColor(rightBorderColor.getIndex());
+                }
+                if (bottomBorderColor.isIndexed()) {
+                    cellStyle.setBottomBorderColor(bottomBorderColor.getIndex());
+                }
+                if (leftBorderColor.isIndexed()) {
+                    cellStyle.setLeftBorderColor(leftBorderColor.getIndex());
+                }
             }
             cellStyle.setHidden(hidden);
             cellStyle.setLocked(locked);
@@ -437,7 +454,7 @@ public class ExcelCellStyle {
     }
 
     protected boolean isSameStyleAs(CellStyle cellStyle) {
-        return dataFormat.getFormat().equals(cellStyle.getDataFormatString())
+        boolean result = dataFormat.getFormat().equals(cellStyle.getDataFormatString())
                 && bgColor.isSameColorAs(cellStyle.getFillForegroundColorColor())
                 && bgFill == cellStyle.getFillPattern()
                 && hAlign == cellStyle.getAlignment()
@@ -447,11 +464,24 @@ public class ExcelCellStyle {
                 && topBorder == cellStyle.getBorderTop()
                 && rightBorder == cellStyle.getBorderRight()
                 && bottomBorder == cellStyle.getBorderBottom()
-                && leftBorder == cellStyle.getBorderLeft()
-                && topBorderColor.isSameColorAs(cellStyle.getTopBorderColor())
-                && rightBorderColor.isSameColorAs(cellStyle.getRightBorderColor())
-                && bottomBorderColor.isSameColorAs(cellStyle.getBottomBorderColor())
-                && leftBorderColor.isSameColorAs(cellStyle.getLeftBorderColor())
+                && leftBorder == cellStyle.getBorderLeft();
+
+        if (cellStyle instanceof XSSFCellStyle) {
+            XSSFCellStyle xssfCellStyle = (XSSFCellStyle) cellStyle;
+            result = result
+                    && topBorderColor.isSameColorAs(xssfCellStyle.getTopBorderXSSFColor())
+                    && rightBorderColor.isSameColorAs(xssfCellStyle.getRightBorderXSSFColor())
+                    && bottomBorderColor.isSameColorAs(xssfCellStyle.getBottomBorderXSSFColor())
+                    && leftBorderColor.isSameColorAs(xssfCellStyle.getLeftBorderXSSFColor());
+        } else {
+            result = result
+                    && topBorderColor.isSameColorAs(cellStyle.getTopBorderColor())
+                    && rightBorderColor.isSameColorAs(cellStyle.getRightBorderColor())
+                    && bottomBorderColor.isSameColorAs(cellStyle.getBottomBorderColor())
+                    && leftBorderColor.isSameColorAs(cellStyle.getLeftBorderColor());
+        }
+
+        return result
                 && hidden == cellStyle.getHidden()
                 && locked == cellStyle.getLocked()
                 && indention == cellStyle.getIndention();

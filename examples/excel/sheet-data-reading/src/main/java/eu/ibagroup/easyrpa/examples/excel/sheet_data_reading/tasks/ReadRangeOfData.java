@@ -30,5 +30,7 @@ public class ReadRangeOfData extends ApTask {
 
         log.info("Fetched data:");
         data.forEach(rec -> log.info("{}", rec));
+
+        log.info("Cells Data C7: {}", doc.selectSheet("Cells Data").getValue("C7"));
     }
 }

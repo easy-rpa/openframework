@@ -9,10 +9,6 @@
  
 ## Email
 
-- [Ways of creating EmailMessage](email/ways-of-message-creating)
-
-- [Ways of creating EmailClient](email/ways-of-client-creating)
-
 - [Sending of simple email message](email/simple-message-sending)
 
 - [Sending of message with attachments](email/message-sending-with-attachments)
@@ -60,6 +56,10 @@
      * Edit cells
      * Edit records   
  
+ - [Working with large Excel files](excel/working-with-large-files)
+     * Read records   
+     * Edit records
+ 
  - [Copying of sheet from one Excel file to another](excel/sheets-copying)    
  
  - [Sheets manipulating](excel/sheets-manipulating)
@@ -88,6 +88,10 @@
     * Evaluating of cell's formulas
     * Evaluating of cell's formulas with links to external Excel files
     
+ - [Working with merged cells](excel/working-with-merged-cells)
+    * Read value from merged cells
+    * Merge/unmerge cells 
+    
  - [Working with pivot tables](excel/working-with-pivot-tables)
     * Create pivot table
     * Read pivot table 
@@ -102,8 +106,6 @@
  - [Running of macros](excel/macros-running)
  
  - [Running of custom VB script](excel/custom-vbs-running)
- 
- - [TODO] Reading data from large Excel files (excel/working-with-large-files)
  
 ## CSV
 
