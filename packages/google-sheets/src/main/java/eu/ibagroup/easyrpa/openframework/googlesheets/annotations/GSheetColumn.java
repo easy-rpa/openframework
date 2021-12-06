@@ -1,7 +1,7 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets.annotations;
 
-//import eu.ibagroup.easyrpa.openframework.excel.function.ColumnFormatter;
-//import eu.ibagroup.easyrpa.openframework.excel.function.FieldMapper;
+import eu.ibagroup.easyrpa.openframework.googlesheets.function.ColumnFormatter;
+import eu.ibagroup.easyrpa.openframework.googlesheets.function.FieldMapper;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -21,7 +21,7 @@ public @interface GSheetColumn {
 
     GSheetCellStyle[] cellStyle() default {};
 
-//    Class<? extends ColumnFormatter> formatter() default ColumnFormatter.class;
+    Class<? extends ColumnFormatter> formatter() default ColumnFormatter.class;
 
-//    Class<? extends FieldMapper> mapper() default FieldMapper.class;
+    Class<? extends FieldMapper> mapper() default FieldMapper.class;
 }

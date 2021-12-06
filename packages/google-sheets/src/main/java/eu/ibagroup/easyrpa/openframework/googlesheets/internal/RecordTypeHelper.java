@@ -1,13 +1,14 @@
-package eu.ibagroup.easyrpa.openframework.excel.internal;
+package eu.ibagroup.easyrpa.openframework.googlesheets.internal;
 
-import eu.ibagroup.easyrpa.openframework.excel.Cell;
-import eu.ibagroup.easyrpa.openframework.excel.ExcelCellStyle;
-import eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelColumn;
-import eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelTable;
-import eu.ibagroup.easyrpa.openframework.excel.function.ColumnFormatter;
-import eu.ibagroup.easyrpa.openframework.excel.function.FieldMapper;
-import eu.ibagroup.easyrpa.openframework.excel.function.TableFormatter;
+import com.google.api.services.sheets.v4.model.Color;
 import eu.ibagroup.easyrpa.openframework.core.utils.TypeUtils;
+import eu.ibagroup.easyrpa.openframework.googlesheets.Cell;
+import eu.ibagroup.easyrpa.openframework.googlesheets.GSheetCellStyle;
+import eu.ibagroup.easyrpa.openframework.googlesheets.annotations.GSheetColumn;
+import eu.ibagroup.easyrpa.openframework.googlesheets.annotations.GSheetTable;
+import eu.ibagroup.easyrpa.openframework.googlesheets.function.ColumnFormatter;
+import eu.ibagroup.easyrpa.openframework.googlesheets.function.FieldMapper;
+import eu.ibagroup.easyrpa.openframework.googlesheets.function.TableFormatter;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -15,8 +16,8 @@ import java.util.*;
 public class RecordTypeHelper<T> {
 
     private Class<T> recordType = null;
-    private ExcelCellStyle tableHeaderCellStyle = null;
-    private ExcelCellStyle tableCellStyle = null;
+    private GSheetCellStyle tableHeaderCellStyle = null;
+    private GSheetCellStyle tableCellStyle = null;
     private TableFormatter<T> tableFormatter = null;
 
     private List<String> fields = new ArrayList<>();
@@ -25,8 +26,8 @@ public class RecordTypeHelper<T> {
     private Map<Integer, String> columnOrderToFieldMap = new HashMap<>();
 
     private Map<Integer, Integer> columnWidthMap = new HashMap<>();
-    private Map<Integer, ExcelCellStyle> columnHeaderCellStyleMap = new HashMap<>();
-    private Map<Integer, ExcelCellStyle> columnCellStyleMap = new HashMap<>();
+    private Map<Integer, GSheetCellStyle> columnHeaderCellStyleMap = new HashMap<>();
+    private Map<Integer, GSheetCellStyle> columnCellStyleMap = new HashMap<>();
     private Map<Integer, ColumnFormatter<T>> columnFormatterMap = new HashMap<>();
     private Map<String, FieldMapper> fieldMapperMap = new HashMap<>();
 
@@ -118,63 +119,11 @@ public class RecordTypeHelper<T> {
     }
 
     public void formatCell(Cell cell, String columnName, int recordIndex, List<T> records) {
-
-        if (cell != null && columnName != null && !columnName.trim().isEmpty()) {
-
-            Integer columnOrder = columnNameToOrderMap.get(columnName);
-            if (columnOrder == null) {
-                return;
-            }
-
-            ExcelCellStyle cellStyle = columnCellStyleMap.get(columnOrder);
-            if (cellStyle != null) {
-                cell.setStyle(cellStyle);
-            } else if (tableCellStyle != null) {
-                cell.setStyle(tableCellStyle);
-            }
-
-            if (tableFormatter != null) {
-                tableFormatter.format(cell, columnName, recordIndex, records);
-            }
-            ColumnFormatter<T> formatter = columnFormatterMap.get(columnOrder);
-            if (formatter != null) {
-                T record = records != null && recordIndex >= 0 && recordIndex < records.size()
-                        ? records.get(recordIndex)
-                        : null;
-                formatter.format(cell, columnName, record);
-            }
-        }
+        //TODO
     }
 
     public void formatHeaderCell(Cell cell, String columnName) {
-
-        if (cell != null && columnName != null && !columnName.trim().isEmpty()) {
-
-            Integer columnOrder = columnNameToOrderMap.get(columnName);
-            if (columnOrder == null) {
-                return;
-            }
-
-            Integer width = columnWidthMap.get(columnOrder);
-            if (width != null) {
-                cell.getSheet().setColumnWidth(cell.getColumnIndex(), width);
-            }
-
-            ExcelCellStyle headerCellStyle = columnHeaderCellStyleMap.get(columnOrder);
-            if (headerCellStyle != null) {
-                cell.setStyle(headerCellStyle);
-            } else if (tableHeaderCellStyle != null) {
-                cell.setStyle(tableHeaderCellStyle);
-            }
-
-            if (tableFormatter != null) {
-                tableFormatter.format(cell, columnName, -1, null);
-            }
-            ColumnFormatter<T> formatter = columnFormatterMap.get(columnOrder);
-            if (formatter != null) {
-                formatter.format(cell, columnName, null);
-            }
-        }
+        //TODO
     }
 
     private static final Map<String, RecordTypeHelper<?>> HELPERS_CACHE = new HashMap<>();
@@ -194,9 +143,9 @@ public class RecordTypeHelper<T> {
             typeInfo = new RecordTypeHelper<>();
             typeInfo.recordType = recordType;
 
-            ExcelTable tableAnnotation = recordType.getAnnotation(ExcelTable.class);
+            GSheetTable tableAnnotation = recordType.getAnnotation(GSheetTable.class);
             if (tableAnnotation != null) {
-                eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelCellStyle[] styleAnnotations = tableAnnotation.cellStyle();
+                eu.ibagroup.easyrpa.openframework.googlesheets.annotations.GSheetCellStyle[] styleAnnotations = tableAnnotation.cellStyle();
                 if (styleAnnotations.length > 0) {
                     typeInfo.tableCellStyle = getStyleForAnnotation(styleAnnotations[0]);
                 }
@@ -212,7 +161,7 @@ public class RecordTypeHelper<T> {
 
             int index = 0;
             for (Field field : recordType.getDeclaredFields()) {
-                ExcelColumn columnAnnotation = field.getAnnotation(ExcelColumn.class);
+                GSheetColumn columnAnnotation = field.getAnnotation(GSheetColumn.class);
                 if (columnAnnotation != null) {
                     int order = columnAnnotation.order();
                     String[] nameHierarchy = columnAnnotation.name();
@@ -234,7 +183,7 @@ public class RecordTypeHelper<T> {
                         typeInfo.columnWidthMap.put(columnOrder, width);
                     }
 
-                    eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelCellStyle[] styleAnnotations = columnAnnotation.cellStyle();
+                    eu.ibagroup.easyrpa.openframework.googlesheets.annotations.GSheetCellStyle[] styleAnnotations = columnAnnotation.cellStyle();
                     if (styleAnnotations.length > 0) {
                         typeInfo.columnCellStyleMap.put(columnOrder, getStyleForAnnotation(styleAnnotations[0]));
                     }
@@ -266,31 +215,10 @@ public class RecordTypeHelper<T> {
         }
     }
 
-    private static ExcelCellStyle getStyleForAnnotation(
-            eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelCellStyle styleAnnotation) {
-        ExcelCellStyle style = new ExcelCellStyle();
-        style.font(styleAnnotation.fontName());
-        style.fontSize(styleAnnotation.fontSize());
-        style.bold(styleAnnotation.bold());
-        style.italic(styleAnnotation.italic());
-        style.strikeout(styleAnnotation.strikeout());
-        style.underline(styleAnnotation.underline());
-        style.fontOffset(styleAnnotation.fontOffset());
-        style.color(styleAnnotation.color().get());
-        style.format(styleAnnotation.dataFormat().get());
-        style.background(styleAnnotation.background().get());
-        style.fill(styleAnnotation.fill());
-        style.hAlign(styleAnnotation.hAlign());
-        style.vAlign(styleAnnotation.vAlign());
-        style.wrapText(styleAnnotation.wrapText());
-        style.rotation(styleAnnotation.rotation());
-        style.topBorder(styleAnnotation.topBorder(), styleAnnotation.topBorderColor().get());
-        style.rightBorder(styleAnnotation.rightBorder(), styleAnnotation.rightBorderColor().get());
-        style.bottomBorder(styleAnnotation.bottomBorder(), styleAnnotation.bottomBorderColor().get());
-        style.leftBorder(styleAnnotation.leftBorder(), styleAnnotation.leftBorderColor().get());
-        style.hidden(styleAnnotation.hidden());
-        style.locked(styleAnnotation.locked());
-        style.indention(styleAnnotation.indention());
+    private static GSheetCellStyle getStyleForAnnotation(
+            eu.ibagroup.easyrpa.openframework.googlesheets.annotations.GSheetCellStyle styleAnnotation) {
+        GSheetCellStyle style = new GSheetCellStyle();
+        style.setBackgroundColor(new Color().setBlue(0f).setGreen(0f).setRed(1f));
         return style;
     }
 }

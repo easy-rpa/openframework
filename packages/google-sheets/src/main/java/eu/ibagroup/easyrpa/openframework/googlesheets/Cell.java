@@ -1,7 +1,7 @@
-package eu.ibagroup.easyrpa.openframework.excel;
+package eu.ibagroup.easyrpa.openframework.googlesheets;
 
-import eu.ibagroup.easyrpa.openframework.excel.internal.PoiElementsCache;
-import org.apache.poi.ss.usermodel.*;
+
+import com.google.api.services.sheets.v4.model.Spreadsheet;
 
 import java.util.Date;
 
@@ -10,9 +10,11 @@ public class Cell {
 
     private String id;
 
-    private Sheet parent;
+    //TODO decide which one is required
+    private Spreadsheet parentDocument;
+//    private Sheet parentSheet;
 
-    private int documentId;
+    private String documentId;
 
     private int sheetIndex;
 
@@ -20,22 +22,28 @@ public class Cell {
 
     private int columnIndex;
 
-    protected Cell(Sheet parent, int rowIndex, int columnIndex) {
-        this.parent = parent;
-        this.documentId = parent.getDocument().getId();
-        this.sheetIndex = parent.getIndex();
+    private GSheetCellStyle cellStyle;
+
+    public Cell(Spreadsheet parent, int sheetIndex, int rowIndex, int columnIndex) {
+        this.parentDocument = parent;
+//        this.parentSheet = parent.getSheets().get(sheetIndex);
+        this.documentId = parent.getSpreadsheetId();
+        this.sheetIndex = sheetIndex;
         this.rowIndex = rowIndex;
         this.columnIndex = columnIndex;
         this.id = this.sheetIndex + "|" + this.rowIndex + "|" + this.columnIndex;
     }
 
-    public ExcelDocument getDocument() {
-        return parent.getDocument();
+    public Cell(Spreadsheet spreadsheet, int id, String cell1Ref) {
     }
 
-    public Sheet getSheet() {
-        return parent;
+    public Spreadsheet getDocument() {
+        return parentDocument;
     }
+
+ //   public Sheet getSheet() {
+ //       return parentSheet;
+ //   }
 
     public int getRowIndex() {
         return rowIndex;
@@ -49,12 +57,12 @@ public class Cell {
         return new CellRef(rowIndex, columnIndex);
     }
 
-    public void setStyle(ExcelCellStyle newStyle) {
-        newStyle.applyTo(this);
+    public void setStyle(GSheetCellStyle newStyle) {
+        cellStyle = newStyle;
     }
 
-    public ExcelCellStyle getStyle() {
-        return new ExcelCellStyle(this);
+    public GSheetCellStyle getStyle() {
+        return new GSheetCellStyle();
     }
 
     public Object getValue() {
@@ -64,238 +72,44 @@ public class Cell {
     @SuppressWarnings("unchecked")
     public <T> T getValue(Class<T> valueType) {
         if (String.class.isAssignableFrom(valueType)) {
-            return (T) getValueAsString();
+            return (T) "val";
         } else if (Number.class.isAssignableFrom(valueType)) {
-            return (T) getValueAsNumeric();
+            return (T) Integer.valueOf(2);
         }
-        return (T) getTypedValue();
+        return (T) "TODO";
     }
 
     public void setValue(Object value) {
-        org.apache.poi.ss.usermodel.Cell poiCell = getPoiCell();
         if (value == null) {
-            poiCell.setBlank();
 
         } else if (value instanceof Date) {
-            poiCell.setCellValue((Date) value);
-
+            //TODO
         } else if (value instanceof Double) {
-            poiCell.setCellValue((Double) value);
-
+            //TODO
         } else if (value instanceof Boolean) {
-            poiCell.setCellValue((Boolean) value);
-
+            //TODO
         } else if (value instanceof String && value.toString().startsWith("=")) {
-            poiCell.setCellFormula((String) value);
-
+            //TODO
         } else {
-            poiCell.setCellValue(value.toString());
+            //TODO
         }
     }
 
     public boolean isEmpty() {
-        org.apache.poi.ss.usermodel.Cell poiCell = getPoiCell();
-        if (poiCell == null)
-            return true;
-        switch (poiCell.getCellType()) {
-            case STRING:
-                return poiCell.getStringCellValue().isEmpty();
-            case FORMULA:
-                FormulaEvaluator evaluator = PoiElementsCache.getEvaluator(documentId);
-                if (evaluator == null) {
-                    evaluator = poiCell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
-                }
-                CellValue cellValue = evaluator.evaluate(poiCell);
-                switch (cellValue.getCellType()) {
-                    case STRING:
-                        return cellValue.getStringValue().isEmpty();
-                    case ERROR:
-                    case BLANK:
-                        return true;
-                    default:
-                        return false;
-                }
-            case ERROR:
-            case BLANK:
-                return true;
-            default:
-                return false;
-        }
+        return false;
     }
 
     public boolean hasFormula() {
-        return getPoiCell().getCellType() == CellType.FORMULA;
+        return false;
     }
 
     public String getFormula() {
-        return getPoiCell().getCellFormula();
+        //TODO
+        return "";
     }
 
     public void setFormula(String newCellFormula) {
-        getPoiCell().setCellFormula(newCellFormula);
-        setValue(getValue());
+        //TODO
     }
 
-    public org.apache.poi.ss.usermodel.Cell getPoiCell() {
-        return PoiElementsCache.getPoiCell(documentId, id, sheetIndex, rowIndex, columnIndex);
-    }
-
-    private Object getTypedValue() {
-        org.apache.poi.ss.usermodel.Cell poiCell = getPoiCell();
-        if (poiCell == null) {
-            return null;
-        }
-        Object value;
-        switch (poiCell.getCellType()) {
-            case NUMERIC:
-                CellStyle cellStyle = poiCell.getCellStyle();
-                short formatIndex = cellStyle.getDataFormat();
-                String formatString = cellStyle.getDataFormatString();
-                if (formatString == null) {
-                    formatString = BuiltinFormats.getBuiltinFormat(formatIndex);
-                }
-                if (DateUtil.isADateFormat(formatIndex, formatString)) {
-                    value = poiCell.getDateCellValue();
-                } else {
-                    value = poiCell.getNumericCellValue();
-                }
-                break;
-            case FORMULA:
-                try {
-                    FormulaEvaluator evaluator = PoiElementsCache.getEvaluator(documentId);
-                    if (evaluator == null) {
-                        evaluator = poiCell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
-                    }
-                    CellValue cellValue = evaluator.evaluate(poiCell);
-                    switch (cellValue.getCellType()) {
-                        case NUMERIC:
-                            cellStyle = poiCell.getCellStyle();
-                            formatIndex = cellStyle.getDataFormat();
-                            formatString = cellStyle.getDataFormatString();
-                            if (formatString == null) {
-                                formatString = BuiltinFormats.getBuiltinFormat(formatIndex);
-                            }
-                            if (DateUtil.isADateFormat(formatIndex, formatString)) {
-                                value = new Date((long) cellValue.getNumberValue());
-                            } else {
-                                value = cellValue.getNumberValue();
-                            }
-                            break;
-                        case BOOLEAN:
-                            value = cellValue.getBooleanValue();
-                            break;
-                        case STRING:
-                            value = cellValue.getStringValue().trim();
-                            break;
-                        case ERROR:
-                            value = "N/A";
-                            break;
-                        default:
-                            value = cellValue.formatAsString();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    value = "#Err!";
-                }
-                break;
-            case BOOLEAN:
-                value = poiCell.getBooleanCellValue();
-                break;
-            case STRING:
-                RichTextString str = poiCell.getRichStringCellValue();
-                value = str.numFormattingRuns() > 0 ? str : str.getString();
-                break;
-            case ERROR:
-                value = "N/A";
-                break;
-            default:
-                value = poiCell.toString();
-        }
-        return value;
-    }
-
-    private String getValueAsString() {
-        org.apache.poi.ss.usermodel.Cell poiCell = getPoiCell();
-        if (poiCell == null) {
-            return "";
-        }
-        switch (poiCell.getCellType()) {
-            case NUMERIC:
-                CellStyle cellStyle = poiCell.getCellStyle();
-                short formatIndex = cellStyle.getDataFormat();
-                String formatString = cellStyle.getDataFormatString();
-                if (formatString == null) {
-                    formatString = BuiltinFormats.getBuiltinFormat(formatIndex);
-                }
-                return PoiElementsCache.getDataFormatter(documentId)
-                        .formatRawCellContents(poiCell.getNumericCellValue(), formatIndex, formatString);
-            case FORMULA:
-                try {
-                    FormulaEvaluator evaluator = PoiElementsCache.getEvaluator(documentId);
-                    if (evaluator == null) {
-                        evaluator = poiCell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
-                    }
-                    CellValue cellValue = evaluator.evaluate(poiCell);
-                    switch (cellValue.getCellType()) {
-                        case NUMERIC:
-                            cellStyle = poiCell.getCellStyle();
-                            formatIndex = cellStyle.getDataFormat();
-                            formatString = cellStyle.getDataFormatString();
-                            if (formatString == null) {
-                                formatString = BuiltinFormats.getBuiltinFormat(formatIndex);
-                            }
-                            return PoiElementsCache.getDataFormatter(documentId)
-                                    .formatRawCellContents(cellValue.getNumberValue(), formatIndex, formatString);
-                        case BOOLEAN:
-                            return Boolean.toString(cellValue.getBooleanValue());
-                        case STRING:
-                            return cellValue.getStringValue().trim();
-                        case ERROR:
-                            return "N/A";
-                        default:
-                            return "";
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return "N/A";
-                }
-            default:
-                return poiCell.toString();
-        }
-    }
-
-    private Double getValueAsNumeric() {
-        org.apache.poi.ss.usermodel.Cell poiCell = getPoiCell();
-        if (poiCell == null) {
-            return null;
-        }
-        switch (poiCell.getCellType()) {
-            case NUMERIC:
-                return poiCell.getNumericCellValue();
-            case FORMULA:
-                try {
-                    FormulaEvaluator evaluator = PoiElementsCache.getEvaluator(documentId);
-                    if (evaluator == null) {
-                        evaluator = poiCell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
-                    }
-                    CellValue cellValue = evaluator.evaluate(poiCell);
-                    switch (cellValue.getCellType()) {
-                        case NUMERIC:
-                            return cellValue.getNumberValue();
-                        case STRING:
-                            try {
-                                return Double.parseDouble(cellValue.getStringValue());
-                            } catch (Exception e) {
-                                return null;
-                            }
-                        default:
-                            return null;
-                    }
-                } catch (Exception e) {
-                    return null;
-                }
-            default:
-                return null;
-        }
-    }
 }

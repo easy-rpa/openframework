@@ -1,4 +1,4 @@
-package eu.ibagroup.easyrpa.openframework.googlesheets.style;
+package eu.ibagroup.easyrpa.openframework.googlesheets;
 
 import java.awt.*;
 
@@ -58,7 +58,7 @@ public class GSheetColor {
         return (red >= 0 && green >= 0 && blue >= 0 && alpha >= 0);
     }
 
-    protected com.google.api.services.sheets.v4.model.Color toNativeColor() {
+    public com.google.api.services.sheets.v4.model.Color toNativeColor() {
         return new com.google.api.services.sheets.v4.model.Color()
                 .setRed(this.getRed())
                 .setGreen(this.getGreen())

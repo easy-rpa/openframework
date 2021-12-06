@@ -1,6 +1,6 @@
-package eu.ibagroup.easyrpa.openframework.excel.function;
+package eu.ibagroup.easyrpa.openframework.googlesheets.function;
 
-import eu.ibagroup.easyrpa.openframework.excel.Cell;
+import com.google.api.services.sheets.v4.model.CellData;
 
 import java.util.List;
 
@@ -17,5 +17,5 @@ public interface TableFormatter<T> {
      *                    add/insert/update records function. It does not includes records that have been
      *                    added/inserted/updated before.
      */
-    void format(Cell cell, String column, int recordIndex, List<T> records);
+    void format(CellData cell, String column, int recordIndex, List<T> records);
 }

@@ -1,5 +1,6 @@
 package eu.ibagroup.easyrpa.examples.googlesheets.sheets_manipulating.entities;
 
+import eu.ibagroup.easyrpa.openframework.googlesheets.annotations.GSheetColumn;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -35,18 +36,19 @@ public class Passenger {
                     bottomBorder = BorderStyle.THIN, leftBorder = BorderStyle.MEDIUM
             )
     )*/
+    @GSheetColumn(name = "Passenger Id")
     private Integer passengerId;
 
-//    @ExcelColumn(name = "Name", width = 50)
+    @GSheetColumn(name = "Name")
     private String name;
 
-//    @ExcelColumn(name = "Sex", width = 12)
+    @GSheetColumn(name = "Sex")
     private String sex;
 
-//    @ExcelColumn(name = "Age", width = 12)
+    @GSheetColumn(name = "Age")
     private Integer age;
 
-//    @ExcelColumn(name = "Survived", width = 12, formatter = SurvivedFormatter.class)
+    @GSheetColumn(name = "Survived")
     private boolean survived;
 
 //    @ExcelColumn(name = "Class", width = 12, cellStyle = @ExcelCellStyle(
@@ -54,24 +56,25 @@ public class Passenger {
 //            topBorder = BorderStyle.THIN, rightBorder = BorderStyle.THIN,
 //            bottomBorder = BorderStyle.THIN, leftBorder = BorderStyle.THIN
 //    ))
+    @GSheetColumn(name = "Class")
     private Integer pClass;
 
-//    @ExcelColumn(name = "Siblings on board", width = 20)
+    @GSheetColumn(name = "Siblings on board", width = 20)
     private Integer SibSp;
 
-//    @ExcelColumn(name = "Parch", width = 12)
+    @GSheetColumn(name = "Parch", width = 12)
     private Integer parch;
 
-//    @ExcelColumn(name = "Ticket", width = 12)
+    @GSheetColumn(name = "Ticket", width = 12)
     private String ticket;
 
-//    @ExcelColumn(name = "Fare", width = 12)
+    @GSheetColumn(name = "Fare", width = 12)
     private Double fare;
 
-//    @ExcelColumn(name = "Cabin", width = 12)
+    @GSheetColumn(name = "Cabin", width = 12)
     private String cabin;
 
-//    @ExcelColumn(name = "Embarked", width = 12,
+    @GSheetColumn(name = "Embarked", width = 12)
 //            headerStyle = @ExcelCellStyle(
 //                    bold = true, background = ExcelColors.GREY_25_PERCENT,
 //                    hAlign = HorizontalAlignment.CENTER, vAlign = VerticalAlignment.CENTER,

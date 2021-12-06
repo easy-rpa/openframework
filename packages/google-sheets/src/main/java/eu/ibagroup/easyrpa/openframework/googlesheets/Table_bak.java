@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 //TODO implement multi line header support. Currently only one line header is supported.
-public class Table<T> implements Iterable<T> {
+public class Table_bak<T> implements Iterable<T> {
 
     private GoogleSheets service;
 
@@ -36,7 +36,7 @@ public class Table<T> implements Iterable<T> {
             buildTable(topRow, leftCol, records);
         }
     }*/
-    public Table(GoogleSheets service, String spreadsheetId, int headerTopRow, int headerLeftCol, int headerBottomRow, int headerRightCol, int bottomRow, Class<T> recordType) {
+    public Table_bak(GoogleSheets service, String spreadsheetId, int headerTopRow, int headerLeftCol, int headerBottomRow, int headerRightCol, int bottomRow, Class<T> recordType) {
         this.service = service;
         this.spreadsheetId = spreadsheetId;
         this.hTopRow = headerTopRow;
@@ -47,7 +47,7 @@ public class Table<T> implements Iterable<T> {
         this.typeHelper = RecordTypeHelper.getFor(recordType);
     }
 
-    public Table(GoogleSheets service, String spreadsheetId, int headerTopRow, int headerLeftCol, int headerBottomRow, int headerRightCol) {
+    public Table_bak(GoogleSheets service, String spreadsheetId, int headerTopRow, int headerLeftCol, int headerBottomRow, int headerRightCol) {
         this.service = service;
         this.spreadsheetId = spreadsheetId;
         this.hTopRow = headerTopRow;

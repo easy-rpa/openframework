@@ -72,6 +72,9 @@ public class GoogleSheets {
     public Spreadsheet getSpreadsheet(String spreadsheetId) {
         com.google.api.services.sheets.v4.model.Spreadsheet spreadsheet;
         try {
+            Sheets.Spreadsheets.Get s = service.spreadsheets().get(spreadsheetId);
+            s.getSpreadsheetId();
+            //  s.get
             spreadsheet = service.spreadsheets().get(spreadsheetId).setIncludeGridData(true).execute();
         } catch (IOException e) {
             throw new SpreadsheetNotFound("Spreadsheet with such id not found");
@@ -130,6 +133,16 @@ public class GoogleSheets {
         return result;
     }
 
+    public CellData getCellData(String spreadsheetId, String cellRef)
+            throws IOException {
+        CellRef ref = new CellRef(cellRef);
+
+        Sheets service = this.service;
+//        service.spreadsheets().
+        CellData cellData = service.spreadsheets().get(spreadsheetId).setIncludeGridData(true).execute().getSheets().get(0).getData().get(0).getRowData().get(ref.getRow()).getValues().get(ref.getCol());
+        return cellData;
+    }
+
     public UpdateValuesResponse updateValues(String spreadsheetId, String range,
                                              String valueInputOption, List<List<Object>> _values)
             throws IOException {
@@ -172,7 +185,96 @@ public class GoogleSheets {
                 .setData(data);
         BatchUpdateValuesResponse result =
                 service.spreadsheets().values().batchUpdate(spreadsheetId, body).execute();
+
         System.out.printf("%d cells updated.", result.getTotalUpdatedCells());
         return result;
+    }
+
+    public void setBackground(String spreadsheetId, String range, GSheetColor color) throws IOException {
+        CellRange rng = new CellRange(range);
+        List<Request> requests = new ArrayList<>();
+        requests.add(new Request()
+                .setRepeatCell(new RepeatCellRequest()
+                                .setCell(new CellData()
+                                        //.setUserEnteredValue( new ExtendedValue().setStringValue("cell text"))
+                                        .setEffectiveValue(new ExtendedValue().setStringValue("cell text2"))
+                                        .setUserEnteredFormat(new CellFormat()
+                                                .setBackgroundColor(color.toNativeColor()
+                                                )
+                                                .setTextFormat(new TextFormat()
+                                                        .setFontSize(15)
+                                                        .setBold(Boolean.TRUE)
+                                                )
+                                        )
+                                )
+                                .setRange(new GridRange()
+                                        .setSheetId(getSpreadsheet(spreadsheetId).getActiveSheet().getId())
+                                        .setStartRowIndex(rng.getFirstRow())
+                                        .setEndRowIndex(rng.getLastRow()+1)
+                                        .setStartColumnIndex(rng.getFirstCol())
+                                        .setEndColumnIndex(rng.getLastCol()+1)
+                                )
+                                .setFields("userEnteredFormat.backgroundColor,userEnteredFormat.textFormat ")
+                        //.setFields("*")
+                )
+        );
+        BatchUpdateSpreadsheetRequest bodyReq =
+                new BatchUpdateSpreadsheetRequest().setRequests(requests);
+        service.spreadsheets().batchUpdate(spreadsheetId, bodyReq).execute();
+    }
+
+        public void setTextColor(String spreadsheetId, String range, GSheetColor color) throws IOException {
+            CellRange rng = new CellRange(range);
+            List<Request> requests = new ArrayList<>();
+            requests.add(new Request()
+                    .setRepeatCell(new RepeatCellRequest()
+                                    .setCell(new CellData()
+                                            //.setUserEnteredValue( new ExtendedValue().setStringValue("cell text"))
+                                            .setEffectiveValue(new ExtendedValue().setStringValue("cell text2"))
+                                            .setUserEnteredFormat(new CellFormat()
+                                                    .setTextFormat(new TextFormat()
+                                                            .setForegroundColor(color.toNativeColor())
+                                                    )
+                                            )
+                                    )
+                                    .setRange(new GridRange()
+                                            .setSheetId(getSpreadsheet(spreadsheetId).getActiveSheet().getId())
+                                            .setStartRowIndex(rng.getFirstRow())
+                                            .setEndRowIndex(rng.getLastRow()+1)
+                                            .setStartColumnIndex(rng.getFirstCol())
+                                            .setEndColumnIndex(rng.getLastCol()+1)
+                                    )
+                                    .setFields("userEnteredFormat.textFormat.foregroundColor")
+                            //.setFields("*")
+                    )
+            );
+
+        BatchUpdateSpreadsheetRequest bodyReq =
+                new BatchUpdateSpreadsheetRequest().setRequests(requests);
+        service.spreadsheets().batchUpdate(spreadsheetId ,bodyReq).execute();
+
+    }
+
+    public void setCellData(String spreadsheetId, String cell1Ref, CellData cellData) throws IOException {
+        CellRef ref = new CellRef(cell1Ref);
+        List<Request> requests = new ArrayList<>();
+        requests.add(new Request()
+                .setRepeatCell(new RepeatCellRequest()
+                                .setCell(cellData)
+                                .setRange(new GridRange()
+                                        .setSheetId(getSpreadsheet(spreadsheetId).getActiveSheet().getId())
+                                        .setStartRowIndex(ref.getRow())
+                                        .setEndRowIndex(ref.getRow()+1)
+                                        .setStartColumnIndex(ref.getCol())
+                                        .setEndColumnIndex(ref.getCol()+1)
+                                )
+                                .setFields("userEnteredFormat.backgroundColor,userEnteredFormat.textRotation,userEnteredFormat.textFormat")
+//                        .setFields("*")
+                )
+        );
+
+        BatchUpdateSpreadsheetRequest bodyReq =
+                new BatchUpdateSpreadsheetRequest().setRequests(requests);
+        service.spreadsheets().batchUpdate(spreadsheetId ,bodyReq).execute();
     }
 }

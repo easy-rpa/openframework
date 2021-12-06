@@ -1,4 +1,4 @@
-package eu.ibagroup.easyrpa.openframework.excel;
+package eu.ibagroup.easyrpa.openframework.googlesheets;
 
 import org.apache.poi.ss.formula.SheetNameFormatter;
 import org.apache.poi.ss.util.CellReference;
