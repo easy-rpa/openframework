@@ -11,7 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 public class SheetsDocumentCreatingModule extends ApModule {
 
     public TaskOutput run() throws Exception {
-        return execute(getInput(), CreateNewGoogleSheetsDocument.class)
+//        return execute(getInput(), CreateNewGoogleSheetsDocument.class)
+        return execute(getInput(), SetStylesForCells.class)
+//        return execute(getInput(), GetTableObj.class)
                 .get();
     }
 }

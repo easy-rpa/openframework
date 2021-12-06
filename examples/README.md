@@ -9,10 +9,6 @@
  
 ## Email
 
-- [Ways of creating EmailMessage](email/ways-of-message-creating)
-
-- [Ways of creating EmailClient](email/ways-of-client-creating)
-
 - [Sending of simple email message](email/simple-message-sending)
 
 - [Sending of message with attachments](email/message-sending-with-attachments)
@@ -52,7 +48,7 @@
 
  - [Creating of new Excel file](excel/excel-file-creating)
  
- - [Reading data from given GSheet](excel/GSheet-data-reading)
+ - [Reading data from given sheet](excel/sheet-data-reading)
     * Read as range of data
     * Read as list of records    
 
@@ -60,22 +56,26 @@
      * Edit cells
      * Edit records   
  
- - [Copying of GSheet from one Excel file to another](excel/sheets-copying)    
+ - [Working with large Excel files](excel/working-with-large-files)
+     * Read records   
+     * Edit records
+ 
+ - [Copying of sheet from one Excel file to another](excel/sheets-copying)    
  
  - [Sheets manipulating](excel/sheets-manipulating)
     * List existing sheets
-    * Activate GSheet
-    * Rename GSheet
-    * Move GSheet
-    * Clone GSheet
-    * Delete GSheet 
+    * Activate sheet
+    * Rename sheet
+    * Move sheet
+    * Clone sheet
+    * Delete sheet 
     
- - [Working with GSheet rows](excel/working-with-rows)
+ - [Working with sheet rows](excel/working-with-rows)
     * Lookup and edit rows
     * Insert new rows
     * Delete rows
   
- - [Working with GSheet columns](excel/working-with-columns)
+ - [Working with sheet columns](excel/working-with-columns)
     * Read column cells
     * Add/insert new columns
     * Move columns
@@ -88,6 +88,10 @@
     * Evaluating of cell's formulas
     * Evaluating of cell's formulas with links to external Excel files
     
+ - [Working with merged cells](excel/working-with-merged-cells)
+    * Read value from merged cells
+    * Merge/unmerge cells 
+    
  - [Working with pivot tables](excel/working-with-pivot-tables)
     * Create pivot table
     * Read pivot table 
@@ -95,15 +99,13 @@
         
  - [Changing cells style (fonts, colors etc.)](excel/cell-style-changing)
  
- - [Inserting image to GSheet](excel/image-inserting)
+ - [Inserting image to sheet](excel/image-inserting)
  
  - [Exporting Excel file to PDF](excel/export-to-pdf)
  
  - [Running of macros](excel/macros-running)
  
  - [Running of custom VB script](excel/custom-vbs-running)
- 
- - [TODO] Reading data from large Excel files (excel/working-with-large-files)
  
 ## CSV
 
@@ -125,23 +127,23 @@
     * Rename folder
     * Delete folder
  - [Getting information about selected file/directory](google-drive/file-dir-info)
- - [Creating Google Sheet](google-drive/google-GSheet-creating)
+ - [Creating Google Sheet](google-drive/google-sheet-creating)
 
 ## Google Sheets
 
  - Downloading a spreadsheet as an XLSX or PDF file (sheets/spreadsheet-downloading)
- - Sheet manipulations (sheets/GSheet-manipulation)
-    * Create GSheet
-    * Delete GSheet
-    * Rename GSheet
-    * Clone GSheet
-    * Activate GSheet
+ - Sheet manipulations (sheets/sheet-manipulation)
+    * Create sheet
+    * Delete sheet
+    * Rename sheet
+    * Clone sheet
+    * Activate sheet
     * Get list of all sheets
- - Working with GSheet rows (sheets/working-with-rows)
+ - Working with sheet rows (sheets/working-with-rows)
      * Lookup and edit rows
      * Add/insert new rows
      * Delete rows
- - Working with GSheet columns (sheets/working-with-columns)
+ - Working with sheet columns (sheets/working-with-columns)
    * Read column cells
    * Add/insert new columns
    * Move columns
@@ -154,8 +156,8 @@
     * Recalculation cell formula
  - Working with data range (sheets/working-with-data-range)
     * Reading a range of data
-    * Adding data range on GSheet
-    * Removing data range from GSheet
+    * Adding data range on sheet
+    * Removing data range from sheet
  
 ## Database
   

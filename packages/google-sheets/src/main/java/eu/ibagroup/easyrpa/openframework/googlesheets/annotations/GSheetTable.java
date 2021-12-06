@@ -1,5 +1,7 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets.annotations;
 
+import eu.ibagroup.easyrpa.openframework.googlesheets.function.TableFormatter;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -13,5 +15,5 @@ public @interface GSheetTable {
 
     GSheetCellStyle[] cellStyle() default {};
 
-//    Class<? extends TableFormatter> formatter() default TableFormatter.class;
+    Class<? extends TableFormatter> formatter() default TableFormatter.class;
 }

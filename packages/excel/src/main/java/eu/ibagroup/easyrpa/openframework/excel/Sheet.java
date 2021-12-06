@@ -4,7 +4,8 @@ import eu.ibagroup.easyrpa.openframework.core.utils.TypeUtils;
 import eu.ibagroup.easyrpa.openframework.excel.constants.InsertMethod;
 import eu.ibagroup.easyrpa.openframework.excel.constants.MatchMethod;
 import eu.ibagroup.easyrpa.openframework.excel.exceptions.VBScriptExecutionException;
-import eu.ibagroup.easyrpa.openframework.excel.internal.PoiElementsCache;
+import eu.ibagroup.easyrpa.openframework.excel.internal.poi.POIElementsCache;
+import eu.ibagroup.easyrpa.openframework.excel.internal.poi.XSSFSheetExt;
 import eu.ibagroup.easyrpa.openframework.excel.utils.FilePathUtils;
 import eu.ibagroup.easyrpa.openframework.excel.vbscript.*;
 import org.apache.commons.io.IOUtils;
@@ -15,6 +16,7 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTMergeCells;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -174,6 +176,75 @@ public class Sheet implements Iterable<Row> {
                     rowIndex++;
                 }
             }
+        }
+    }
+
+    public Cell mergeCells(String regionRef) {
+        CellRange region = new CellRange(regionRef);
+        return mergeCells(region.getFirstRow(), region.getFirstCol(),
+                region.getLastRow(), region.getLastCol());
+    }
+
+    public Cell mergeCells(CellRange regionToMerge) {
+        return mergeCells(regionToMerge.getFirstRow(), regionToMerge.getFirstCol(),
+                regionToMerge.getLastRow(), regionToMerge.getLastCol());
+    }
+
+    public Cell mergeCells(String startCellRef, String endCellRef) {
+        CellRef startRef = new CellRef(startCellRef);
+        CellRef endRef = new CellRef(endCellRef);
+        return mergeCells(startRef.getRow(), startRef.getCol(), endRef.getRow(), endRef.getCol());
+    }
+
+    public Cell mergeCells(int startRow, int startCol, int endRow, int endCol) {
+        unmergeCells(startRow, startCol, endRow, endCol);
+        CellRangeAddress region = new CellRangeAddress(startRow, endRow, startCol, endCol);
+        int regionIndex = getPoiSheet().addMergedRegion(region);
+        if (regionIndex >= 0) {
+            POIElementsCache.addMergedRegion(documentId, sheetIndex, regionIndex, region);
+            return new Cell(this, region.getFirstRow(), region.getFirstColumn());
+        }
+        return null;
+    }
+
+    public void unmergeCells(String regionRef) {
+        CellRange region = new CellRange(regionRef);
+        unmergeCells(region.getFirstRow(), region.getFirstCol(),
+                region.getLastRow(), region.getLastCol());
+    }
+
+    public void unmergeCells(CellRange regionToMerge) {
+        mergeCells(regionToMerge.getFirstRow(), regionToMerge.getFirstCol(),
+                regionToMerge.getLastRow(), regionToMerge.getLastCol());
+    }
+
+    public void unmergeCells(String startCellRef, String endCellRef) {
+        CellRef startRef = new CellRef(startCellRef);
+        CellRef endRef = new CellRef(endCellRef);
+        unmergeCells(startRef.getRow(), startRef.getCol(), endRef.getRow(), endRef.getCol());
+    }
+
+    public void unmergeCells(int startRow, int startCol, int endRow, int endCol) {
+
+        CellRangeAddress region = new CellRangeAddress(startRow, endRow, startCol, endCol);
+
+        org.apache.poi.ss.usermodel.Sheet poiSheet = getPoiSheet();
+
+        final List<CellRangeAddress> regions = poiSheet.getMergedRegions();
+        List<Integer> indicesToRemove = new ArrayList<>();
+        for (int index = 0; index < regions.size(); index++) {
+            if (regions.get(index).intersects(region)) {
+                indicesToRemove.add(index);
+            }
+        }
+
+        if (indicesToRemove.size() > 0) {
+            poiSheet.removeMergedRegions(indicesToRemove);
+            if (poiSheet instanceof XSSFSheet) {
+                CTMergeCells mergedCells = ((XSSFSheet) poiSheet).getCTWorksheet().getMergeCells();
+                mergedCells.setCount(mergedCells.getCount() - indicesToRemove.size());
+            }
+            POIElementsCache.removeMergedRegions(documentId, indicesToRemove);
         }
     }
 
@@ -430,8 +501,13 @@ public class Sheet implements Iterable<Row> {
         int lastColIndex = -1;
         int firstRowNum = poiSheet.getFirstRowNum();
         if (firstRowNum >= 0) {
-            for (org.apache.poi.ss.usermodel.Row row : poiSheet) {
-                lastColIndex = Math.max(lastColIndex, row.getLastCellNum());
+            if (poiSheet instanceof XSSFSheetExt) {
+                CellRangeAddress sheetDimension = ((XSSFSheetExt) poiSheet).getSheetDimension();
+                lastColIndex = sheetDimension.getLastColumn();
+            } else {
+                for (org.apache.poi.ss.usermodel.Row row : poiSheet) {
+                    lastColIndex = Math.max(lastColIndex, row.getLastCellNum());
+                }
             }
         }
         return lastColIndex;
@@ -607,7 +683,7 @@ public class Sheet implements Iterable<Row> {
     }
 
     public org.apache.poi.ss.usermodel.Sheet getPoiSheet() {
-        return PoiElementsCache.getPoiSheet(documentId, sheetIndex);
+        return POIElementsCache.getPoiSheet(documentId, sheetIndex);
     }
 
     private void shiftRows(int startRow, int rowsCount) {
@@ -622,7 +698,7 @@ public class Sheet implements Iterable<Row> {
 
         //Rows have been shifted and their positions changed. We need to cleanup
         // caches to get actual poi elements.
-        PoiElementsCache.clearRowsAndCellsCache(documentId);
+        POIElementsCache.clearRowsAndCellsCache(documentId);
 
         // Shift data validation ranges separately since by default shifting of rows
         // doesn't affect position of data validation

@@ -13,7 +13,7 @@ public class SheetDataReadingModule extends ApModule {
 
     public TaskOutput run() throws Exception {
         return execute(getInput(), ReadRangeOfData.class)
-                .thenCompose(execute(ReadListOfTypedRecords.class))
+//                .thenCompose(execute(ReadListOfTypedRecords.class))
                 .get();
     }
 }

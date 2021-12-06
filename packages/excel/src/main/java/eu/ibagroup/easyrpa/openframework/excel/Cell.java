@@ -1,9 +1,11 @@
 package eu.ibagroup.easyrpa.openframework.excel;
 
-import eu.ibagroup.easyrpa.openframework.excel.internal.PoiElementsCache;
+import eu.ibagroup.easyrpa.openframework.excel.internal.poi.POIElementsCache;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 
 import java.util.Date;
+import java.util.Objects;
 
 //TODO Supporting of cell constraints (data validation)
 public class Cell {
@@ -26,7 +28,7 @@ public class Cell {
         this.sheetIndex = parent.getIndex();
         this.rowIndex = rowIndex;
         this.columnIndex = columnIndex;
-        this.id = this.sheetIndex + "|" + this.rowIndex + "|" + this.columnIndex;
+        this.id = POIElementsCache.getId(sheetIndex, rowIndex, columnIndex);
     }
 
     public ExcelDocument getDocument() {
@@ -101,7 +103,7 @@ public class Cell {
             case STRING:
                 return poiCell.getStringCellValue().isEmpty();
             case FORMULA:
-                FormulaEvaluator evaluator = PoiElementsCache.getEvaluator(documentId);
+                FormulaEvaluator evaluator = POIElementsCache.getEvaluator(documentId);
                 if (evaluator == null) {
                     evaluator = poiCell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
                 }
@@ -136,8 +138,51 @@ public class Cell {
         setValue(getValue());
     }
 
+    public boolean isMerged() {
+        return POIElementsCache.getMergedRegionIndex(documentId, id) != null;
+    }
+
+    public CellRange getMergedRegion() {
+        Integer regionIndex = POIElementsCache.getMergedRegionIndex(documentId, id);
+        if (regionIndex != null) {
+            CellRangeAddress ra = getSheet().getPoiSheet().getMergedRegion(regionIndex);
+            return new CellRange(ra.getFirstRow(), ra.getFirstColumn(), ra.getLastRow(), ra.getLastColumn());
+        }
+        return null;
+    }
+
+    public Cell getMergedRegionCell() {
+        Integer regionIndex = POIElementsCache.getMergedRegionIndex(documentId, id);
+        if (regionIndex != null) {
+            CellRangeAddress ra = getSheet().getPoiSheet().getMergedRegion(regionIndex);
+            return new Cell(getSheet(), ra.getFirstRow(), ra.getFirstColumn());
+        }
+        return null;
+    }
+
     public org.apache.poi.ss.usermodel.Cell getPoiCell() {
-        return PoiElementsCache.getPoiCell(documentId, id, sheetIndex, rowIndex, columnIndex);
+        Cell mergedRegionCell = getMergedRegionCell();
+        if (mergedRegionCell != null && !mergedRegionCell.equals(this)) {
+            return mergedRegionCell.getPoiCell();
+        }
+        return POIElementsCache.getPoiCell(documentId, id, sheetIndex, rowIndex, columnIndex);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Cell)) return false;
+        Cell cell = (Cell) o;
+        return documentId == cell.documentId &&
+                sheetIndex == cell.sheetIndex &&
+                rowIndex == cell.rowIndex &&
+                columnIndex == cell.columnIndex &&
+                Objects.equals(id, cell.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, documentId, sheetIndex, rowIndex, columnIndex);
     }
 
     private Object getTypedValue() {
@@ -162,7 +207,7 @@ public class Cell {
                 break;
             case FORMULA:
                 try {
-                    FormulaEvaluator evaluator = PoiElementsCache.getEvaluator(documentId);
+                    FormulaEvaluator evaluator = POIElementsCache.getEvaluator(documentId);
                     if (evaluator == null) {
                         evaluator = poiCell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
                     }
@@ -227,11 +272,11 @@ public class Cell {
                 if (formatString == null) {
                     formatString = BuiltinFormats.getBuiltinFormat(formatIndex);
                 }
-                return PoiElementsCache.getDataFormatter(documentId)
+                return POIElementsCache.getDataFormatter(documentId)
                         .formatRawCellContents(poiCell.getNumericCellValue(), formatIndex, formatString);
             case FORMULA:
                 try {
-                    FormulaEvaluator evaluator = PoiElementsCache.getEvaluator(documentId);
+                    FormulaEvaluator evaluator = POIElementsCache.getEvaluator(documentId);
                     if (evaluator == null) {
                         evaluator = poiCell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
                     }
@@ -244,7 +289,7 @@ public class Cell {
                             if (formatString == null) {
                                 formatString = BuiltinFormats.getBuiltinFormat(formatIndex);
                             }
-                            return PoiElementsCache.getDataFormatter(documentId)
+                            return POIElementsCache.getDataFormatter(documentId)
                                     .formatRawCellContents(cellValue.getNumberValue(), formatIndex, formatString);
                         case BOOLEAN:
                             return Boolean.toString(cellValue.getBooleanValue());
@@ -274,7 +319,7 @@ public class Cell {
                 return poiCell.getNumericCellValue();
             case FORMULA:
                 try {
-                    FormulaEvaluator evaluator = PoiElementsCache.getEvaluator(documentId);
+                    FormulaEvaluator evaluator = POIElementsCache.getEvaluator(documentId);
                     if (evaluator == null) {
                         evaluator = poiCell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
                     }

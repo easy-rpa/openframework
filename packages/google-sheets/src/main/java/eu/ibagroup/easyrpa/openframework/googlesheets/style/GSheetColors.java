@@ -1,34 +1,35 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets.style;
 
+import eu.ibagroup.easyrpa.openframework.googlesheets.GSheetColor;
+
+import java.awt.*;
+
 public enum GSheetColors {
 
-    UNDEFINED(0, (short) -1),
-    BLACK1(1, (short) 1);
+    BLACK(Color.BLACK),
+    WHITE(Color.WHITE),
+    LIGHT_GRAY(Color.LIGHT_GRAY),
+    GRAY(Color.GRAY),
+    DARK_GRAY(Color.DARK_GRAY),
+    RED(Color.RED),
+    PINK(Color.PINK),
+    ORANGE(Color.ORANGE),
+    YELLOW(Color.YELLOW),
+    GREEN(Color.GREEN),
+    MAGENTA(Color.MAGENTA),
+    CYAN(Color.CYAN),
+    BLUE(Color.BLUE);
 
-    private static final GSheetColor[] _colors = new GSheetColor[2];
+    private final Color color;
 
-    static {
-        GSheetColors[] values = values();
-        for (GSheetColors color : values()) {
-            _colors[color._idx] = new GSheetColor(color.poiIndex);
-        }
-    }
-
-    private final int _idx;
-
-    private final short poiIndex;
-
-    GSheetColors(int _idx, short poiIndex) {
-        this._idx = _idx;
-        this.poiIndex = poiIndex;
+    GSheetColors(Color color) {
+        this.color = color;
     }
 
     public GSheetColor get() {
-        return _colors[_idx];
+        return new GSheetColor(color);
     }
 
-    public short getPoiIndex() {
-        return poiIndex;
-    }
+
 
 }
