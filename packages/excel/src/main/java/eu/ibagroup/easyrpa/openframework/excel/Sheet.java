@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-//TODO Supporting of merged regions
 //TODO Supporting of full copying of range of cells to another
 // excel document (including styles, merged regions, data validations, comments etc.)
 public class Sheet implements Iterable<Row> {
@@ -185,9 +184,9 @@ public class Sheet implements Iterable<Row> {
                 region.getLastRow(), region.getLastCol());
     }
 
-    public Cell mergeCells(CellRange regionToMerge) {
-        return mergeCells(regionToMerge.getFirstRow(), regionToMerge.getFirstCol(),
-                regionToMerge.getLastRow(), regionToMerge.getLastCol());
+    public Cell mergeCells(CellRange region) {
+        return mergeCells(region.getFirstRow(), region.getFirstCol(),
+                region.getLastRow(), region.getLastCol());
     }
 
     public Cell mergeCells(String startCellRef, String endCellRef) {
@@ -213,9 +212,9 @@ public class Sheet implements Iterable<Row> {
                 region.getLastRow(), region.getLastCol());
     }
 
-    public void unmergeCells(CellRange regionToMerge) {
-        mergeCells(regionToMerge.getFirstRow(), regionToMerge.getFirstCol(),
-                regionToMerge.getLastRow(), regionToMerge.getLastCol());
+    public void unmergeCells(CellRange region) {
+        mergeCells(region.getFirstRow(), region.getFirstCol(),
+                region.getLastRow(), region.getLastCol());
     }
 
     public void unmergeCells(String startCellRef, String endCellRef) {

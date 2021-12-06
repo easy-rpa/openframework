@@ -1,6 +1,7 @@
 package eu.ibagroup.easyrpa.openframework.excel;
 
 import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.DefaultIndexedColorMap;
 import org.apache.poi.xssf.usermodel.IndexedColorMap;
@@ -81,6 +82,9 @@ public class ExcelColor {
         IndexedColorMap colorMap = workbook instanceof XSSFWorkbook
                 ? ((XSSFWorkbook) workbook).getStylesSource().getIndexedColors()
                 : new DefaultIndexedColorMap();
+        if (isIndexed()) {
+            return new XSSFColor(IndexedColors.fromInt(index), colorMap);
+        }
         return new XSSFColor(new byte[]{red, green, blue}, colorMap);
     }
 

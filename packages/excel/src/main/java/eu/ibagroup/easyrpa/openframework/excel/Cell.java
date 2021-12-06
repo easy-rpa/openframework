@@ -81,8 +81,8 @@ public class Cell {
         } else if (value instanceof Date) {
             poiCell.setCellValue((Date) value);
 
-        } else if (value instanceof Double) {
-            poiCell.setCellValue((Double) value);
+        } else if (value instanceof Number) {
+            poiCell.setCellValue(((Number) value).doubleValue());
 
         } else if (value instanceof Boolean) {
             poiCell.setCellValue((Boolean) value);
