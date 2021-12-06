@@ -197,47 +197,26 @@ public class TypeUtils {
         }
         if (Number.class.isAssignableFrom(type) && obj instanceof Number) {
             if (Byte.class.isAssignableFrom(type) || Byte.TYPE == type) {
-                if (obj instanceof Short) return ((Short) obj).byteValue();
-                if (obj instanceof Integer) return ((Integer) obj).byteValue();
-                if (obj instanceof Long) return ((Long) obj).byteValue();
-                if (obj instanceof Float) return ((Float) obj).byteValue();
-                if (obj instanceof Double) return ((Double) obj).byteValue();
+                return ((Number) obj).byteValue();
             }
             if (Short.class.isAssignableFrom(type) || Short.TYPE == type) {
-                if (obj instanceof Byte) return ((Byte) obj).shortValue();
-                if (obj instanceof Integer) return ((Integer) obj).shortValue();
-                if (obj instanceof Long) return ((Long) obj).shortValue();
-                if (obj instanceof Float) return ((Float) obj).shortValue();
-                if (obj instanceof Double) return ((Double) obj).shortValue();
+                return ((Number) obj).shortValue();
             }
             if (Integer.class.isAssignableFrom(type) || Integer.TYPE == type) {
-                if (obj instanceof Byte) return ((Byte) obj).intValue();
-                if (obj instanceof Short) return ((Short) obj).intValue();
-                if (obj instanceof Long) return ((Long) obj).intValue();
-                if (obj instanceof Float) return ((Float) obj).intValue();
-                if (obj instanceof Double) return ((Double) obj).intValue();
+                return ((Number) obj).intValue();
             }
             if (Long.class.isAssignableFrom(type) || Long.TYPE == type) {
-                if (obj instanceof Byte) return ((Byte) obj).longValue();
-                if (obj instanceof Short) return ((Short) obj).longValue();
-                if (obj instanceof Integer) return ((Integer) obj).longValue();
-                if (obj instanceof Float) return ((Float) obj).longValue();
-                if (obj instanceof Double) return ((Double) obj).longValue();
+                return ((Number) obj).longValue();
             }
             if (Float.class.isAssignableFrom(type) || Float.TYPE == type) {
-                if (obj instanceof Byte) return ((Byte) obj).floatValue();
-                if (obj instanceof Short) return ((Short) obj).floatValue();
-                if (obj instanceof Integer) return ((Integer) obj).floatValue();
-                if (obj instanceof Long) return ((Long) obj).floatValue();
-                if (obj instanceof Double) return ((Double) obj).floatValue();
+                return ((Number) obj).floatValue();
             }
             if (Double.class.isAssignableFrom(type) || Double.TYPE == type) {
-                if (obj instanceof Byte) return ((Byte) obj).doubleValue();
-                if (obj instanceof Short) return ((Short) obj).doubleValue();
-                if (obj instanceof Integer) return ((Integer) obj).doubleValue();
-                if (obj instanceof Long) return ((Long) obj).doubleValue();
-                if (obj instanceof Float) return ((Float) obj).doubleValue();
+                return ((Number) obj).doubleValue();
             }
+        }
+        if (String.class.isAssignableFrom(type) && !(obj instanceof String)) {
+            return obj != null ? obj.toString() : null;
         }
         return obj;
     }

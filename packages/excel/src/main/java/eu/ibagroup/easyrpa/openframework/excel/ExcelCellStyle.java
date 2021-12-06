@@ -1,5 +1,6 @@
 package eu.ibagroup.easyrpa.openframework.excel;
 
+import eu.ibagroup.easyrpa.openframework.core.utils.TypeUtils;
 import eu.ibagroup.easyrpa.openframework.excel.style.DataFormats;
 import eu.ibagroup.easyrpa.openframework.excel.style.ExcelColors;
 import eu.ibagroup.easyrpa.openframework.excel.style.FontOffsetType;
@@ -7,6 +8,9 @@ import eu.ibagroup.easyrpa.openframework.excel.style.FontUnderlineStyle;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTBorder;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTBorderPr;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.STBorderStyle;
 
 public class ExcelCellStyle {
 
@@ -410,24 +414,49 @@ public class ExcelCellStyle {
                 ((XSSFCellStyle) cellStyle).setFillForegroundColor(bgColor.toXSSFColor(workbook));
             }
 
-
             cellStyle.setFillPattern(bgFill);
             cellStyle.setAlignment(hAlign);
             cellStyle.setVerticalAlignment(vAlign);
             cellStyle.setWrapText(wrapText);
             cellStyle.setRotation(rotation);
-            cellStyle.setBorderTop(topBorder);
-            cellStyle.setBorderRight(rightBorder);
-            cellStyle.setBorderBottom(bottomBorder);
-            cellStyle.setBorderLeft(leftBorder);
 
             if (cellStyle instanceof XSSFCellStyle) {
-                XSSFCellStyle xssfCellStyle = (XSSFCellStyle) cellStyle;
-                xssfCellStyle.setTopBorderColor(topBorderColor.toXSSFColor(workbook));
-                xssfCellStyle.setRightBorderColor(rightBorderColor.toXSSFColor(workbook));
-                xssfCellStyle.setBottomBorderColor(bottomBorderColor.toXSSFColor(workbook));
-                xssfCellStyle.setLeftBorderColor(leftBorderColor.toXSSFColor(workbook));
+                CTBorder ct = TypeUtils.callMethod(cellStyle, "getCTBorder");
+                if (topBorder == BorderStyle.NONE) {
+                    ct.unsetTop();
+                } else {
+                    CTBorderPr pr = ct.isSetTop() ? ct.getTop() : ct.addNewTop();
+                    pr.setStyle(STBorderStyle.Enum.forInt(topBorder.getCode() + 1));
+                    pr.setColor(topBorderColor.toXSSFColor(workbook).getCTColor());
+                }
+                if (rightBorder == BorderStyle.NONE) {
+                    ct.unsetRight();
+                } else {
+                    CTBorderPr pr = ct.isSetRight() ? ct.getRight() : ct.addNewRight();
+                    pr.setStyle(STBorderStyle.Enum.forInt(rightBorder.getCode() + 1));
+                    pr.setColor(rightBorderColor.toXSSFColor(workbook).getCTColor());
+                }
+                if (bottomBorder == BorderStyle.NONE) {
+                    ct.unsetBottom();
+                } else {
+                    CTBorderPr pr = ct.isSetBottom() ? ct.getBottom() : ct.addNewBottom();
+                    pr.setStyle(STBorderStyle.Enum.forInt(bottomBorder.getCode() + 1));
+                    pr.setColor(bottomBorderColor.toXSSFColor(workbook).getCTColor());
+                }
+                if (leftBorder == BorderStyle.NONE) {
+                    ct.unsetLeft();
+                } else {
+                    CTBorderPr pr = ct.isSetLeft() ? ct.getLeft() : ct.addNewLeft();
+                    pr.setStyle(STBorderStyle.Enum.forInt(leftBorder.getCode() + 1));
+                    pr.setColor(leftBorderColor.toXSSFColor(workbook).getCTColor());
+                }
+                TypeUtils.callMethod(cellStyle, "addBorder", ct);
+
             } else {
+                cellStyle.setBorderTop(topBorder);
+                cellStyle.setBorderRight(rightBorder);
+                cellStyle.setBorderBottom(bottomBorder);
+                cellStyle.setBorderLeft(leftBorder);
                 if (topBorderColor.isIndexed()) {
                     cellStyle.setTopBorderColor(topBorderColor.getIndex());
                 }
@@ -441,6 +470,7 @@ public class ExcelCellStyle {
                     cellStyle.setLeftBorderColor(leftBorderColor.getIndex());
                 }
             }
+
             cellStyle.setHidden(hidden);
             cellStyle.setLocked(locked);
             cellStyle.setIndention(indention);
