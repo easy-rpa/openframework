@@ -127,13 +127,21 @@ public class Sheet implements Iterable<Row> {
     }
 
     public List<List<Object>> getRange(String startRef, String endRef) {
+        return getRange(startRef, endRef, Object.class);
+    }
+
+    public <T> List<List<T>> getRange(String startRef, String endRef, Class<T> valueType) {
         CellRef sRef = new CellRef(startRef);
         CellRef eRef = new CellRef(endRef);
-        return getRange(sRef.getRow(), sRef.getCol(), eRef.getRow(), eRef.getCol());
+        return getRange(sRef.getRow(), sRef.getCol(), eRef.getRow(), eRef.getCol(), valueType);
     }
 
     public List<List<Object>> getRange(int startRow, int startCol, int endRow, int endCol) {
-        List<List<Object>> data = new ArrayList<>();
+        return getRange(startRow, startCol, endRow, endCol, Object.class);
+    }
+
+    public <T> List<List<T>> getRange(int startRow, int startCol, int endRow, int endCol, Class<T> valueType) {
+        List<List<T>> data = new ArrayList<>();
 
         if (startRow < 0 || startCol < 0 || endRow < 0 || endCol < 0) {
             return data;
@@ -145,9 +153,9 @@ public class Sheet implements Iterable<Row> {
         int c2 = Math.max(startCol, endCol);
 
         for (int row = r1; row <= r2; row++) {
-            List<Object> rowList = new ArrayList<>();
+            List<T> rowList = new ArrayList<>();
             for (int col = c1; col <= c2; col++) {
-                rowList.add(getValue(row, col));
+                rowList.add(getValue(row, col, valueType));
             }
             data.add(rowList);
         }
@@ -201,7 +209,9 @@ public class Sheet implements Iterable<Row> {
         int regionIndex = getPoiSheet().addMergedRegion(region);
         if (regionIndex >= 0) {
             POIElementsCache.addMergedRegion(documentId, sheetIndex, regionIndex, region);
-            return new Cell(this, region.getFirstRow(), region.getFirstColumn());
+            Cell topLeftCell = new Cell(this, region.getFirstRow(), region.getFirstColumn());
+            topLeftCell.getStyle().apply();
+            return topLeftCell;
         }
         return null;
     }
@@ -557,8 +567,23 @@ public class Sheet implements Iterable<Row> {
         }
         Row headerRow = findRow(matchMethod, keywords);
         if (headerRow != null) {
-            CellRef headerRef = headerRow.getReference();
-            return getTable(headerRef.getRow(), headerRef.getCol(), recordType);
+            int topRow = Integer.MAX_VALUE, leftCol = Integer.MAX_VALUE;
+            int botRow = -1, rightCol = -1;
+            for (Cell cell : headerRow) {
+                CellRange region = cell.getMergedRegion();
+                if (region != null) {
+                    topRow = Math.min(topRow, region.getFirstRow());
+                    leftCol = Math.min(leftCol, region.getFirstCol());
+                    botRow = Math.max(botRow, region.getLastRow());
+                    rightCol = Math.max(rightCol, region.getLastCol());
+                } else {
+                    topRow = Math.min(topRow, cell.getRowIndex());
+                    leftCol = Math.min(leftCol, cell.getColumnIndex());
+                    botRow = Math.max(botRow, cell.getRowIndex());
+                    rightCol = Math.max(rightCol, cell.getColumnIndex());
+                }
+            }
+            return getTable(topRow, leftCol, botRow, rightCol, recordType);
         }
         return null;
     }

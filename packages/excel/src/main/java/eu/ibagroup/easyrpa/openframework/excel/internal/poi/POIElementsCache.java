@@ -95,6 +95,9 @@ public class POIElementsCache {
         if (POISaveMemoryExtension.isInitialized()) {
             return cache.workbooks.get(excelDocumentId).getSheetAt(sheetIndex).getRow(rowIndex).getCell(columnIndex);
         }
+        if(cellId == null){
+            cellId = getId(sheetIndex, rowIndex, columnIndex);
+        }
         Map<String, Cell> cellsCache = cache.cellsCache.get(excelDocumentId);
         Cell poiCell = cellsCache.get(cellId);
         if (poiCell == null) {

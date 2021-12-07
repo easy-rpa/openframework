@@ -102,7 +102,7 @@ public class Table<T> implements Iterable<T> {
 
     public Map<String, Integer> getColumnNameToIndexMap() {
         if (columnNameToIndexMap == null) {
-            this.columnNameToIndexMap = getColumnNameToIndexMap(this.hTopRow, this.hLeftCol, this.hRightCol);
+            this.columnNameToIndexMap = getColumnNameToIndexMap(this.hTopRow, this.hLeftCol, this.hBottomRow, this.hRightCol);
         }
         return columnNameToIndexMap;
     }
@@ -194,7 +194,6 @@ public class Table<T> implements Iterable<T> {
             return;
         }
         Map<String, Integer> columnsIndexMap = getColumnNameToIndexMap();
-        //TODO think to replace map with list of column names
         Map<Integer, String> columnNamesMap = columnsIndexMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
 
         List<List<Object>> data = records.stream().map(r -> typeHelper.mapToValues(r, columnsIndexMap)).collect(Collectors.toList());
@@ -204,7 +203,9 @@ public class Table<T> implements Iterable<T> {
         if (this.records == null) {
             this.records = new ArrayList<>(Collections.nCopies(getRecordsCount(), null));
         }
-        this.records.addAll(insertPos, records);
+        for (int i = insertPos, j = 0; j < records.size(); i++, j++) {
+            this.records.set(i, records.get(j));
+        }
         if (bottomRow >= 0) {
             bottomRow += records.size();
         }
@@ -212,7 +213,7 @@ public class Table<T> implements Iterable<T> {
         int rowsCount = data.size();
         int startRow = insertPos + hBottomRow + 1;
         for (int i = startRow; i < rowsCount + startRow; i++) {
-            for (int j = hLeftCol; j < hRightCol; j++) {
+            for (int j = hLeftCol; j <= hRightCol; j++) {
                 typeHelper.formatCell(parent.getCell(i, j), columnNamesMap.get(j - hLeftCol), i - hBottomRow - 1, this.records);
             }
         }
@@ -227,7 +228,6 @@ public class Table<T> implements Iterable<T> {
             return;
         }
         Map<String, Integer> columnsIndexMap = getColumnNameToIndexMap();
-        //TODO think to replace map with list of column names
         Map<Integer, String> columnNamesMap = columnsIndexMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
 
         for (T record : records) {
@@ -308,32 +308,59 @@ public class Table<T> implements Iterable<T> {
         return new RecordIterator();
     }
 
-    private Map<String, Integer> getColumnNameToIndexMap(int tableHeaderRow, int headerLeftCol, int headerRightCol) {
-        Row headerRow = parent.getRow(tableHeaderRow);
-        if (headerRow == null) {
-            return null;
-        }
+    private Map<String, Integer> getColumnNameToIndexMap(int headerTopRow, int headerLeftCol, int headerBottomRow, int headerRightCol) {
         Map<String, Integer> columnsIndex = new HashMap<>();
-        List<String> columns = headerRow.getRange(headerLeftCol, headerRightCol, String.class);
-        for (int i = 0; i < columns.size(); i++) {
-            String columnName = columns.get(i);
-            columnsIndex.put(columnName != null ? columnName : "", i);
+        List<List<String>> headerValues = parent.getRange(headerTopRow, headerLeftCol, headerBottomRow, headerRightCol, String.class);
+        List<String> nameHierarchy = new ArrayList<>();
+        for (int j = 0; j <= headerRightCol - headerLeftCol; j++) {
+            for (int i = 0; i <= headerBottomRow - headerTopRow; i++) {
+                if (i >= headerValues.size()) {
+                    continue;
+                }
+                List<String> rowValues = headerValues.get(i);
+                if (rowValues == null || j >= rowValues.size()) {
+                    continue;
+                }
+                String name = rowValues.get(j);
+                if (name != null && (nameHierarchy.isEmpty() || !name.equals(nameHierarchy.get(nameHierarchy.size() - 1)))) {
+                    nameHierarchy.add(name);
+                }
+            }
+            if (!nameHierarchy.isEmpty()) {
+                String fullColumnName = nameHierarchy.stream().map(String::trim)
+                        .collect(Collectors.joining(RecordTypeHelper.NAME_LEVEL_DELIMITER));
+                columnsIndex.put(fullColumnName, j);
+                nameHierarchy.clear();
+            }
         }
-        return columnsIndex;
+        return columnsIndex.size() > 0 ? columnsIndex : null;
     }
 
     private void buildTable(int startRow, int startCol, List<T> records) {
-        List<String> columnNames = typeHelper.getColumnNames();
-        int columnsCount = columnNames.size();
+        RecordTypeHelper.ColumnNamesTree columnNamesTree = typeHelper.getColumnNames();
 
         hTopRow = startRow;
         hLeftCol = startCol;
-        hBottomRow = startRow;
-        hRightCol = hLeftCol + columnsCount;
+        hBottomRow = startRow + columnNamesTree.getHeight() - 1;
+        hRightCol = startCol + columnNamesTree.getWidth() - 1;
 
-        parent.insertRows(InsertMethod.BEFORE, hTopRow, hLeftCol, columnNames);
-        for (int j = hLeftCol; j < hRightCol; j++) {
-            typeHelper.formatHeaderCell(parent.getCell(hTopRow, j), columnNames.get(j - hLeftCol));
+        List<List<String>> stub = Collections.nCopies(columnNamesTree.getHeight(),
+                Collections.nCopies(columnNamesTree.getWidth(), ""));
+        parent.insertRows(InsertMethod.BEFORE, hTopRow, hLeftCol, stub);
+
+        for (int i = 0; i < columnNamesTree.getHeight(); i++) {
+            List<RecordTypeHelper.ColumnNameNode> columnNodes = columnNamesTree.getForLevel(i);
+            Row row = parent.getRow(startRow + i);
+            for (RecordTypeHelper.ColumnNameNode columnNode : columnNodes) {
+                Cell cell = row.getCell(startCol + columnNode.getColumnIndex());
+                cell.setValue(columnNode.getName());
+                if (columnNode.getWidth() > 1 || columnNode.getHeight() > 1) {
+                    parent.mergeCells(cell.getRowIndex(), cell.getColumnIndex(),
+                            cell.getRowIndex() + columnNode.getHeight() - 1,
+                            cell.getColumnIndex() + columnNode.getWidth() - 1);
+                }
+                typeHelper.formatHeaderCell(cell, columnNode.getFullName());
+            }
         }
 
         insertRecords(InsertMethod.BEFORE, 0, records);

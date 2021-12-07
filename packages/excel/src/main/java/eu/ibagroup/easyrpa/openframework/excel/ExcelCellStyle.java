@@ -1,6 +1,7 @@
 package eu.ibagroup.easyrpa.openframework.excel;
 
 import eu.ibagroup.easyrpa.openframework.core.utils.TypeUtils;
+import eu.ibagroup.easyrpa.openframework.excel.internal.poi.POIElementsCache;
 import eu.ibagroup.easyrpa.openframework.excel.style.DataFormats;
 import eu.ibagroup.easyrpa.openframework.excel.style.ExcelColors;
 import eu.ibagroup.easyrpa.openframework.excel.style.FontOffsetType;
@@ -343,18 +344,35 @@ public class ExcelCellStyle {
     }
 
     public void applyTo(Cell cell) {
+        int documentId = cell.getDocument().getId();
+        int sheetIndex = cell.getSheetIndex();
+
+        CellRange mr = cell.getMergedRegion();
+        if (mr == null) {
+            applyToPoiCell(documentId, cell.getPoiCell());
+        } else {
+            for (int i = mr.getFirstRow(); i <= mr.getLastRow(); i++) {
+                for (int j = mr.getFirstCol(); j <= mr.getLastCol(); j++) {
+                    applyToPoiCell(documentId, POIElementsCache.getPoiCell(documentId, null, sheetIndex, i, j));
+                }
+            }
+        }
+
+        this.cell = cell;
+    }
+
+    protected void applyToPoiCell(int documentId, org.apache.poi.ss.usermodel.Cell poiCell) {
+        poiCell.setCellStyle(getOrCreatePoiCellStyle(documentId, poiCell.getSheet().getWorkbook()));
+    }
+
+    protected CellStyle getOrCreatePoiCellStyle(int documentId, Workbook workbook) {
         CellStyle cellStyle = null;
 
-        int documentId = cell.getDocument().getId();
-        org.apache.poi.ss.usermodel.Cell poiCell = cell.getPoiCell();
-
-        if (!isDirty && poiCellStyleIndex != null && parentDocumentId == documentId
-                && poiCellStyleIndex != poiCell.getCellStyle().getIndex()) {
-
-            cellStyle = poiCell.getSheet().getWorkbook().getCellStyleAt(poiCellStyleIndex);
-            poiCell.setCellStyle(cellStyle);
-            this.cell = cell;
-            return;
+        if (!isDirty && poiCellStyleIndex != null && parentDocumentId == documentId) {
+            cellStyle = workbook.getCellStyleAt(poiCellStyleIndex);
+            if (cellStyle != null) {
+                return cellStyle;
+            }
         }
 
         Font font = null;
@@ -363,7 +381,6 @@ public class ExcelCellStyle {
             bgFill = FillPatternType.SOLID_FOREGROUND;
         }
 
-        Workbook workbook = poiCell.getSheet().getWorkbook();
         for (int i = 0; i < workbook.getNumCellStyles(); i++) {
             CellStyle cs = workbook.getCellStyleAt(i);
             if (isSameStyleAs(cs)) {
@@ -478,9 +495,9 @@ public class ExcelCellStyle {
 
         parentDocumentId = documentId;
         poiCellStyleIndex = cellStyle.getIndex();
-        poiCell.setCellStyle(cellStyle);
-        this.cell = cell;
         isDirty = false;
+
+        return cellStyle;
     }
 
     protected boolean isSameStyleAs(CellStyle cellStyle) {

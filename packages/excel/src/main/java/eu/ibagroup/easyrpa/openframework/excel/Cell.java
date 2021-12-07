@@ -39,6 +39,10 @@ public class Cell {
         return parent;
     }
 
+    public int getSheetIndex() {
+        return sheetIndex;
+    }
+
     public int getRowIndex() {
         return rowIndex;
     }
