@@ -377,7 +377,7 @@ public class ExcelCellStyle {
 
         Font font = null;
 
-        if (bgColor.getIndex() != ExcelColors.AUTOMATIC.getPoiIndex() && bgFill == FillPatternType.NO_FILL) {
+        if (bgColor.isDefined() && bgColor.getIndex() != ExcelColors.AUTOMATIC.getPoiIndex() && bgFill == FillPatternType.NO_FILL) {
             bgFill = FillPatternType.SOLID_FOREGROUND;
         }
 
@@ -440,28 +440,28 @@ public class ExcelCellStyle {
             if (cellStyle instanceof XSSFCellStyle) {
                 CTBorder ct = TypeUtils.callMethod(cellStyle, "getCTBorder");
                 if (topBorder == BorderStyle.NONE) {
-                    ct.unsetTop();
+                    if (ct.isSetTop()) ct.unsetTop();
                 } else {
                     CTBorderPr pr = ct.isSetTop() ? ct.getTop() : ct.addNewTop();
                     pr.setStyle(STBorderStyle.Enum.forInt(topBorder.getCode() + 1));
                     pr.setColor(topBorderColor.toXSSFColor(workbook).getCTColor());
                 }
                 if (rightBorder == BorderStyle.NONE) {
-                    ct.unsetRight();
+                    if (ct.isSetRight()) ct.unsetRight();
                 } else {
                     CTBorderPr pr = ct.isSetRight() ? ct.getRight() : ct.addNewRight();
                     pr.setStyle(STBorderStyle.Enum.forInt(rightBorder.getCode() + 1));
                     pr.setColor(rightBorderColor.toXSSFColor(workbook).getCTColor());
                 }
                 if (bottomBorder == BorderStyle.NONE) {
-                    ct.unsetBottom();
+                    if (ct.isSetBottom()) ct.unsetBottom();
                 } else {
                     CTBorderPr pr = ct.isSetBottom() ? ct.getBottom() : ct.addNewBottom();
                     pr.setStyle(STBorderStyle.Enum.forInt(bottomBorder.getCode() + 1));
                     pr.setColor(bottomBorderColor.toXSSFColor(workbook).getCTColor());
                 }
                 if (leftBorder == BorderStyle.NONE) {
-                    ct.unsetLeft();
+                    if (ct.isSetLeft()) ct.unsetLeft();
                 } else {
                     CTBorderPr pr = ct.isSetLeft() ? ct.getLeft() : ct.addNewLeft();
                     pr.setStyle(STBorderStyle.Enum.forInt(leftBorder.getCode() + 1));

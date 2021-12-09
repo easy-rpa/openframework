@@ -143,6 +143,14 @@ public class CellRange {
         }
     }
 
+    public int getColumnsCount() {
+        return lastCell.getCol() - firstCell.getCol() + 1;
+    }
+
+    public int getRowsCount() {
+        return lastCell.getRow() - firstCell.getRow() + 1;
+    }
+
     public String formatAsString() {
         if (ref == null) {
             CellReference firstRef = new CellReference(firstCell.getSheetName(),
@@ -172,6 +180,56 @@ public class CellRange {
         return sheetName != null && sheetName.length() > 0;
     }
 
+    /**
+     * Determines if the given coordinates lie within the bounds
+     * of this range.
+     *
+     * @param rowInd The row, 0-based.
+     * @param colInd The column, 0-based.
+     * @return True if the coordinates lie within the bounds, false otherwise.
+     */
+    public boolean isInRange(int rowInd, int colInd) {
+        return firstCell.getRow() <= rowInd && rowInd <= lastCell.getRow() && //containsRow
+                firstCell.getCol() <= colInd && colInd <= lastCell.getCol(); //containsColumn
+    }
+
+    /**
+     * Determines if the given {@link CellRef} lies within the bounds
+     * of this range.
+     *
+     * @param ref the CellRef to check
+     * @return True if the ref lies within the bounds, false otherwise.
+     */
+    public boolean isInRange(CellRef ref) {
+        return isInRange(ref.getRow(), ref.getCol());
+    }
+
+    /**
+     * Determines if the given {@link CellRange} lies within the bounds
+     * of this range.
+     *
+     * @param range the CellRange to check
+     * @return True if the range lies within the bounds, false otherwise.
+     */
+    public boolean isInRange(CellRange range) {
+        return isInRange(range.firstCell.getRow(), range.firstCell.getCol())
+                && isInRange(range.lastCell.getRow(), range.lastCell.getCol());
+    }
+
+    /**
+     * Determines whether or not this CellRange and the specified CellRange intersect.
+     *
+     * @param other a candidate cell range address to check for intersection with this range
+     * @return returns true if this range and other range have at least 1 cell in common
+     * @see #isInRange(int, int) for checking if a single cell intersects
+     */
+    public boolean intersects(CellRange other) {
+        return this.firstCell.getRow() <= other.lastCell.getRow() &&
+                this.firstCell.getCol() <= other.lastCell.getCol() &&
+                other.firstCell.getRow() <= this.lastCell.getRow() &&
+                other.firstCell.getCol() <= this.lastCell.getCol();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -184,5 +242,10 @@ public class CellRange {
     @Override
     public int hashCode() {
         return Objects.hash(firstCell, lastCell);
+    }
+
+    @Override
+    public String toString() {
+        return formatAsString();
     }
 }

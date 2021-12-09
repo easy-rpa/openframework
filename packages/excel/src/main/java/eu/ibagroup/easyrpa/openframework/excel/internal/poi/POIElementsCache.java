@@ -35,7 +35,7 @@ public class POIElementsCache {
             cache.rowsCache.put(excelDocumentId, new HashMap<>());
             cache.cellsCache.put(excelDocumentId, new HashMap<>());
         }
-        cache.readMergedRegions(excelDocumentId, workbook);
+        cache.readMergedRegions(excelDocumentId);
     }
 
     public static void unregister(int excelDocumentId) {
@@ -95,7 +95,7 @@ public class POIElementsCache {
         if (POISaveMemoryExtension.isInitialized()) {
             return cache.workbooks.get(excelDocumentId).getSheetAt(sheetIndex).getRow(rowIndex).getCell(columnIndex);
         }
-        if(cellId == null){
+        if (cellId == null) {
             cellId = getId(sheetIndex, rowIndex, columnIndex);
         }
         Map<String, Cell> cellsCache = cache.cellsCache.get(excelDocumentId);
@@ -146,6 +146,7 @@ public class POIElementsCache {
             POIElementsCache cache = getInstance();
             cache.rowsCache.get(excelDocumentId).clear();
             cache.cellsCache.get(excelDocumentId).clear();
+            cache.readMergedRegions(excelDocumentId);
         }
     }
 
@@ -182,7 +183,6 @@ public class POIElementsCache {
         return evaluator;
     }
 
-
     private Map<Integer, Workbook> workbooks = new HashMap<>();
     private Map<Integer, FormulaEvaluator> formulaEvaluators = new HashMap<>();
     private Map<Integer, DataFormatter> dataFormatters = new HashMap<>();
@@ -196,9 +196,18 @@ public class POIElementsCache {
     private POIElementsCache() {
     }
 
-    private void readMergedRegions(int excelDocumentId, Workbook workbook) {
-        Map<String, Integer> docMergedRegionsCache = new HashMap<>();
-        mergedRegionsCache.put(excelDocumentId, docMergedRegionsCache);
+    private void readMergedRegions(int excelDocumentId) {
+        Workbook workbook = workbooks.get(excelDocumentId);
+        if (workbook == null) {
+            return;
+        }
+        Map<String, Integer> docMergedRegionsCache = mergedRegionsCache.get(excelDocumentId);
+        if (docMergedRegionsCache == null) {
+            docMergedRegionsCache = new HashMap<>();
+            mergedRegionsCache.put(excelDocumentId, docMergedRegionsCache);
+        } else {
+            docMergedRegionsCache.clear();
+        }
         for (Sheet sheet : workbook) {
             int sheetIndex = workbook.getSheetIndex(sheet.getSheetName());
             List<CellRangeAddress> mergedRegions = sheet.getMergedRegions();

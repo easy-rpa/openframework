@@ -164,6 +164,10 @@ public class Cell {
         return null;
     }
 
+    public ExcelCellsFormat getFormat() {
+        return new ExcelCellsFormat(this);
+    }
+
     public org.apache.poi.ss.usermodel.Cell getPoiCell() {
         Cell mergedRegionCell = getMergedRegionCell();
         if (mergedRegionCell != null && !mergedRegionCell.equals(this)) {

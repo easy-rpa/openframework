@@ -33,13 +33,8 @@ public class CloneSheet extends ApTask {
 
         log.info("Active sheet name: '{}'", activeSheet.getName());
 
-        Sheet clonedSheet = doc.cloneSheet(activeSheet.getName());
-        log.info("Sheet '{}' has been cloned successfully.", clonedSheet.getName());
-
-        log.info("Rename cloned sheet to '{}'.", clonedSheetName);
-        doc.renameSheet(clonedSheet, clonedSheetName);
-
-        log.info("Name of sheet after rename '{}'.", clonedSheet.getName());
+        Sheet clonedSheet = activeSheet.cloneAs(clonedSheetName);
+        log.info("Sheet '{}' has been cloned successfully. Current name of cloned sheet '{}'", activeSheet.getName(), clonedSheet.getName());
 
         String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);
         log.info("Save changes to '{}'.", outputFilePath);

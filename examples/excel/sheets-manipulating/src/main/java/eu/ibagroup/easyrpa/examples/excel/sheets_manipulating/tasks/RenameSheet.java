@@ -29,10 +29,9 @@ public class RenameSheet extends ApTask {
         log.info("Rename active by default sheet to '{}' for spreadsheet document located at: {}", newSheetName, sourceSpreadsheetFile);
         ExcelDocument doc = new ExcelDocument(sourceSpreadsheetFile);
         Sheet activeSheet = doc.getActiveSheet();
-        String oldSheetName = activeSheet.getName();
 
         log.info("Current name of active sheet: '{}'. Rename it to '{}'.", activeSheet.getName(), newSheetName);
-        doc.renameSheet(activeSheet, newSheetName);
+        activeSheet.rename(newSheetName);
         log.info("Sheet has been renamed successfully. Current name of active sheet: '{}'", activeSheet.getName());
 
         String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);

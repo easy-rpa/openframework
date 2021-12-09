@@ -33,7 +33,7 @@ public class CopySheetBetweenSpreadsheets extends ApTask {
         ExcelDocument target = new ExcelDocument(targetSpreadsheetFile);
 
         Sheet targetSheet = target.createSheet(sourceSheetName);
-        src.copySheet(sourceSheetName, targetSheet);
+        src.selectSheet(sourceSheetName).copy(targetSheet);
         log.info("Sheet '{}' has been copied successfully.", sourceSheetName);
 
         String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + FilenameUtils.getName(targetSpreadsheetFile));

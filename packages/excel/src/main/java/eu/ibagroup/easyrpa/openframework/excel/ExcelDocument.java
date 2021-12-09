@@ -347,6 +347,19 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      ********************************************************/
 
     /**
+     * Get names of all sheets
+     *
+     * @return List of sheet names
+     */
+    public List<String> getSheetNames() {
+        List<String> sheetNames = new ArrayList<>();
+        for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+            sheetNames.add(workbook.getSheetName(i));
+        }
+        return sheetNames;
+    }
+
+    /**
      * Create a new sheet for this Excel Document and return the high level
      * representation. New sheet will set as active sheet. Will set existing sheet
      * as active sheet and return it if sheet with name specified is exist already
@@ -366,77 +379,6 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     }
 
     /**
-     * Create an Sheet from an existing sheet in the Excel Document. This new sheet will
-     * be placed next to the source sheet.
-     *
-     * @param sheetName the name of sheet to clone.
-     * @return Sheet representing the cloned sheet. Returns null if specified sheet not found.
-     */
-    public Sheet cloneSheet(String sheetName) {
-        org.apache.poi.ss.usermodel.Sheet source = workbook.getSheet(sheetName);
-        if (source != null) {
-            org.apache.poi.ss.usermodel.Sheet clone = workbook.cloneSheet(workbook.getSheetIndex(source));
-            return new Sheet(this, workbook.getSheetIndex(clone));
-        }
-        return null;
-    }
-
-    /**
-     * Copy the content of sheet {@code sheetName} to another sheet with styles.
-     * Destination sheet can be located in another Excel Document.
-     *
-     * @param sheetName - name of the sheet to copy
-     * @param destSheet - destination sheet
-     */
-    public void copySheet(String sheetName, Sheet destSheet) {
-        org.apache.poi.ss.usermodel.Sheet source = workbook.getSheet(sheetName);
-        if (source == null) {
-            throw new IllegalArgumentException(String.format("Sheet with name '%s' is not found to copy.", sheetName));
-        }
-        //TODO Rewrite based on ExcelCellStyle implementation
-        SpreadsheetUtil.copySheet(source, destSheet.getPoiSheet());
-    }
-
-    /**
-     * Copy the content of sheet {@code sheetName} to another sheet without styles.
-     * Destination sheet can be located in another Excel Document.
-     *
-     * @param sheetName - name of the sheet to copy
-     * @param destSheet - destination sheet
-     */
-    public void copySheetWithoutStyles(String sheetName, Sheet destSheet) {
-        org.apache.poi.ss.usermodel.Sheet source = workbook.getSheet(sheetName);
-        if (source == null) {
-            throw new IllegalArgumentException(String.format("Sheet with name '%s' is not found to copy.", sheetName));
-        }
-        //TODO Rewrite based on ExcelCellStyle implementation
-        SpreadsheetUtil.copySheetWithoutStyles(source, destSheet.getPoiSheet());
-    }
-
-    /**
-     * Get names of all sheets
-     *
-     * @return List of sheet names
-     */
-    public List<String> getSheetNames() {
-        List<String> sheetNames = new ArrayList<>();
-        for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
-            sheetNames.add(workbook.getSheetName(i));
-        }
-        return sheetNames;
-    }
-
-    /**
-     * Move specified sheet to a new position.
-     *
-     * @param sheetName the name of the sheet to reorder
-     * @param newPos    the position that we want to move the sheet into (0 based)
-     */
-    public void moveSheet(String sheetName, int newPos) {
-        workbook.setSheetOrder(sheetName, newPos);
-    }
-
-    /**
      * Removes sheet with the given name. Does nothing if sheet with given name not
      * found.
      *
@@ -453,21 +395,21 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     }
 
     /**
+     * Removes given sheet.
+     *
+     * @param sheet - sheet to remove
+     */
+    public void removeSheet(Sheet sheet) {
+        if (sheet.getDocument() == this) {
+            workbook.removeSheetAt(sheet.getIndex());
+        }
+    }
+
+    /**
      * @return current active sheet.
      */
     public Sheet getActiveSheet() {
         return new Sheet(this, workbook.getActiveSheetIndex());
-    }
-
-    /**
-     * Change the name of given sheet.
-     *
-     * @param sheet   - instance of Sheet that needs to renamed
-     * @param newName - a new name for specified sheet
-     */
-    public void renameSheet(Sheet sheet, String newName) {
-        int index = workbook.getSheetIndex(sheet.getPoiSheet());
-        workbook.setSheetName(index, newName);
     }
 
     /**

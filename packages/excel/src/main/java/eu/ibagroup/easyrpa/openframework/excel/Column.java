@@ -183,6 +183,14 @@ public class Column implements Iterable<Cell> {
         return true;
     }
 
+    public ExcelCellsFormat getFormat() {
+        return new ExcelCellsFormat(this);
+    }
+
+    public ExcelCellsFormat getFormat(int firstRow, int lastRow) {
+        return new ExcelCellsFormat(this, firstRow, lastRow);
+    }
+
     @Override
     public Iterator<Cell> iterator() {
         return new CellIterator(parent.getPoiSheet());

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-//TODO Supporting of styles coping per row (getting of while row style and applying to another row)
 public class Row implements Iterable<Cell> {
 
     private String id;
@@ -182,6 +181,14 @@ public class Row implements Iterable<Cell> {
 
     public int getLastCellIndex() {
         return getPoiRow().getLastCellNum();
+    }
+
+    public ExcelCellsFormat getFormat() {
+        return new ExcelCellsFormat(this);
+    }
+
+    public ExcelCellsFormat getFormat(int firstCol, int lastCol) {
+        return new ExcelCellsFormat(this, firstCol, lastCol);
     }
 
     @Override

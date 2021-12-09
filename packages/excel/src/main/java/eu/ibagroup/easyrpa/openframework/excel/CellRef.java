@@ -182,4 +182,9 @@ public class CellRef {
     public int hashCode() {
         return Objects.hash(sheetName, rowIndex, colIndex, isRowAbs, isColAbs);
     }
+
+    @Override
+    public String toString() {
+        return formatAsString();
+    }
 }

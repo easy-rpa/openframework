@@ -14,6 +14,8 @@ public class ExcelColor {
 
     private short index = -1;
 
+    private byte alpha = -1;
+
     private byte red = -1;
 
     private byte green = -1;
@@ -24,7 +26,8 @@ public class ExcelColor {
         this.index = index;
     }
 
-    public ExcelColor(byte red, byte green, byte blue) {
+    public ExcelColor(byte alpha, byte red, byte green, byte blue) {
+        this.alpha = alpha;
         this.red = red;
         this.green = green;
         this.blue = blue;
@@ -32,6 +35,7 @@ public class ExcelColor {
 
     public ExcelColor(String rgbHexCode) {
         Color color = Color.decode(rgbHexCode);
+        alpha = (byte) color.getAlpha();
         red = (byte) color.getRed();
         green = (byte) color.getGreen();
         blue = (byte) color.getBlue();
@@ -43,10 +47,11 @@ public class ExcelColor {
             if (xssfColor.isIndexed()) {
                 index = xssfColor.getIndex();
             } else if (xssfColor.isRGB()) {
-                byte[] rgb = xssfColor.getRGB();
-                red = rgb[0];
-                green = rgb[1];
-                blue = rgb[2];
+                byte[] argb = xssfColor.getARGB();
+                alpha = argb[0];
+                red = argb[1];
+                green = argb[2];
+                blue = argb[3];
             }
         } else if (color instanceof HSSFColor) {
             HSSFColor hssfColor = (HSSFColor) color;
@@ -56,6 +61,10 @@ public class ExcelColor {
 
     public short getIndex() {
         return index;
+    }
+
+    public byte getAlpha() {
+        return alpha;
     }
 
     public byte getRed() {
@@ -75,7 +84,7 @@ public class ExcelColor {
     }
 
     public boolean isDefined() {
-        return index >= 0 || (red >= 0 && green >= 0 && blue >= 0);
+        return index >= 0 || (alpha >= 0 && red >= 0 && green >= 0 && blue >= 0);
     }
 
     protected XSSFColor toXSSFColor(Workbook workbook) {
@@ -85,7 +94,7 @@ public class ExcelColor {
         if (isIndexed()) {
             return new XSSFColor(IndexedColors.fromInt(index), colorMap);
         }
-        return new XSSFColor(new byte[]{red, green, blue}, colorMap);
+        return new XSSFColor(new byte[]{alpha, red, green, blue}, colorMap);
     }
 
     protected boolean isSameColorAs(short colorIndex) {
@@ -93,15 +102,19 @@ public class ExcelColor {
     }
 
     protected boolean isSameColorAs(org.apache.poi.ss.usermodel.Color color) {
-        if (color instanceof XSSFColor) {
+        if (color == null && !isDefined()) {
+            return true;
+
+        } else if (color instanceof XSSFColor) {
             XSSFColor xssfColor = (XSSFColor) color;
             if (index >= 0 && xssfColor.isIndexed() && xssfColor.getIndex() == index) {
                 return true;
             }
             if (xssfColor.isRGB()) {
-                byte[] rgb = xssfColor.getRGB();
-                return red == rgb[0] && green == rgb[1] && blue == rgb[2];
+                byte[] argb = xssfColor.getARGB();
+                return alpha == argb[0] && red == argb[1] && green == argb[2] && blue == argb[3];
             }
+
         } else if (color instanceof HSSFColor) {
             HSSFColor hssfColor = (HSSFColor) color;
             return index >= 0 && hssfColor.getIndex() == index;
