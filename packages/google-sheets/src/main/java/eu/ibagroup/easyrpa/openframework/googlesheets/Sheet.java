@@ -6,6 +6,7 @@ import eu.ibagroup.easyrpa.openframework.googlesheets.constants.MatchMethod;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SheetNameAlreadyExist;
 import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSheetElementsCache;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -249,7 +250,6 @@ public class Sheet implements Iterable<Row> {
         }
 
         int rowIndex = method == null || method == InsertMethod.BEFORE ? rowPos : rowPos + 1;
-
         if (rowIndex > getLastRowIndex()) {
             putRange(rowIndex, startCol, data);
 
@@ -610,4 +610,21 @@ public class Sheet implements Iterable<Row> {
             return new Row(Sheet.this, index++);
         }
     }
+
+
+    public <T> Table<T> insertTable(List<T> records) throws IOException {
+        return insertTable(0, 0, records);
+    }
+
+    public <T> Table<T> insertTable(String topLeftCellRef, List<T> records) throws IOException {
+        CellRef ref = new CellRef(topLeftCellRef);
+        return insertTable(ref.getRow(), ref.getCol(), records);
+    }
+
+    public <T> Table<T> insertTable(int startRow, int startCol, List<T> records) throws IOException {
+        return startRow >= 0 && startCol >= 0 && records != null && records.size() > 0
+                ? new Table<T>(this, startRow, startCol, records)
+                : null;
+    }
+
 }

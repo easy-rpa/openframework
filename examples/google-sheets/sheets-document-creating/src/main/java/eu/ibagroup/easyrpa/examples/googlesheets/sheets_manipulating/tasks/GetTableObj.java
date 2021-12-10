@@ -5,7 +5,9 @@ import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.examples.googlesheets.sheets_manipulating.entities.Passenger;
 import eu.ibagroup.easyrpa.openframework.googlesheets.GoogleSheets;
-import eu.ibagroup.easyrpa.openframework.googlesheets.Table_bak;
+import eu.ibagroup.easyrpa.openframework.googlesheets.Sheet;
+import eu.ibagroup.easyrpa.openframework.googlesheets.Spreadsheet;
+import eu.ibagroup.easyrpa.openframework.googlesheets.Table;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
@@ -22,10 +24,13 @@ public class GetTableObj extends ApTask {
 
     @Override
     public void execute() throws Exception {
-        Table_bak table = new Table_bak(service, spreadsheetId, 15, 0, 15, 11, 32, Passenger.class);
-        List data = table.getdata();
+        Spreadsheet spreadsheet = service.getSpreadsheet(spreadsheetId);
+        Sheet activeSheet = spreadsheet.getActiveSheet();
+
+        Table table = new Table(activeSheet, 15, 0, 15, 11, Passenger.class);
+//        List data = table.getdata();
         List records = table.getRecords();
-        log.info("кусщквы size = "+records.size());
+        log.info("records size = "+records.size());
 
     }
 }

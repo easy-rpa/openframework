@@ -1,42 +1,55 @@
 package eu.ibagroup.easyrpa.examples.googlesheets.sheets_manipulating.entities;
 
+import eu.ibagroup.easyrpa.openframework.googlesheets.annotations.GSheetCellStyle;
 import eu.ibagroup.easyrpa.openframework.googlesheets.annotations.GSheetColumn;
+import eu.ibagroup.easyrpa.openframework.googlesheets.annotations.GSheetTable;
+import eu.ibagroup.easyrpa.openframework.googlesheets.constants.*;
+import eu.ibagroup.easyrpa.openframework.googlesheets.style.BorderStyle;
+import eu.ibagroup.easyrpa.openframework.googlesheets.style.GSheetColors;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/*@ExcelTable(
-        headerStyle = @ExcelCellStyle(
-                bold = true, background = ExcelColors.GREY_25_PERCENT,
-                hAlign = HorizontalAlignment.CENTER, vAlign = VerticalAlignment.CENTER,
-                topBorder = BorderStyle.THIN, rightBorder = BorderStyle.THIN,
-                bottomBorder = BorderStyle.MEDIUM, leftBorder = BorderStyle.THIN
+@GSheetTable(
+        headerStyle = @GSheetCellStyle(
+                bold = true, background = GSheetColors.GRAY,
+                fontSize = 16, fontName = FontFamily.COURIER_NEW,
+                topBorderColor = GSheetColors.BLACK, topBorderStyle = BorderStyle.SOLID, topBorderWidth = 3,
+                bottomBorderColor = GSheetColors.BLACK, bottomBorderStyle = BorderStyle.SOLID, bottomBorderWidth = 3,
+                leftBorderColor = GSheetColors.BLACK, leftBorderStyle = BorderStyle.SOLID, leftBorderWidth = 3,
+                rightBorderColor = GSheetColors.BLACK, rightBorderStyle = BorderStyle.SOLID, rightBorderWidth = 3,
+                vAlign = VerticalAlignment.MIDDLE, hAlign = HorizontalAlignment.RIGHT, wrapText = WrapStrategies.LEGACY_WRAP,
+                bottomPadding = 20, topPadding = 20, rightPadding = 20, leftPadding = 20
         ),
-        cellStyle = @ExcelCellStyle(
-                vAlign = VerticalAlignment.TOP,
-                topBorder = BorderStyle.THIN, rightBorder = BorderStyle.THIN,
-                bottomBorder = BorderStyle.THIN, leftBorder = BorderStyle.THIN
-        ),
-        formatter = HeaderFormatter.class
-)*/
+        cellStyle = @GSheetCellStyle(
+                background = GSheetColors.LIGHT_GRAY, color = GSheetColors.ORANGE, strikeout = true, fontSize = 14,
+//                topBorderColor = GSheetColors.ORANGE, topBorderStyle = BorderStyle.DOUBLE, topBorderWidth = 2,
+                bottomBorderColor = GSheetColors.ORANGE, bottomBorderStyle = BorderStyle.DOUBLE, bottomBorderWidth = 2,
+                leftBorderColor = GSheetColors.ORANGE, leftBorderStyle = BorderStyle.DOUBLE, leftBorderWidth = 2,
+                rightBorderColor = GSheetColors.ORANGE, rightBorderStyle = BorderStyle.DOUBLE, rightBorderWidth = 2,
+                vAlign = VerticalAlignment.BOTTOM, hAlign = HorizontalAlignment.CENTER, wrapText = WrapStrategies.LEGACY_WRAP,
+                textDirection = TextDirections.RIGHT_TO_LEFT
+        )//,
+        //formatter = HeaderFormatter.class
+)
 @Data
 public class Passenger {
 
-/*    @ExcelColumn(name = "Passenger Id", width = 12,
-            headerStyle = @ExcelCellStyle(
-                    bold = true, background = ExcelColors.GREY_25_PERCENT,
-                    hAlign = HorizontalAlignment.CENTER, vAlign = VerticalAlignment.CENTER,
-                    topBorder = BorderStyle.THIN, rightBorder = BorderStyle.THIN,
-                    bottomBorder = BorderStyle.MEDIUM, leftBorder = BorderStyle.MEDIUM
-            ),
-            cellStyle = @ExcelCellStyle(
-                    vAlign = VerticalAlignment.TOP,
-                    topBorder = BorderStyle.THIN, rightBorder = BorderStyle.THIN,
-                    bottomBorder = BorderStyle.THIN, leftBorder = BorderStyle.MEDIUM
-            )
-    )*/
-    @GSheetColumn(name = "Passenger Id")
+    /*    @ExcelColumn(name = "Passenger Id", width = 12,
+                headerStyle = @ExcelCellStyle(
+                        bold = true, background = ExcelColors.GREY_25_PERCENT,
+                        hAlign = HorizontalAlignment.CENTER, vAlign = VerticalAlignment.CENTER,
+                        topBorder = BorderStyle.THIN, rightBorder = BorderStyle.THIN,
+                        bottomBorder = BorderStyle.MEDIUM, leftBorder = BorderStyle.MEDIUM
+                ),
+                cellStyle = @ExcelCellStyle(
+                        vAlign = VerticalAlignment.TOP,
+                        topBorder = BorderStyle.THIN, rightBorder = BorderStyle.THIN,
+                        bottomBorder = BorderStyle.THIN, leftBorder = BorderStyle.MEDIUM
+                )
+        )*/
+    @GSheetColumn(name = "Passenger Id", width = 19)
     private Integer passengerId;
 
     @GSheetColumn(name = "Name")
@@ -51,7 +64,7 @@ public class Passenger {
     @GSheetColumn(name = "Survived")
     private boolean survived;
 
-//    @ExcelColumn(name = "Class", width = 12, cellStyle = @ExcelCellStyle(
+    //    @ExcelColumn(name = "Class", width = 12, cellStyle = @ExcelCellStyle(
 //            hAlign = HorizontalAlignment.CENTER,
 //            topBorder = BorderStyle.THIN, rightBorder = BorderStyle.THIN,
 //            bottomBorder = BorderStyle.THIN, leftBorder = BorderStyle.THIN

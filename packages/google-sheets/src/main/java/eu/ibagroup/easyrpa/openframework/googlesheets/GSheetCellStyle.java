@@ -1,11 +1,20 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets;
 
-import com.google.api.client.util.Key;
 import com.google.api.services.sheets.v4.model.*;
 
 public class GSheetCellStyle {
 
-
+    private Color backgroundColor;
+    private Borders borders;
+    private String horizontalAlignment;
+    private String hyperlinkDisplayType;
+    private NumberFormat numberFormat;
+    private Padding padding;
+    private String textDirection;
+    private TextFormat textFormat;
+    private TextRotation textRotation = new TextRotation().setAngle(0).setVertical(false);
+    private String verticalAlignment;
+    private String wrapStrategy;
 
     public GSheetCellStyle(CellFormat cellFormat) {
         backgroundColor = cellFormat.getBackgroundColor();
@@ -21,25 +30,23 @@ public class GSheetCellStyle {
         wrapStrategy = cellFormat.getWrapStrategy();
     }
 
-    //TODO check what is it    @Key
-    @Key
-    private Color backgroundColor;
-    private Borders borders;
-    private String horizontalAlignment;
-    private String hyperlinkDisplayType;
-    private NumberFormat numberFormat;
-    private Padding padding;
-    private String textDirection;
-    private TextFormat textFormat;
-    private TextRotation textRotation = new TextRotation().setAngle(0).setVertical(false);
-    private String verticalAlignment;
-    private String wrapStrategy;
-
     public GSheetCellStyle() {
     }
 
     public GSheetCellStyle(Cell cell) {
-        //TODO
+        CellFormat cellFormat = cell.getGoogleCell().getUserEnteredFormat();
+        backgroundColor = cellFormat.getBackgroundColor();
+        borders = cellFormat.getBorders();
+        horizontalAlignment = cellFormat.getHorizontalAlignment();
+        hyperlinkDisplayType = cellFormat.getHyperlinkDisplayType();
+        numberFormat = cellFormat.getNumberFormat();
+        padding = cellFormat.getPadding();
+        textDirection = cellFormat.getTextDirection();
+        textFormat = cellFormat.getTextFormat();
+        textRotation = cellFormat.getTextRotation();
+        verticalAlignment = cellFormat.getVerticalAlignment();
+        wrapStrategy = cellFormat.getWrapStrategy();
+
     }
 
     //private Cell cell;
@@ -143,9 +150,4 @@ public class GSheetCellStyle {
         this.wrapStrategy = wrapStrategy;
         return this;
     }
-
-    public void applyTo(Cell cell) {
-        //TODO
-    }
-
 }

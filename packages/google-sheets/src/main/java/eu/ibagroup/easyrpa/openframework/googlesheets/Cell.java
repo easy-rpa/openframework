@@ -53,7 +53,7 @@ public class Cell {
     }
 
     public void setStyle(GSheetCellStyle newStyle) {
-        newStyle.applyTo(this);
+//TODO        newStyle.applyTo(this);
     }
 
     public GSheetCellStyle getStyle() {
@@ -176,7 +176,7 @@ public class Cell {
         ExtendedValue extendedValue = googleCell.getUserEnteredValue();
 
         if (extendedValue.getNumberValue() != null) {
-           return extendedValue.getNumberValue().toString();
+            return extendedValue.getNumberValue().toString();
         } else if (!extendedValue.getFormulaValue().isEmpty()) {
             return extendedValue.getFormulaValue();
         } else if (extendedValue.getBoolValue() != null) {
@@ -194,7 +194,7 @@ public class Cell {
                 }
             }
         } else if (!extendedValue.getErrorValue().isEmpty()) {
-           return extendedValue.getErrorValue().getMessage();
+            return extendedValue.getErrorValue().getMessage();
         }
         return extendedValue.getStringValue();
     }
