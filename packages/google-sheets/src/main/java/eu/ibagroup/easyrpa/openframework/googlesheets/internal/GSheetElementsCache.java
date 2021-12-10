@@ -1,4 +1,4 @@
-package eu.ibagroup.easyrpa.openframework.googlesheets.spreadsheet.internal;
+package eu.ibagroup.easyrpa.openframework.googlesheets.internal;
 
 import com.google.api.services.sheets.v4.model.CellData;
 import com.google.api.services.sheets.v4.model.RowData;

@@ -4,8 +4,8 @@ import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.googlesheets.GoogleSheets;
-import eu.ibagroup.easyrpa.openframework.googlesheets.spreadsheet.GSheet;
-import eu.ibagroup.easyrpa.openframework.googlesheets.spreadsheet.Spreadsheet;
+import eu.ibagroup.easyrpa.openframework.googlesheets.Sheet;
+import eu.ibagroup.easyrpa.openframework.googlesheets.Spreadsheet;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
@@ -23,22 +23,22 @@ public class ActivateSpecificSheet extends ApTask {
     @Override
     public void execute() {
         int sheetIndex = 2;
-        String sheetName = "2";
+        String sheetName = "Sheet1";
 
         log.info("Activate sheet with name '{}' for spreadsheet document with id: {}", sheetName, spreadsheetId);
         Spreadsheet spreadsheet = service.getSpreadsheet(spreadsheetId);
-        GSheet activeGSheet = spreadsheet.getActiveSheet();
+        Sheet activeSheet = spreadsheet.getActiveSheet();
 
-        log.info("Active sheet before any action: {}", activeGSheet.getName());
+        log.info("Active sheet before any action: {}", activeSheet.getName());
 
         log.info("Activate sheet.");
-        activeGSheet = spreadsheet.selectSheet(sheetName);
+        activeSheet = spreadsheet.selectSheet(sheetName);
 
-        log.info("Active sheet after activation: {}", activeGSheet.getName());
+        log.info("Active sheet after activation: {}", activeSheet.getName());
 
         log.info("Active sheet using index {}.", sheetIndex);
-        activeGSheet = spreadsheet.selectSheet(sheetIndex);
+        activeSheet = spreadsheet.selectSheet(sheetIndex);
 
-        log.info("Active sheet after activation: {}", activeGSheet.getName());
+        log.info("Active sheet after activation: {}", activeSheet.getName());
     }
 }

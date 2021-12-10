@@ -12,10 +12,10 @@ public class SheetsManipulatingModule extends ApModule {
 
     public TaskOutput run() throws Exception {
         return execute(getInput(), ListExistingSheets.class)
-                .thenCompose(execute(ActivateSpecificSheet.class))
-                .thenCompose(execute(RenameSheet.class))
+                //.thenCompose(execute(ActivateSpecificSheet.class))
+                //.thenCompose(execute(RenameSheet.class))
                 .thenCompose(execute(CloneSheet.class))
-                .thenCompose(execute(DeleteSheet.class))
+                //.thenCompose(execute(DeleteSheet.class))
                 .get();
     }
 }

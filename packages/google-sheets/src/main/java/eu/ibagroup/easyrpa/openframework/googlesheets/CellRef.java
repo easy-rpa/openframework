@@ -6,7 +6,6 @@ import org.apache.poi.ss.util.CellReference;
 import java.util.Objects;
 
 public class CellRef {
-
     /**
      * The character ($) that signifies a row or column value is absolute instead of relative
      */
@@ -54,17 +53,6 @@ public class CellRef {
         this.colIndex = colIndex;
         this.isRowAbs = isRowAbs;
         this.isColAbs = isColAbs;
-    }
-
-    CellRef(CellReference poiRef) {
-        if (poiRef != null) {
-            this.sheetName = poiRef.getSheetName();
-            this.rowIndex = poiRef.getRow();
-            this.colIndex = poiRef.getCol();
-            this.isRowAbs = poiRef.isRowAbsolute();
-            this.isColAbs = poiRef.isColAbsolute();
-            this.ref = poiRef.formatAsString();
-        }
     }
 
     public String getSheetName() {

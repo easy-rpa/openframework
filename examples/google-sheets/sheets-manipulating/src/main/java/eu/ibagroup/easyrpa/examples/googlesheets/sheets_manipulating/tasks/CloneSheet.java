@@ -4,8 +4,8 @@ import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.googlesheets.GoogleSheets;
-import eu.ibagroup.easyrpa.openframework.googlesheets.spreadsheet.GSheet;
-import eu.ibagroup.easyrpa.openframework.googlesheets.spreadsheet.Spreadsheet;
+import eu.ibagroup.easyrpa.openframework.googlesheets.Sheet;
+import eu.ibagroup.easyrpa.openframework.googlesheets.Spreadsheet;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
@@ -27,15 +27,15 @@ public class CloneSheet extends ApTask {
 
         log.info("Clone active by default sheet for spreadsheet with id: {}", spreadsheetId);
         Spreadsheet spreadsheet = service.getSpreadsheet(spreadsheetId);
-        GSheet activeGSheet = spreadsheet.getActiveSheet();
+        Sheet activeSheet = spreadsheet.getActiveSheet();
 
-        log.info("Active sheet name: '{}'", activeGSheet.getName());
+        log.info("Active sheet name: '{}'", activeSheet.getName());
 
-        GSheet clonedGSheet = spreadsheet.cloneSheet(activeGSheet.getName());
-        log.info("Sheet '{}' has been cloned successfully.", clonedGSheet.getName());
+        Sheet clonedSheet = spreadsheet.cloneSheet(activeSheet.getName());
+        log.info("Sheet '{}' has been cloned successfully.", clonedSheet.getName());
 
         log.info("Rename cloned sheet to '{}'.", clonedSheetName);
-        clonedGSheet.rename(clonedSheetName);
+        clonedSheet.rename(clonedSheetName);
 
         spreadsheet.commit();
     }

@@ -19,8 +19,8 @@ public class CellRange {
 
     public CellRange(String rangeRef) {
         AreaReference poiRef = new AreaReference(rangeRef, null);
-        this.firstCell = new CellRef(poiRef.getFirstCell());
-        this.lastCell = new CellRef(poiRef.getLastCell());
+        this.firstCell = new CellRef(poiRef.getFirstCell().formatAsString());
+        this.lastCell = new CellRef(poiRef.getLastCell().formatAsString());
         this.ref = poiRef.formatAsString();
     }
 

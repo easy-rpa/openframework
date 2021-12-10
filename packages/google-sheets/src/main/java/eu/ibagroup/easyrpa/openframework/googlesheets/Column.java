@@ -1,5 +1,7 @@
-package eu.ibagroup.easyrpa.openframework.googlesheets.spreadsheet;
+package eu.ibagroup.easyrpa.openframework.googlesheets;
 
+import com.google.api.services.sheets.v4.model.CellData;
+import com.google.api.services.sheets.v4.model.GridData;
 import com.google.api.services.sheets.v4.model.RowData;
 
 import java.util.ArrayList;
@@ -8,11 +10,11 @@ import java.util.List;
 
 public class Column implements Iterable<Cell> {
 
-    private GSheet parent;
+    private Sheet parent;
 
     private int columnIndex;
 
-    protected Column(GSheet parent, int columnIndex) {
+    protected Column(Sheet parent, int columnIndex) {
         this.parent = parent;
         this.columnIndex = columnIndex;
     }
@@ -21,7 +23,7 @@ public class Column implements Iterable<Cell> {
         return parent.getParentSpreadsheet();
     }
 
-    public GSheet getSheet() {
+    public Sheet getSheet() {
         return parent;
     }
 
@@ -149,9 +151,9 @@ public class Column implements Iterable<Cell> {
 
     public Cell getCell(int rowIndex) {
         if (rowIndex >= 0) {
-            RowData row = parent.getPoiSheet().getRow(rowIndex);
+            RowData row = parent.getGSheet().getData().get(0).getRowData().get(rowIndex);
             if (row != null) {
-                org.apache.poi.ss.usermodel.Cell cell = row.getCell(columnIndex);
+                CellData cell = row.getValues().get(columnIndex);
                 return cell != null ? new Cell(parent, rowIndex, columnIndex) : null;
             }
         }
@@ -159,21 +161,22 @@ public class Column implements Iterable<Cell> {
     }
 
     public Cell createCell(int rowIndex) {
-        org.apache.poi.ss.usermodel.Sheet poiSheet = parent.getPoiSheet();
-        org.apache.poi.ss.usermodel.Row poiRow = poiSheet.getRow(rowIndex);
-        if (poiRow == null) {
-            poiRow = poiSheet.createRow(rowIndex);
+        GridData gSheet = parent.getGSheet().getData().get(0);
+        RowData row = gSheet.getRowData().get(rowIndex);
+        if (row == null) {
+            row = new RowData();
+            gSheet.getRowData().add(rowIndex, row);
         }
-        poiRow.createCell(columnIndex);
+        row.getValues().add(columnIndex,new CellData());
         return new Cell(parent, rowIndex, columnIndex);
     }
 
     public int getFirstRowIndex() {
-        return parent.getPoiSheet().getFirstRowNum();
+        return parent.getFirstRowIndex();
     }
 
     public int getLastRowIndex() {
-        return parent.getPoiSheet().getLastRowNum();
+        return parent.getLastRowIndex();
     }
 
     public boolean isEmpty() {
@@ -187,28 +190,28 @@ public class Column implements Iterable<Cell> {
 
     @Override
     public Iterator<Cell> iterator() {
-        return new CellIterator(parent.getPoiSheet());
+        return new CellIterator(parent.getGSheet());
     }
 
     private class CellIterator implements Iterator<Cell> {
 
-        private org.apache.poi.ss.usermodel.Sheet poiSheet;
+        private com.google.api.services.sheets.v4.model.Sheet gSheet;
         private int index = 0;
         private int cellsCount;
 
-        public CellIterator(org.apache.poi.ss.usermodel.Sheet poiSheet) {
-            this.poiSheet = poiSheet;
-            this.cellsCount = poiSheet.getLastRowNum() + 1;
+        public CellIterator(com.google.api.services.sheets.v4.model.Sheet gSheet) {
+            this.gSheet = gSheet;
+            this.cellsCount = gSheet.getData().get(0).getStartRow() + gSheet.getData().get(0).getRowData().size();
         }
 
         @Override
         public boolean hasNext() {
             if (index < cellsCount) {
-                org.apache.poi.ss.usermodel.Row nextRow = poiSheet.getRow(index);
-                while ((nextRow == null || nextRow.getCell(columnIndex) == null) && index + 1 < cellsCount) {
-                    nextRow = poiSheet.getRow(++index);
+               RowData nextRow = gSheet.getData().get(0).getRowData().get(index);
+                while ((nextRow == null || nextRow.getValues().get(columnIndex) == null) && index + 1 < cellsCount) {
+                    nextRow = gSheet.getData().get(0).getRowData().get(++index);
                 }
-                return nextRow != null && nextRow.getCell(columnIndex) != null;
+                return nextRow != null && nextRow.getValues().get(columnIndex) != null;
             }
             return false;
         }

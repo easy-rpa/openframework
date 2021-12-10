@@ -4,7 +4,7 @@ import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.googlesheets.GoogleSheets;
-import eu.ibagroup.easyrpa.openframework.googlesheets.spreadsheet.Spreadsheet;
+import eu.ibagroup.easyrpa.openframework.googlesheets.Spreadsheet;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;

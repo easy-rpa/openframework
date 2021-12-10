@@ -1,4 +1,4 @@
-package eu.ibagroup.easyrpa.openframework.googlesheets.spreadsheet;
+package eu.ibagroup.easyrpa.openframework.googlesheets;
 
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.*;
@@ -40,34 +40,34 @@ public class Spreadsheet {
                 .collect(Collectors.toList());
     }
 
-    public GSheet getActiveSheet() {
-        return new GSheet(googleSpreadsheet.getSheets().get(activeSheetIndex), this);
+    public Sheet getActiveSheet() {
+        return new Sheet(googleSpreadsheet.getSheets().get(activeSheetIndex), this);
     }
 
-    public GSheet selectSheet(String name) {
+    public Sheet selectSheet(String name) {
         List<com.google.api.services.sheets.v4.model.Sheet> list = googleSpreadsheet.getSheets();
         for (int i = 0; i < list.size(); i++) {
             if (name.equals(list.get(i).getProperties().getTitle())) {
                 activeSheetIndex = i;
-                return new GSheet(googleSpreadsheet.getSheets().get(activeSheetIndex), this);
+                return new Sheet(googleSpreadsheet.getSheets().get(activeSheetIndex), this);
             }
         }
         throw new SheetNotFound("Sheet with this name wasn't found");
     }
 
-    public GSheet selectSheet(int index) {
+    public Sheet selectSheet(int index) {
         if (index < 0 || googleSpreadsheet.getSheets().size() <= index) {
             throw new SheetNotFound("Incorrect sheet id");
         }
         activeSheetIndex = index;
-        return new GSheet(googleSpreadsheet.getSheets().get(index), this);
+        return new Sheet(googleSpreadsheet.getSheets().get(index), this);
     }
 
-    public GSheet getSheetAt(int index){
+    public Sheet getSheetAt(int index){
         if (index < 0 || googleSpreadsheet.getSheets().size() <= index) {
             throw new SheetNotFound("Incorrect sheet id");
         }
-        return new GSheet(googleSpreadsheet.getSheets().get(index), this);
+        return new Sheet(googleSpreadsheet.getSheets().get(index), this);
     }
 
     public com.google.api.services.sheets.v4.model.Sheet getGSheetAt(int index){
@@ -95,7 +95,7 @@ public class Spreadsheet {
         return googleSpreadsheet.getProperties().getTitle();
     }
 
-    public GSheet cloneSheet(String sheetName) {
+    public Sheet cloneSheet(String sheetName) {
         com.google.api.services.sheets.v4.model.Sheet sheet = getGoogleSheet(sheetName).clone();
 
         int newSheetIndex = googleSpreadsheet.getSheets().size();
@@ -118,7 +118,7 @@ public class Spreadsheet {
                 .getDuplicateSheet()
                 .getProperties();
 
-        return new GSheet(sheet.setProperties(properties), this);
+        return new Sheet(sheet.setProperties(properties), this);
     }
 
     public void removeSheet(String sheetName) {
@@ -169,11 +169,11 @@ public class Spreadsheet {
         return null;
     }
 
-    public void copySheet(GSheet GSheet) {
+    public void copySheet(Sheet sheet) {
         CopySheetToAnotherSpreadsheetRequest requestBody = new CopySheetToAnotherSpreadsheetRequest();
         requestBody.setDestinationSpreadsheetId(googleSpreadsheet.getSpreadsheetId());
         try {
-            service.spreadsheets().sheets().copyTo(GSheet.getParentSpreadsheet().getId(), GSheet.getId(), requestBody).execute();
+            service.spreadsheets().sheets().copyTo(sheet.getParentSpreadsheet().getId(), sheet.getId(), requestBody).execute();
         } catch (IOException e) {
             throw new CopySheetException(e.getMessage());
         }

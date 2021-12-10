@@ -38,6 +38,10 @@ public class GSheetCellStyle {
     public GSheetCellStyle() {
     }
 
+    public GSheetCellStyle(Cell cell) {
+        //TODO
+    }
+
     //private Cell cell;
 
 
@@ -139,4 +143,9 @@ public class GSheetCellStyle {
         this.wrapStrategy = wrapStrategy;
         return this;
     }
+
+    public void applyTo(Cell cell) {
+        //TODO
+    }
+
 }
