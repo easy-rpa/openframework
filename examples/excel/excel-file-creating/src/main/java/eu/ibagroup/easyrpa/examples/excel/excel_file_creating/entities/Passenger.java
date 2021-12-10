@@ -16,7 +16,7 @@ import org.apache.poi.ss.usermodel.VerticalAlignment;
         headerStyle = @ExcelCellStyle(
                 bold = true, background = ExcelColors.GREY_25_PERCENT,
                 hAlign = HorizontalAlignment.CENTER, vAlign = VerticalAlignment.CENTER,
-                topBorder = BorderStyle.THIN, rightBorder = BorderStyle.THIN,
+                topBorder = BorderStyle.MEDIUM, rightBorder = BorderStyle.THIN,
                 bottomBorder = BorderStyle.MEDIUM, leftBorder = BorderStyle.THIN
         ),
         cellStyle = @ExcelCellStyle(
@@ -32,7 +32,7 @@ public class Passenger {
             headerStyle = @ExcelCellStyle(
                     bold = true, background = ExcelColors.GREY_25_PERCENT,
                     hAlign = HorizontalAlignment.CENTER, vAlign = VerticalAlignment.CENTER,
-                    topBorder = BorderStyle.THIN, rightBorder = BorderStyle.THIN,
+                    topBorder = BorderStyle.MEDIUM, rightBorder = BorderStyle.THIN,
                     bottomBorder = BorderStyle.MEDIUM, leftBorder = BorderStyle.MEDIUM
             ),
             cellStyle = @ExcelCellStyle(
@@ -81,7 +81,7 @@ public class Passenger {
             headerStyle = @ExcelCellStyle(
                     bold = true, background = ExcelColors.GREY_25_PERCENT,
                     hAlign = HorizontalAlignment.CENTER, vAlign = VerticalAlignment.CENTER,
-                    topBorder = BorderStyle.THIN, rightBorder = BorderStyle.MEDIUM,
+                    topBorder = BorderStyle.MEDIUM, rightBorder = BorderStyle.MEDIUM,
                     bottomBorder = BorderStyle.MEDIUM, leftBorder = BorderStyle.THIN
             ),
             cellStyle = @ExcelCellStyle(

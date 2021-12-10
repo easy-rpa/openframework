@@ -17,16 +17,18 @@ public class PostgresService extends DatabaseService {
     @Inject
     public PostgresService(RPAServicesAccessor rpaServices) {
         super(rpaServices);
+        this.connectionString = getRpaServices().getConfigParam(POSTGRES_URL_CONF_FIELD);
+        this.userName = getRpaServices().getCredentials(POSTGRES_SECRET_VAULT).getUser();
+        this.password = getRpaServices().getCredentials(POSTGRES_SECRET_VAULT).getPassword();
+    }
+
+    public PostgresService(String connectionString, String userName, String password) {
+        super(connectionString, userName, password);
     }
 
     @Override
     DatabaseService initJdbcConnection() throws SQLException, ClassNotFoundException {
         if (!ConnectionKeeper.sessionAlive()) {
-            String connectionString = getRpaServices().getConfigParam(POSTGRES_URL_CONF_FIELD);
-
-            String userName = getRpaServices().getCredentials(POSTGRES_SECRET_VAULT).getUser();
-            String password = getRpaServices().getCredentials(POSTGRES_SECRET_VAULT).getPassword();
-
             PostgresConnectionHelper.initialize(connectionString, userName, password);
             this.setSession(OpenFrameworkDbConnector.getConnection().getSession());
         }
@@ -36,11 +38,6 @@ public class PostgresService extends DatabaseService {
     @Override
     DatabaseService initOrmConnection() throws SQLException {
         if (ConnectionKeeper.getOrmConnectionSource() == null || !ConnectionKeeper.getOrmConnectionSource().isOpen()) {
-            String connectionString = this.rpaServices.getConfigParam(POSTGRES_URL_CONF_FIELD);
-
-            String userName = rpaServices.getCredentials(POSTGRES_SECRET_VAULT).getUser();
-            String password = rpaServices.getCredentials(POSTGRES_SECRET_VAULT).getPassword();
-
             ConnectionKeeper.setOrmConnectionSource(new JdbcConnectionSource(connectionString, userName, password));
         }
         return this;

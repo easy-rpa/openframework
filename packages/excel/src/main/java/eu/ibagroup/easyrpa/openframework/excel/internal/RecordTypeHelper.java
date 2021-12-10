@@ -1,5 +1,6 @@
 package eu.ibagroup.easyrpa.openframework.excel.internal;
 
+import eu.ibagroup.easyrpa.openframework.core.utils.TypeUtils;
 import eu.ibagroup.easyrpa.openframework.excel.Cell;
 import eu.ibagroup.easyrpa.openframework.excel.ExcelCellStyle;
 import eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelColumn;
@@ -7,12 +8,13 @@ import eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelTable;
 import eu.ibagroup.easyrpa.openframework.excel.function.ColumnFormatter;
 import eu.ibagroup.easyrpa.openframework.excel.function.FieldMapper;
 import eu.ibagroup.easyrpa.openframework.excel.function.TableFormatter;
-import eu.ibagroup.easyrpa.openframework.core.utils.TypeUtils;
 
 import java.lang.reflect.Field;
 import java.util.*;
 
 public class RecordTypeHelper<T> {
+
+    public static final String NAME_LEVEL_DELIMITER = "&&";
 
     private Class<T> recordType = null;
     private ExcelCellStyle tableHeaderCellStyle = null;
@@ -24,6 +26,7 @@ public class RecordTypeHelper<T> {
     private Map<String, Integer> columnNameToOrderMap = new HashMap<>();
     private Map<Integer, String> columnOrderToFieldMap = new HashMap<>();
 
+    private ColumnNamesTree columnNamesTree = new ColumnNamesTree();
     private Map<Integer, Integer> columnWidthMap = new HashMap<>();
     private Map<Integer, ExcelCellStyle> columnHeaderCellStyleMap = new HashMap<>();
     private Map<Integer, ExcelCellStyle> columnCellStyleMap = new HashMap<>();
@@ -34,20 +37,8 @@ public class RecordTypeHelper<T> {
     private RecordTypeHelper() {
     }
 
-    public List<String> getColumnNames() {
-        int columnsCount = columnNameToOrderMap.values().stream()
-                .max(Comparator.comparingInt(v -> v)).orElse(-1) + 1;
-        String[] columnNames = new String[columnsCount];
-        for (int i = 0; i < columnsCount; i++) {
-            String fieldName = columnOrderToFieldMap.get(i);
-            if (fieldName != null) {
-                String columnName = fieldToColumnMap.get(fieldName);
-                columnNames[i] = columnName != null ? columnName : "";
-            } else {
-                columnNames[i] = "";
-            }
-        }
-        return Arrays.asList(columnNames);
+    public ColumnNamesTree getColumnNames() {
+        return columnNamesTree;
     }
 
     public T mapToRecord(List<Object> values, Map<String, Integer> columnNameToValueIndexMap) {
@@ -152,6 +143,12 @@ public class RecordTypeHelper<T> {
 
             Integer columnOrder = columnNameToOrderMap.get(columnName);
             if (columnOrder == null) {
+                if (tableHeaderCellStyle != null) {
+                    cell.setStyle(tableHeaderCellStyle);
+                }
+                if (tableFormatter != null) {
+                    tableFormatter.format(cell, columnName, -1, null);
+                }
                 return;
             }
 
@@ -219,8 +216,16 @@ public class RecordTypeHelper<T> {
 
                     String fieldName = field.getName();
                     int columnOrder = order > 0 ? order : index++;
-                    String columnName = nameHierarchy.length > 0 ? nameHierarchy[0] : null;
 
+                    String columnName = fieldName;
+                    if (nameHierarchy.length > 0) {
+                        for (int i = 0; i < nameHierarchy.length; i++) {
+                            nameHierarchy[i] = nameHierarchy[i].trim();
+                        }
+                        columnName = String.join(NAME_LEVEL_DELIMITER, nameHierarchy);
+                    }
+
+                    typeInfo.columnNamesTree.add(columnName);
                     typeInfo.fields.add(fieldName);
 
                     if (columnName != null) {
@@ -292,5 +297,150 @@ public class RecordTypeHelper<T> {
         style.locked(styleAnnotation.locked());
         style.indention(styleAnnotation.indention());
         return style;
+    }
+
+    public static class ColumnNamesTree extends ColumnNameNode {
+
+        public ColumnNamesTree() {
+            super(null, null, -1);
+        }
+
+        public List<ColumnNameNode> getForLevel(int level) {
+            List<ColumnNameNode> nodes = new ArrayList<>();
+            collectByLevel(nodes, level);
+            return nodes;
+        }
+
+        protected void add(String name) {
+            if (name != null) {
+                String[] nameHierarchy = name.split(NAME_LEVEL_DELIMITER);
+                add(nameHierarchy, 0);
+                adjustSize();
+                adjustPosition();
+            }
+        }
+    }
+
+    public static class ColumnNameNode {
+        private ColumnNameNode root;
+        private String name;
+        private String fullName;
+        private int level;
+        private int maxLevel;
+        private int columnIndex = 0;
+        private int width = 1;
+        private int height = 1;
+        private List<ColumnNameNode> children = new ArrayList<>();
+
+        protected ColumnNameNode(ColumnNameNode root, String[] nameHierarchy, int level) {
+            this.root = root;
+            if (nameHierarchy != null) {
+                this.name = nameHierarchy[level];
+                this.fullName = String.join(NAME_LEVEL_DELIMITER, Arrays.copyOfRange(nameHierarchy, 0, level + 1));
+            }
+            this.level = maxLevel = level;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getFullName() {
+            return fullName;
+        }
+
+        public int getColumnIndex() {
+            return columnIndex;
+        }
+
+        public int getWidth() {
+            return width;
+        }
+
+        public int getHeight() {
+            return height;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof RecordTypeHelper.ColumnNameNode)) return false;
+            ColumnNameNode that = (ColumnNameNode) o;
+            return name.equals(that.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name);
+        }
+
+        protected void add(String[] nameHierarchy, int level) {
+            if (level < nameHierarchy.length) {
+                ColumnNameNode columnNameNode = new ColumnNameNode(root != null ? root : this, nameHierarchy, level);
+                int index = children.indexOf(columnNameNode);
+                if (index >= 0) {
+                    columnNameNode = children.get(index);
+                } else {
+                    children.add(columnNameNode);
+                }
+                columnNameNode.add(nameHierarchy, level + 1);
+                maxLevel = Math.max(maxLevel, nameHierarchy.length - 1);
+            }
+        }
+
+        protected void adjustSize() {
+            int oldHeight = height;
+            width = calculateWidth();
+            if (root == null) {
+                height = oldHeight = maxLevel + 1;
+            } else {
+                height = (int) Math.ceil((double) (root.maxLevel - maxLevel) / (maxLevel - level + 1)) + 1;
+            }
+            for (ColumnNameNode child : children) {
+                if (height != oldHeight) {
+                    child.shiftLevel(height - oldHeight);
+                }
+                child.adjustSize();
+            }
+        }
+
+        protected void adjustPosition() {
+            int index = columnIndex;
+            for (ColumnNameNode child : children) {
+                child.columnIndex = index;
+                index += child.width;
+                child.adjustPosition();
+            }
+        }
+
+        protected void collectByLevel(List<ColumnNameNode> nodes, int level) {
+            if (this.level == level) {
+                nodes.add(this);
+            } else {
+                for (ColumnNameNode child : children) {
+                    child.collectByLevel(nodes, level);
+                }
+            }
+        }
+
+        private void shiftLevel(int n) {
+            level += n;
+            maxLevel += n;
+            for (ColumnNameNode child : children) {
+                child.shiftLevel(n);
+            }
+        }
+
+        private int calculateWidth() {
+            if (children.isEmpty()) {
+                return 1;
+            }
+            int width = 0;
+            for (ColumnNameNode child : children) {
+                width += child.calculateWidth();
+            }
+            return width;
+        }
+
     }
 }

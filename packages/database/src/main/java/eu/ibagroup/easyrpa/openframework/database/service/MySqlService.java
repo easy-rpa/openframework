@@ -17,16 +17,18 @@ public class MySqlService extends DatabaseService {
     @Inject
     public MySqlService(RPAServicesAccessor rpaServices) {
         super(rpaServices);
+        this.connectionString = getRpaServices().getConfigParam(MYSQL_URL_CONF_FIELD);
+        this.userName = getRpaServices().getCredentials(MYSQL_SECRET_VAULT).getUser();
+        this.password = getRpaServices().getCredentials(MYSQL_SECRET_VAULT).getPassword();
+    }
+
+    public MySqlService(String connectionString, String userName, String password) {
+        super(connectionString, userName, password);
     }
 
     @Override
     DatabaseService initJdbcConnection() throws SQLException, ClassNotFoundException {
         if (connectionKeeper == null || !ConnectionKeeper.sessionAlive()) {
-            String connectionString = getRpaServices().getConfigParam(MYSQL_URL_CONF_FIELD);
-
-            String userName = getRpaServices().getCredentials(MYSQL_SECRET_VAULT).getUser();
-            String password = getRpaServices().getCredentials(MYSQL_SECRET_VAULT).getPassword();
-
             MySqlConnectionHelper.initialize(connectionString, userName, password);
             this.setSession(OpenFrameworkDbConnector.getConnection().getSession());
         }
@@ -36,10 +38,6 @@ public class MySqlService extends DatabaseService {
     @Override
     MySqlService initOrmConnection() throws SQLException {
         if (ConnectionKeeper.getOrmConnectionSource() == null || !ConnectionKeeper.getOrmConnectionSource().isOpen()) {
-            String connectionString = this.rpaServices.getConfigParam(MYSQL_URL_CONF_FIELD);
-
-            String userName = rpaServices.getCredentials(MYSQL_SECRET_VAULT).getUser();
-            String password = rpaServices.getCredentials(MYSQL_SECRET_VAULT).getPassword();
             ConnectionKeeper.setOrmConnectionSource(new JdbcConnectionSource(connectionString, userName, password));
         }
         return this;

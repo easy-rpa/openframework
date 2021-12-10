@@ -3,6 +3,7 @@ package eu.ibagroup.easyrpa.examples.excel.sheets_manipulating;
 import eu.ibagroup.easyrpa.engine.annotation.ApModuleEntry;
 import eu.ibagroup.easyrpa.engine.apflow.ApModule;
 import eu.ibagroup.easyrpa.engine.apflow.TaskOutput;
+import eu.ibagroup.easyrpa.engine.boot.ApModuleRunner;
 import eu.ibagroup.easyrpa.examples.excel.sheets_manipulating.tasks.*;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,5 +19,9 @@ public class SheetsManipulatingModule extends ApModule {
                 .thenCompose(execute(CloneSheet.class))
                 .thenCompose(execute(DeleteSheet.class))
                 .get();
+    }
+
+    public static void main(String[] args) {
+        ApModuleRunner.localLaunch(SheetsManipulatingModule.class);
     }
 }

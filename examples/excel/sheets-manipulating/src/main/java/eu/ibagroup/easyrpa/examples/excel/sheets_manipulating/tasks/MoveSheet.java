@@ -31,7 +31,7 @@ public class MoveSheet extends ApTask {
         log.info("Active sheet name: '{}'", activeSheet.getName());
 
         int newPosition = doc.getSheetNames().size() - 1;
-        doc.moveSheet(activeSheet.getName(), newPosition);
+        activeSheet.moveTo(newPosition);
 
         log.info("Sheet '{}' has been moved to '{}' position successfully.", activeSheet.getName(), newPosition);
 

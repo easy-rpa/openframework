@@ -1,5 +1,7 @@
 package eu.ibagroup.easyrpa.openframework.excel;
 
+import eu.ibagroup.easyrpa.openframework.core.utils.TypeUtils;
+import eu.ibagroup.easyrpa.openframework.excel.internal.poi.POIElementsCache;
 import eu.ibagroup.easyrpa.openframework.excel.style.DataFormats;
 import eu.ibagroup.easyrpa.openframework.excel.style.ExcelColors;
 import eu.ibagroup.easyrpa.openframework.excel.style.FontOffsetType;
@@ -7,6 +9,9 @@ import eu.ibagroup.easyrpa.openframework.excel.style.FontUnderlineStyle;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTBorder;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTBorderPr;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.STBorderStyle;
 
 public class ExcelCellStyle {
 
@@ -339,27 +344,43 @@ public class ExcelCellStyle {
     }
 
     public void applyTo(Cell cell) {
+        int documentId = cell.getDocument().getId();
+        int sheetIndex = cell.getSheetIndex();
+
+        CellRange mr = cell.getMergedRegion();
+        if (mr == null) {
+            applyToPoiCell(documentId, cell.getPoiCell());
+        } else {
+            for (int i = mr.getFirstRow(); i <= mr.getLastRow(); i++) {
+                for (int j = mr.getFirstCol(); j <= mr.getLastCol(); j++) {
+                    applyToPoiCell(documentId, POIElementsCache.getPoiCell(documentId, null, sheetIndex, i, j));
+                }
+            }
+        }
+
+        this.cell = cell;
+    }
+
+    protected void applyToPoiCell(int documentId, org.apache.poi.ss.usermodel.Cell poiCell) {
+        poiCell.setCellStyle(getOrCreatePoiCellStyle(documentId, poiCell.getSheet().getWorkbook()));
+    }
+
+    protected CellStyle getOrCreatePoiCellStyle(int documentId, Workbook workbook) {
         CellStyle cellStyle = null;
 
-        int documentId = cell.getDocument().getId();
-        org.apache.poi.ss.usermodel.Cell poiCell = cell.getPoiCell();
-
-        if (!isDirty && poiCellStyleIndex != null && parentDocumentId == documentId
-                && poiCellStyleIndex != poiCell.getCellStyle().getIndex()) {
-
-            cellStyle = poiCell.getSheet().getWorkbook().getCellStyleAt(poiCellStyleIndex);
-            poiCell.setCellStyle(cellStyle);
-            this.cell = cell;
-            return;
+        if (!isDirty && poiCellStyleIndex != null && parentDocumentId == documentId) {
+            cellStyle = workbook.getCellStyleAt(poiCellStyleIndex);
+            if (cellStyle != null) {
+                return cellStyle;
+            }
         }
 
         Font font = null;
 
-        if (bgColor.getIndex() != ExcelColors.AUTOMATIC.getPoiIndex() && bgFill == FillPatternType.NO_FILL) {
+        if (bgColor.isDefined() && bgColor.getIndex() != ExcelColors.AUTOMATIC.getPoiIndex() && bgFill == FillPatternType.NO_FILL) {
             bgFill = FillPatternType.SOLID_FOREGROUND;
         }
 
-        Workbook workbook = poiCell.getSheet().getWorkbook();
         for (int i = 0; i < workbook.getNumCellStyles(); i++) {
             CellStyle cs = workbook.getCellStyleAt(i);
             if (isSameStyleAs(cs)) {
@@ -410,24 +431,49 @@ public class ExcelCellStyle {
                 ((XSSFCellStyle) cellStyle).setFillForegroundColor(bgColor.toXSSFColor(workbook));
             }
 
-
             cellStyle.setFillPattern(bgFill);
             cellStyle.setAlignment(hAlign);
             cellStyle.setVerticalAlignment(vAlign);
             cellStyle.setWrapText(wrapText);
             cellStyle.setRotation(rotation);
-            cellStyle.setBorderTop(topBorder);
-            cellStyle.setBorderRight(rightBorder);
-            cellStyle.setBorderBottom(bottomBorder);
-            cellStyle.setBorderLeft(leftBorder);
 
             if (cellStyle instanceof XSSFCellStyle) {
-                XSSFCellStyle xssfCellStyle = (XSSFCellStyle) cellStyle;
-                xssfCellStyle.setTopBorderColor(topBorderColor.toXSSFColor(workbook));
-                xssfCellStyle.setRightBorderColor(rightBorderColor.toXSSFColor(workbook));
-                xssfCellStyle.setBottomBorderColor(bottomBorderColor.toXSSFColor(workbook));
-                xssfCellStyle.setLeftBorderColor(leftBorderColor.toXSSFColor(workbook));
+                CTBorder ct = TypeUtils.callMethod(cellStyle, "getCTBorder");
+                if (topBorder == BorderStyle.NONE) {
+                    if (ct.isSetTop()) ct.unsetTop();
+                } else {
+                    CTBorderPr pr = ct.isSetTop() ? ct.getTop() : ct.addNewTop();
+                    pr.setStyle(STBorderStyle.Enum.forInt(topBorder.getCode() + 1));
+                    pr.setColor(topBorderColor.toXSSFColor(workbook).getCTColor());
+                }
+                if (rightBorder == BorderStyle.NONE) {
+                    if (ct.isSetRight()) ct.unsetRight();
+                } else {
+                    CTBorderPr pr = ct.isSetRight() ? ct.getRight() : ct.addNewRight();
+                    pr.setStyle(STBorderStyle.Enum.forInt(rightBorder.getCode() + 1));
+                    pr.setColor(rightBorderColor.toXSSFColor(workbook).getCTColor());
+                }
+                if (bottomBorder == BorderStyle.NONE) {
+                    if (ct.isSetBottom()) ct.unsetBottom();
+                } else {
+                    CTBorderPr pr = ct.isSetBottom() ? ct.getBottom() : ct.addNewBottom();
+                    pr.setStyle(STBorderStyle.Enum.forInt(bottomBorder.getCode() + 1));
+                    pr.setColor(bottomBorderColor.toXSSFColor(workbook).getCTColor());
+                }
+                if (leftBorder == BorderStyle.NONE) {
+                    if (ct.isSetLeft()) ct.unsetLeft();
+                } else {
+                    CTBorderPr pr = ct.isSetLeft() ? ct.getLeft() : ct.addNewLeft();
+                    pr.setStyle(STBorderStyle.Enum.forInt(leftBorder.getCode() + 1));
+                    pr.setColor(leftBorderColor.toXSSFColor(workbook).getCTColor());
+                }
+                TypeUtils.callMethod(cellStyle, "addBorder", ct);
+
             } else {
+                cellStyle.setBorderTop(topBorder);
+                cellStyle.setBorderRight(rightBorder);
+                cellStyle.setBorderBottom(bottomBorder);
+                cellStyle.setBorderLeft(leftBorder);
                 if (topBorderColor.isIndexed()) {
                     cellStyle.setTopBorderColor(topBorderColor.getIndex());
                 }
@@ -441,6 +487,7 @@ public class ExcelCellStyle {
                     cellStyle.setLeftBorderColor(leftBorderColor.getIndex());
                 }
             }
+
             cellStyle.setHidden(hidden);
             cellStyle.setLocked(locked);
             cellStyle.setIndention(indention);
@@ -448,9 +495,9 @@ public class ExcelCellStyle {
 
         parentDocumentId = documentId;
         poiCellStyleIndex = cellStyle.getIndex();
-        poiCell.setCellStyle(cellStyle);
-        this.cell = cell;
         isDirty = false;
+
+        return cellStyle;
     }
 
     protected boolean isSameStyleAs(CellStyle cellStyle) {

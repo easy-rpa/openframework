@@ -15,22 +15,18 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFTable;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTMergeCells;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-//TODO Supporting of merged regions
-//TODO Supporting of full copying of range of cells to another
-// excel document (including styles, merged regions, data validations, comments etc.)
 public class Sheet implements Iterable<Row> {
 
     private ExcelDocument parent;
@@ -128,13 +124,21 @@ public class Sheet implements Iterable<Row> {
     }
 
     public List<List<Object>> getRange(String startRef, String endRef) {
+        return getRange(startRef, endRef, Object.class);
+    }
+
+    public <T> List<List<T>> getRange(String startRef, String endRef, Class<T> valueType) {
         CellRef sRef = new CellRef(startRef);
         CellRef eRef = new CellRef(endRef);
-        return getRange(sRef.getRow(), sRef.getCol(), eRef.getRow(), eRef.getCol());
+        return getRange(sRef.getRow(), sRef.getCol(), eRef.getRow(), eRef.getCol(), valueType);
     }
 
     public List<List<Object>> getRange(int startRow, int startCol, int endRow, int endCol) {
-        List<List<Object>> data = new ArrayList<>();
+        return getRange(startRow, startCol, endRow, endCol, Object.class);
+    }
+
+    public <T> List<List<T>> getRange(int startRow, int startCol, int endRow, int endCol, Class<T> valueType) {
+        List<List<T>> data = new ArrayList<>();
 
         if (startRow < 0 || startCol < 0 || endRow < 0 || endCol < 0) {
             return data;
@@ -146,9 +150,9 @@ public class Sheet implements Iterable<Row> {
         int c2 = Math.max(startCol, endCol);
 
         for (int row = r1; row <= r2; row++) {
-            List<Object> rowList = new ArrayList<>();
+            List<T> rowList = new ArrayList<>();
             for (int col = c1; col <= c2; col++) {
-                rowList.add(getValue(row, col));
+                rowList.add(getValue(row, col, valueType));
             }
             data.add(rowList);
         }
@@ -185,9 +189,9 @@ public class Sheet implements Iterable<Row> {
                 region.getLastRow(), region.getLastCol());
     }
 
-    public Cell mergeCells(CellRange regionToMerge) {
-        return mergeCells(regionToMerge.getFirstRow(), regionToMerge.getFirstCol(),
-                regionToMerge.getLastRow(), regionToMerge.getLastCol());
+    public Cell mergeCells(CellRange region) {
+        return mergeCells(region.getFirstRow(), region.getFirstCol(),
+                region.getLastRow(), region.getLastCol());
     }
 
     public Cell mergeCells(String startCellRef, String endCellRef) {
@@ -202,7 +206,9 @@ public class Sheet implements Iterable<Row> {
         int regionIndex = getPoiSheet().addMergedRegion(region);
         if (regionIndex >= 0) {
             POIElementsCache.addMergedRegion(documentId, sheetIndex, regionIndex, region);
-            return new Cell(this, region.getFirstRow(), region.getFirstColumn());
+            Cell topLeftCell = new Cell(this, region.getFirstRow(), region.getFirstColumn());
+            topLeftCell.getStyle().apply();
+            return topLeftCell;
         }
         return null;
     }
@@ -213,9 +219,9 @@ public class Sheet implements Iterable<Row> {
                 region.getLastRow(), region.getLastCol());
     }
 
-    public void unmergeCells(CellRange regionToMerge) {
-        mergeCells(regionToMerge.getFirstRow(), regionToMerge.getFirstCol(),
-                regionToMerge.getLastRow(), regionToMerge.getLastCol());
+    public void unmergeCells(CellRange region) {
+        mergeCells(region.getFirstRow(), region.getFirstCol(),
+                region.getLastRow(), region.getLastCol());
     }
 
     public void unmergeCells(String startCellRef, String endCellRef) {
@@ -246,6 +252,12 @@ public class Sheet implements Iterable<Row> {
             }
             POIElementsCache.removeMergedRegions(documentId, indicesToRemove);
         }
+    }
+
+    public List<CellRange> getMergedRegions() {
+        return getPoiSheet().getMergedRegions().stream()
+                .map(r -> new CellRange(r.getFirstRow(), r.getFirstColumn(), r.getLastRow(), r.getLastColumn()))
+                .collect(Collectors.toList());
     }
 
     public Row getRow(String rowRef) {
@@ -558,8 +570,23 @@ public class Sheet implements Iterable<Row> {
         }
         Row headerRow = findRow(matchMethod, keywords);
         if (headerRow != null) {
-            CellRef headerRef = headerRow.getReference();
-            return getTable(headerRef.getRow(), headerRef.getCol(), recordType);
+            int topRow = Integer.MAX_VALUE, leftCol = Integer.MAX_VALUE;
+            int botRow = -1, rightCol = -1;
+            for (Cell cell : headerRow) {
+                CellRange region = cell.getMergedRegion();
+                if (region != null) {
+                    topRow = Math.min(topRow, region.getFirstRow());
+                    leftCol = Math.min(leftCol, region.getFirstCol());
+                    botRow = Math.max(botRow, region.getLastRow());
+                    rightCol = Math.max(rightCol, region.getLastCol());
+                } else {
+                    topRow = Math.min(topRow, cell.getRowIndex());
+                    leftCol = Math.min(leftCol, cell.getColumnIndex());
+                    botRow = Math.max(botRow, cell.getRowIndex());
+                    rightCol = Math.max(rightCol, cell.getColumnIndex());
+                }
+            }
+            return getTable(topRow, leftCol, botRow, rightCol, recordType);
         }
         return null;
     }
@@ -675,6 +702,163 @@ public class Sheet implements Iterable<Row> {
         ptParams.setSheetName(getName());
         ptParams.checkPosition();
         getDocument().runScript(new PivotTableScript(PivotTableScript.ScriptAction.CREATE, ptParams));
+    }
+
+    public ExcelCellsFormat getFormat() {
+        return new ExcelCellsFormat(this);
+    }
+
+    public ExcelCellsFormat getFormat(String startCellRef, String endCellRef) {
+        CellRef startRef = new CellRef(startCellRef);
+        CellRef endRef = new CellRef(endCellRef);
+        return new ExcelCellsFormat(this, startRef.getRow(), startRef.getCol(), endRef.getRow(), endRef.getCol());
+    }
+
+    public ExcelCellsFormat getFormat(int firstRow, int firstCol, int lastRow, int lastCol) {
+        return new ExcelCellsFormat(this, firstRow, firstCol, lastRow, lastCol);
+    }
+
+    public void clear() {
+        org.apache.poi.ss.usermodel.Sheet poiSheet = getPoiSheet();
+        int rowNum;
+        while ((rowNum = poiSheet.getLastRowNum()) > 0) {
+            org.apache.poi.ss.usermodel.Row row = poiSheet.getRow(rowNum);
+            if (row != null) {
+                poiSheet.removeRow(row);
+            }
+        }
+    }
+
+    /**
+     * Move given sheet to a new position.
+     *
+     * @param newPos - the position that we want to move the sheet into (0 based)
+     */
+    public void moveTo(int newPos) {
+        parent.getWorkbook().setSheetOrder(getName(), newPos);
+        sheetIndex = newPos;
+    }
+
+
+    /**
+     * Change the name of given sheet.
+     *
+     * @param newName - a new name for specified sheet
+     */
+    public void rename(String newName) {
+        parent.getWorkbook().setSheetName(sheetIndex, newName);
+    }
+
+    /**
+     * Clone the current sheet and place it to the end of Excel Document.
+     *
+     * @param clonedSheetName - name that should be set for cloned sheet.
+     * @return Sheet representing the cloned sheet.
+     */
+    public Sheet cloneAs(String clonedSheetName) {
+        Workbook workbook = parent.getWorkbook();
+        org.apache.poi.ss.usermodel.Sheet clone = workbook.cloneSheet(sheetIndex);
+        int clonedSheetIndex = workbook.getSheetIndex(clone);
+        workbook.setSheetName(clonedSheetIndex, clonedSheetName);
+        return new Sheet(parent, clonedSheetIndex);
+    }
+
+    /**
+     * Copy the content of sheet to another sheet with the same format.
+     * Destination sheet can be located in another Excel Document.
+     *
+     * @param destSheet - destination sheet
+     */
+    public void copy(Sheet destSheet) {
+        copy(destSheet, true);
+    }
+
+    /**
+     * Copy the content of sheet to another sheet.
+     * Destination sheet can be located in another Excel Document.
+     *
+     * @param destSheet  - destination sheet
+     * @param copyFormat - specifies whether it's necessary to copy format settings (styles, merged regions etc.).
+     */
+    public void copy(Sheet destSheet, boolean copyFormat) {
+        int rowsCount = getLastRowIndex() + 1;
+        int columnsCount = getLastColumnIndex() + 1;
+
+        destSheet.clear();
+        destSheet.putRange(0, 0, getRange(0, 0, rowsCount - 1, columnsCount - 1));
+
+        org.apache.poi.ss.usermodel.Sheet srcPoiSheet = getPoiSheet();
+        org.apache.poi.ss.usermodel.Sheet destPoiSheet = destSheet.getPoiSheet();
+
+        //Copy XSSF tables
+        if (srcPoiSheet instanceof XSSFSheet && destPoiSheet instanceof XSSFSheet) {
+            XSSFSheet srcXSSFSheet = (XSSFSheet) srcPoiSheet;
+            XSSFSheet destXSSFSheet = (XSSFSheet) destPoiSheet;
+
+            for (XSSFTable srcXSSFTable : srcXSSFSheet.getTables()) {
+                XSSFTable destXSSFTable = destXSSFSheet.createTable(srcXSSFTable.getArea());
+                try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                    srcXSSFTable.writeTo(baos);
+                    destXSSFTable.readFrom(new ByteArrayInputStream(baos.toByteArray()));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        //Copy images
+        Drawing<?> srcDrawing = srcPoiSheet.getDrawingPatriarch();
+        if (srcDrawing != null) {
+            Workbook destWb = destPoiSheet.getWorkbook();
+            Drawing<?> destDrawing = destPoiSheet.createDrawingPatriarch();
+            for (Shape shape : srcDrawing) {
+                if (shape instanceof Picture) {
+                    Picture srcPicture = (Picture) shape;
+                    int pictureIdx = destWb.addPicture(srcPicture.getPictureData().getData(), srcPicture.getPictureData().getPictureType());
+                    destDrawing.createPicture(srcPicture.getClientAnchor(), pictureIdx);
+                }
+            }
+        }
+
+        if (copyFormat) {
+            getFormat().applyTo(destSheet);
+
+            //Copy column widths and row heights
+            short defaultRowHeight = srcPoiSheet.getDefaultRowHeight();
+            if (defaultRowHeight != destPoiSheet.getDefaultRowHeight()) {
+                destPoiSheet.setDefaultRowHeight(defaultRowHeight);
+            }
+            int defaultColWidth = srcPoiSheet.getDefaultColumnWidth();
+            if (defaultColWidth != destPoiSheet.getDefaultColumnWidth()) {
+                destPoiSheet.setDefaultColumnWidth(defaultColWidth);
+            }
+            for (int i = 0; i < columnsCount; i++) {
+                int width = srcPoiSheet.getColumnWidth(i);
+                if (width != defaultColWidth) {
+                    destPoiSheet.setColumnWidth(i, width);
+                }
+            }
+            for (int i = 0; i < rowsCount; i++) {
+                org.apache.poi.ss.usermodel.Row srcRow = srcPoiSheet.getRow(i);
+                org.apache.poi.ss.usermodel.Row destRow = destPoiSheet.getRow(i);
+                if (srcRow != null && destRow != null) {
+                    short height = srcRow.getHeight();
+                    if (height != defaultRowHeight) {
+                        destRow.setHeight(height);
+                    }
+                }
+            }
+
+            //Copy tab color
+            if (srcPoiSheet instanceof XSSFSheet && destPoiSheet instanceof XSSFSheet) {
+                XSSFSheet srcXSSFSheet = (XSSFSheet) srcPoiSheet;
+                XSSFSheet destXSSFSheet = (XSSFSheet) destPoiSheet;
+                XSSFColor tabColor = srcXSSFSheet.getTabColor();
+                if (tabColor != null) {
+                    destXSSFSheet.setTabColor(tabColor);
+                }
+            }
+        }
     }
 
     @Override

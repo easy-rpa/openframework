@@ -1,6 +1,7 @@
 target
 bin
 object_storage
+tokens
 .metadata
 .settings
 logs
