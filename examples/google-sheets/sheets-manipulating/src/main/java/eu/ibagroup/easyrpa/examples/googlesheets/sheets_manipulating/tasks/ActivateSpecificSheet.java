@@ -22,7 +22,7 @@ public class ActivateSpecificSheet extends ApTask {
 
     @Override
     public void execute() {
-        int sheetIndex = 2;
+        int sheetIndex = 1;
         String sheetName = "Sheet1";
 
         log.info("Activate sheet with name '{}' for spreadsheet document with id: {}", sheetName, spreadsheetId);

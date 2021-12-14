@@ -16,8 +16,6 @@ public class Sheet implements Iterable<Row> {
 
     private Spreadsheet parentSpreadsheet;
 
-    private com.google.api.services.sheets.v4.model.Sheet googleSheet;
-
     private int sheetIndex;
 
     public Sheet(Spreadsheet parent, int sheetIndex) {
@@ -25,19 +23,17 @@ public class Sheet implements Iterable<Row> {
         this.parentSpreadsheet = parent;
     }
 
-    public Sheet(com.google.api.services.sheets.v4.model.Sheet googleSheet, Spreadsheet parent) {
-        this.googleSheet = googleSheet;
+    public Sheet(Spreadsheet parent) {
         this.parentSpreadsheet = parent;
     }
 
     public String getName() {
-      return   googleSheet.getProperties().getTitle();
-        //return getGSheet().getProperties().getTitle(); посмотреть в какой момент добавлять в кэш
+        return getGSheet().getProperties().getTitle();// посмотреть в какой момент добавлять в кэш
     }
 
     public int getId() {
-        return googleSheet.getProperties().getSheetId();
-        //return getGSheet().getProperties().getSheetId();
+        //return googleSheet.getProperties().getSheetId();
+        return getGSheet().getProperties().getSheetId();
     }
 
     public Spreadsheet getParentSpreadsheet() {
@@ -53,13 +49,13 @@ public class Sheet implements Iterable<Row> {
             throw new SheetNameAlreadyExist("Name already defined in this scope");
         }
 
-        googleSheet.getProperties().setTitle(name);
-        //getGSheet().getProperties().setTitle(name);
+        //googleSheet.getProperties().setTitle(name);
+        getGSheet().getProperties().setTitle(name);
 
         parentSpreadsheet.getRequests().add(new Request().setUpdateSheetProperties(
                 new UpdateSheetPropertiesRequest()
-                        //.setProperties(getGSheet().getProperties()) опять же getGsheet не работает
-                        .setProperties(googleSheet.getProperties())
+                        .setProperties(getGSheet().getProperties()) //опять же getGsheet не работает
+                        //.setProperties(googleSheet.getProperties())
                         .setFields("*")
         ));
     }

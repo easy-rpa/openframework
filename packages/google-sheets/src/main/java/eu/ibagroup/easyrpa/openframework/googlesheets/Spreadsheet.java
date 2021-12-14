@@ -6,6 +6,7 @@ import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.CopySheetExcept
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SheetNameAlreadyExist;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SheetNotFound;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.UpdateException;
+import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSheetElementsCache;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class Spreadsheet {
     }
 
     public Sheet getActiveSheet() {
-        return new Sheet(googleSpreadsheet.getSheets().get(activeSheetIndex), this);
+        return new Sheet( this,activeSheetIndex);
     }
 
     public Sheet selectSheet(String name) {
@@ -49,7 +50,7 @@ public class Spreadsheet {
         for (int i = 0; i < list.size(); i++) {
             if (name.equals(list.get(i).getProperties().getTitle())) {
                 activeSheetIndex = i;
-                return new Sheet(googleSpreadsheet.getSheets().get(activeSheetIndex), this);
+                return new Sheet( this,activeSheetIndex);
             }
         }
         throw new SheetNotFound("Sheet with this name wasn't found");
@@ -60,14 +61,14 @@ public class Spreadsheet {
             throw new SheetNotFound("Incorrect sheet id");
         }
         activeSheetIndex = index;
-        return new Sheet(googleSpreadsheet.getSheets().get(index), this);
+        return new Sheet(this,activeSheetIndex);
     }
 
     public Sheet getSheetAt(int index){
         if (index < 0 || googleSpreadsheet.getSheets().size() <= index) {
             throw new SheetNotFound("Incorrect sheet id");
         }
-        return new Sheet(googleSpreadsheet.getSheets().get(index), this);
+        return new Sheet( this);
     }
 
     public com.google.api.services.sheets.v4.model.Sheet getGSheetAt(int index){
@@ -118,7 +119,8 @@ public class Spreadsheet {
                 .getDuplicateSheet()
                 .getProperties();
 
-        return new Sheet(sheet.setProperties(properties), this);
+        sheet.setProperties(properties);
+        return new Sheet( this,newSheetIndex);
     }
 
     public void removeSheet(String sheetName) {

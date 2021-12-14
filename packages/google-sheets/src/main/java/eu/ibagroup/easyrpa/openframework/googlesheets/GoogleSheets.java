@@ -18,6 +18,7 @@ import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.CopySheetExcept
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.GoogleSheetsInstanceCreationException;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SpreadsheetNotFound;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SpreadsheetRequestFailed;
+import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSheetElementsCache;
 
 import javax.inject.Inject;
 import java.io.*;
@@ -72,7 +73,6 @@ public class GoogleSheets {
         try {
             Sheets.Spreadsheets.Get s = service.spreadsheets().get(spreadsheetId);
             s.getSpreadsheetId();
-            //  s.get
             spreadsheet = service.spreadsheets().get(spreadsheetId).setIncludeGridData(true).execute();
         } catch (IOException e) {
             throw new SpreadsheetNotFound("Spreadsheet with such id not found");
@@ -80,6 +80,7 @@ public class GoogleSheets {
         if (spreadsheet == null) {
             throw new SpreadsheetRequestFailed("Some errors occurred");
         }
+        GSheetElementsCache.register(spreadsheet.getSpreadsheetId(),spreadsheet);
         return new Spreadsheet(spreadsheet, service);
     }
 

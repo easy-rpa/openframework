@@ -22,7 +22,7 @@ public class RenameSheet extends ApTask {
 
     @Override
     public void execute() {
-        String newSheetName = "Sheet2";
+        String newSheetName = "RenamedSheet";
 
         log.info("Rename active by default sheet to '{}' for spreadsheet with id: {}", newSheetName, spreadsheetId);
         Spreadsheet spreadsheet = service.getSpreadsheet(spreadsheetId);
