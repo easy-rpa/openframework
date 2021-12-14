@@ -14,6 +14,7 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.*;
 import eu.ibagroup.easyrpa.openframework.core.sevices.RPAServicesAccessor;
+import eu.ibagroup.easyrpa.openframework.googlesheets.constants.BatchUpdateCellStyles;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.CopySheetException;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.GoogleSheetsInstanceCreationException;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SpreadsheetNotFound;
@@ -27,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+
 
 public class GoogleSheets {
 
@@ -163,16 +166,14 @@ public class GoogleSheets {
 
     public BatchUpdateValuesResponse batchUpdateValues(String spreadsheetId, String range,
                                                        String valueInputOption,
-                                                       List<List<Object>> _values)
+                                                       List<List<Object>> values)
             throws IOException {
+
+
         Sheets service = this.service;
-        // [START sheets_batch_update_values]
-        List<List<Object>> values = Arrays.asList(
-                Arrays.asList(
-                )
-        );
-        values = _values;
-        // [END_EXCLUDE]
+
+        fixNullValues(values);
+
         List<ValueRange> data = new ArrayList<>();
         data.add(new ValueRange()
                 .setRange(range)
@@ -187,6 +188,26 @@ public class GoogleSheets {
 
         System.out.printf("%d cells updated.", result.getTotalUpdatedCells());
         return result;
+    }
+
+    private void fixNullValues(List<List<Object>> values) {
+        for(List row : values){
+            for(int i = 0; i< row.size(); i++){
+                if(row.get(i) == null){
+                    row.set(i, "");
+                }
+            }
+        }
+    }
+
+    public BatchUpdateValuesResponse insertRows(String spreadsheetId, String range,
+                                                String valueInputOption,
+                                                List<?> data)throws IOException {
+
+        if (!(data.get(0) instanceof List)) {
+            data = Collections.singletonList(data);
+        }
+        return batchUpdateValues(spreadsheetId, range, valueInputOption, (List<List<Object>>) data);
     }
 
     public void setBackground(String spreadsheetId, String range, GSheetColor color) throws IOException {
@@ -222,31 +243,31 @@ public class GoogleSheets {
         service.spreadsheets().batchUpdate(spreadsheetId, bodyReq).execute();
     }
 
-        public void setTextColor(String spreadsheetId, String range, GSheetColor color) throws IOException {
-            CellRange rng = new CellRange(range);
-            List<Request> requests = new ArrayList<>();
-            requests.add(new Request()
-                    .setRepeatCell(new RepeatCellRequest()
-                                    .setCell(new CellData()
-                                            //.setUserEnteredValue( new ExtendedValue().setStringValue("cell text"))
-                                            .setEffectiveValue(new ExtendedValue().setStringValue("cell text2"))
-                                            .setUserEnteredFormat(new CellFormat()
-                                                    .setTextFormat(new TextFormat()
-                                                            .setForegroundColor(color.toNativeColor())
-                                                    )
-                                            )
-                                    )
-                                    .setRange(new GridRange()
-                                            .setSheetId(getSpreadsheet(spreadsheetId).getActiveSheet().getId())
-                                            .setStartRowIndex(rng.getFirstRow())
-                                            .setEndRowIndex(rng.getLastRow()+1)
-                                            .setStartColumnIndex(rng.getFirstCol())
-                                            .setEndColumnIndex(rng.getLastCol()+1)
-                                    )
-                                    .setFields("userEnteredFormat.textFormat.foregroundColor")
-                            //.setFields("*")
-                    )
-            );
+    public void setTextColor(String spreadsheetId, String range, GSheetColor color) throws IOException {
+        CellRange rng = new CellRange(range);
+        List<Request> requests = new ArrayList<>();
+        requests.add(new Request()
+                .setRepeatCell(new RepeatCellRequest()
+                                .setCell(new CellData()
+                                        //.setUserEnteredValue( new ExtendedValue().setStringValue("cell text"))
+                                        .setEffectiveValue(new ExtendedValue().setStringValue("cell text2"))
+                                        .setUserEnteredFormat(new CellFormat()
+                                                .setTextFormat(new TextFormat()
+                                                        .setForegroundColor(color.toNativeColor())
+                                                )
+                                        )
+                                )
+                                .setRange(new GridRange()
+                                        .setSheetId(getSpreadsheet(spreadsheetId).getActiveSheet().getId())
+                                        .setStartRowIndex(rng.getFirstRow())
+                                        .setEndRowIndex(rng.getLastRow()+1)
+                                        .setStartColumnIndex(rng.getFirstCol())
+                                        .setEndColumnIndex(rng.getLastCol()+1)
+                                )
+                                .setFields("userEnteredFormat.textFormat.foregroundColor")
+                        //.setFields("*")
+                )
+        );
 
         BatchUpdateSpreadsheetRequest bodyReq =
                 new BatchUpdateSpreadsheetRequest().setRequests(requests);
@@ -257,19 +278,20 @@ public class GoogleSheets {
     public void setCellData(String spreadsheetId, String cell1Ref, CellData cellData) throws IOException {
         CellRef ref = new CellRef(cell1Ref);
         List<Request> requests = new ArrayList<>();
+        System.out.println(cell1Ref);
         requests.add(new Request()
-                .setRepeatCell(new RepeatCellRequest()
-                                .setCell(cellData)
-                                .setRange(new GridRange()
-                                        .setSheetId(getSpreadsheet(spreadsheetId).getActiveSheet().getId())
-                                        .setStartRowIndex(ref.getRow())
-                                        .setEndRowIndex(ref.getRow()+1)
-                                        .setStartColumnIndex(ref.getCol())
-                                        .setEndColumnIndex(ref.getCol()+1)
-                                )
-                                .setFields("userEnteredFormat.backgroundColor,userEnteredFormat.textRotation,userEnteredFormat.textFormat")
+                        .setRepeatCell(new RepeatCellRequest()
+                                        .setCell(cellData)
+                                        .setRange(new GridRange()
+                                                .setSheetId(getSpreadsheet(spreadsheetId).getActiveSheet().getId())
+                                                .setStartRowIndex(ref.getRow())
+                                                .setEndRowIndex(ref.getRow()+1)
+                                                .setStartColumnIndex(ref.getCol())
+                                                .setEndColumnIndex(ref.getCol()+1)
+                                        )
+                                        .setFields(BatchUpdateCellStyles.ALL_CELL_STYLE_FIELDS)
 //                        .setFields("*")
-                )
+                        )
         );
 
         BatchUpdateSpreadsheetRequest bodyReq =

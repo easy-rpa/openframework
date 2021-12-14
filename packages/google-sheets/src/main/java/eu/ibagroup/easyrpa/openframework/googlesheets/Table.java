@@ -34,7 +34,7 @@ public class Table<T> implements Iterable<T> {
         }
     }
 
-    protected Table(Sheet parent, int headerTopRow, int headerLeftCol, int headerBottomRow, int headerRightCol, Class<T> recordType) {
+    public Table(Sheet parent, int headerTopRow, int headerLeftCol, int headerBottomRow, int headerRightCol, Class<T> recordType) {
         this.parent = parent;
         this.hTopRow = headerTopRow;
         this.hLeftCol = headerLeftCol;

@@ -18,7 +18,8 @@ public enum GSheetColors {
     GREEN(Color.GREEN),
     MAGENTA(Color.MAGENTA),
     CYAN(Color.CYAN),
-    BLUE(Color.BLUE);
+    BLUE(Color.BLUE),
+    DEFAULT(Color.BLACK);
 
     private final Color color;
 
@@ -29,7 +30,5 @@ public enum GSheetColors {
     public GSheetColor get() {
         return new GSheetColor(color);
     }
-
-
 
 }

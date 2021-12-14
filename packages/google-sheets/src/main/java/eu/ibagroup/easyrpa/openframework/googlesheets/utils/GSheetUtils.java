@@ -44,4 +44,8 @@ public class GSheetUtils {
     public static String convertNumCoordToString(int[] coord) {
         return convertNumToColString(coord[0])+(coord[1]+1);
     }
+
+    public static String convertNumCoordToString(int col, int row) {
+        return convertNumToColString(col)+(row+1);
+    }
 }

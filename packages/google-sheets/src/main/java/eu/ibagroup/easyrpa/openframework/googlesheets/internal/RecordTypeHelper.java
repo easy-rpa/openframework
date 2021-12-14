@@ -1,6 +1,5 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets.internal;
 
-import com.google.api.services.sheets.v4.model.Color;
 import eu.ibagroup.easyrpa.openframework.core.utils.TypeUtils;
 import eu.ibagroup.easyrpa.openframework.googlesheets.Cell;
 import eu.ibagroup.easyrpa.openframework.googlesheets.GSheetCellStyle;
@@ -9,7 +8,9 @@ import eu.ibagroup.easyrpa.openframework.googlesheets.annotations.GSheetTable;
 import eu.ibagroup.easyrpa.openframework.googlesheets.function.ColumnFormatter;
 import eu.ibagroup.easyrpa.openframework.googlesheets.function.FieldMapper;
 import eu.ibagroup.easyrpa.openframework.googlesheets.function.TableFormatter;
+import eu.ibagroup.easyrpa.openframework.googlesheets.utils.StyleAnnotationUtils;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -118,12 +119,63 @@ public class RecordTypeHelper<T> {
         }
     }
 
-    public void formatCell(Cell cell, String columnName, int recordIndex, List<T> records) {
-        //TODO
+    public void formatCell(Cell cell, String columnName, int recordIndex, List<T> records) throws IOException {
+
+        if (cell != null && columnName != null && !columnName.trim().isEmpty()) {
+
+            Integer columnOrder = columnNameToOrderMap.get(columnName);
+            if (columnOrder == null) {
+                return;
+            }
+
+            GSheetCellStyle cellStyle = columnCellStyleMap.get(columnOrder);
+            if (cellStyle != null) {
+                cell.setStyle(cellStyle);
+            } else if (tableCellStyle != null) {
+                cell.setStyle(tableCellStyle);
+            }
+
+            if (tableFormatter != null) {
+//                tableFormatter.format(cell, columnName, recordIndex, records);
+            }
+            ColumnFormatter<T> formatter = columnFormatterMap.get(columnOrder);
+            if (formatter != null) {
+                T record = records != null && recordIndex >= 0 && recordIndex < records.size()
+                        ? records.get(recordIndex)
+                        : null;
+//                formatter.format(cell, columnName, record);
+            }
+        }
     }
 
-    public void formatHeaderCell(Cell cell, String columnName) {
-        //TODO
+    public void formatHeaderCell(Cell cell, String columnName) throws IOException {
+        if (cell != null && columnName != null && !columnName.trim().isEmpty()) {
+
+            Integer columnOrder = columnNameToOrderMap.get(columnName);
+            if (columnOrder == null) {
+                return;
+            }
+
+            Integer width = columnWidthMap.get(columnOrder);
+            if (width != null) {
+//                cell.getSheet().setColumnWidth(cell.getColumnIndex(), width);
+            }
+
+            GSheetCellStyle headerCellStyle = columnHeaderCellStyleMap.get(columnOrder);
+            if (headerCellStyle != null) {
+                cell.setStyle(headerCellStyle);
+            } else if (tableHeaderCellStyle != null) {
+                cell.setStyle(tableHeaderCellStyle);
+            }
+
+//            if (tableFormatter != null) {
+//                tableFormatter.format(cell, columnName, -1, null);
+//            }
+//            ColumnFormatter<T> formatter = columnFormatterMap.get(columnOrder);
+//            if (formatter != null) {
+//                formatter.format(cell, columnName, null);
+//            }
+        }
     }
 
     private static final Map<String, RecordTypeHelper<?>> HELPERS_CACHE = new HashMap<>();
@@ -218,7 +270,25 @@ public class RecordTypeHelper<T> {
     private static GSheetCellStyle getStyleForAnnotation(
             eu.ibagroup.easyrpa.openframework.googlesheets.annotations.GSheetCellStyle styleAnnotation) {
         GSheetCellStyle style = new GSheetCellStyle();
-        style.setBackgroundColor(new Color().setBlue(0f).setGreen(0f).setRed(1f));
+
+        style.setTextRotation(StyleAnnotationUtils.getRotation(styleAnnotation));
+
+        style.setBackgroundColor(StyleAnnotationUtils.getBackgroundColor(styleAnnotation));
+
+        style.setTextFormat(StyleAnnotationUtils.getTextFormat(styleAnnotation));
+
+        style.setBorders(StyleAnnotationUtils.getBorders(styleAnnotation));
+
+        style.setHorizontalAlignment(StyleAnnotationUtils.getHorizontalAlignment(styleAnnotation));
+
+        style.setVerticalAlignment(StyleAnnotationUtils.getVerticalAlignment(styleAnnotation));
+
+        style.setWrapStrategy(StyleAnnotationUtils.getWrapStrategy(styleAnnotation));
+
+        style.setPadding(StyleAnnotationUtils.getPadding(styleAnnotation));
+
+        style.setTextDirection(StyleAnnotationUtils.getTextDirection(styleAnnotation));
+
         return style;
     }
 }
