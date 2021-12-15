@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Execute batch of scripts on spreadsheet excel file
+ * Allows to execute batch of VB scripts on spreadsheet excel file
  */
 public class VBScriptProcessor {
 
@@ -20,22 +20,22 @@ public class VBScriptProcessor {
     private ExcelDocument document;
 
     /**
-     * Construct new empty script processor.
+     * Constructs new empty script processor.
      */
     public VBScriptProcessor() {
     }
 
     /**
-     * Construct new script processor with target Excel Document specified.
+     * Construct snew script processor with target Excel Document specified.
      *
-     * @param document - instance of Excel Document
+     * @param document instance of Excel Document
      */
     public VBScriptProcessor(ExcelDocument document) {
         this.document = document;
     }
 
     /**
-     * Run set of scripts on Excel Document.
+     * Runs set of scripts on Excel Document.
      *
      * @throws RuntimeException if document not specified.
      * @throws RuntimeException if uploading the document to temp file failed.
@@ -74,7 +74,10 @@ public class VBScriptProcessor {
     }
 
     /**
-     * Add script to the batch.
+     * Adds script to the batch.
+     *
+     * @param script script object to add.
+     * @return instance of this script processor.
      */
     public VBScriptProcessor addScript(VBScript script) {
         scripts.add(script);
@@ -82,7 +85,10 @@ public class VBScriptProcessor {
     }
 
     /**
-     * Set target Excel Document.
+     * Sets target Excel Document.
+     *
+     * @param document the instance of target Excel Document
+     * @return instance of this script processor.
      */
     public VBScriptProcessor document(ExcelDocument document) {
         this.document = document;

@@ -12,6 +12,16 @@ import eu.ibagroup.easyrpa.openframework.excel.function.TableFormatter;
 import java.lang.reflect.Field;
 import java.util.*;
 
+/**
+ * <p>FOR INTERNAL USE ONLY</p>
+ * <br>
+ * <p>Helper class that is responsible for extraction of necessary meta information from specific class of table records
+ * and performing of necessary data conversions and actions using this information.</p>
+ *
+ * @param <T> class of related table record.
+ * @see ExcelTable
+ * @see ExcelColumn
+ */
 public class RecordTypeHelper<T> {
 
     public static final String NAME_LEVEL_DELIMITER = "&&";

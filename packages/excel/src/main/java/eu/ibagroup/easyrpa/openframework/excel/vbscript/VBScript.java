@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Implement script with code and parameters defined.
+ * Represents VB script with code and defined parameters.
  */
 public class VBScript {
 
@@ -33,8 +33,7 @@ public class VBScript {
     /**
      * New script with code.
      *
-     * @param script the text of VB script or name of the vbs resource ends with
-     *               .vbs
+     * @param script the text of VB script or name of VBS resource ends with ".vbs".
      */
     public VBScript(String script) {
         setText(getVbsFileContent(script));
@@ -52,13 +51,13 @@ public class VBScript {
     }
 
     /**
-     * Perform remote script on Excel Document. This methods get script code from
-     * system resources by the script name (getScriptName()), and run this script
-     * remotely using excelFilePath and script args as parameters.
+     * Performs remote script on Excel Document.
+     * <br>
+     * This methods takes script text and runs its remotely for given Excel file.
      *
-     * @param excelFilePath remote file path of the excel spreadsheet
+     * @param excelFilePath path to the target Excel file.
      * @throws VBScriptExecutionException on getting of not 'SUCCESS' output of script execution.
-     * @throws RuntimeException           on error of getting script code or error on script execution
+     * @throws RuntimeException           on error of getting script text or error on script execution
      */
     public void perform(String excelFilePath) {
         try {
@@ -82,7 +81,7 @@ public class VBScript {
     }
 
     /**
-     * Get VB script as text
+     * Gets VB script as text
      *
      * @return text of this VB script
      */
@@ -91,16 +90,16 @@ public class VBScript {
     }
 
     /**
-     * Set script code for this VB script object
+     * Sets script code for this VB script object
      *
-     * @param vbsText - the VB script code to set
+     * @param vbsText the VB script code to set
      */
     public void setText(String vbsText) {
         this.vbsText = vbsText;
     }
 
     /**
-     * Get current parameters specified for this VB script
+     * Gets current parameters specified for this VB script
      *
      * @return ordered list of script parameters
      */
@@ -109,9 +108,9 @@ public class VBScript {
     }
 
     /**
-     * Set list of ordered parameters for this VB script object.
+     * Sets list of ordered parameters for this VB script object.
      *
-     * @param parameters - list of parameters to set
+     * @param parameters list of parameters to set
      */
     public void setParameters(List<String> parameters) {
         vbsParameters.clear();
@@ -119,9 +118,9 @@ public class VBScript {
     }
 
     /**
-     * Set parameters to the script and return this VB script object
+     * Sets parameters to the script and returns this VB script object
      *
-     * @param args - parameters to set
+     * @param args parameters to set
      * @return instance of this VB script
      */
     public VBScript params(String... args) {
@@ -133,7 +132,7 @@ public class VBScript {
      * Checks whether specified VB script text is a path to resource ".vbs" file. If so, then reads this file
      * and retrieve it's content.
      *
-     * @param vbScript - text with VB script code or path to resource ".vbs" file.
+     * @param vbScript text with VB script code or path to resource ".vbs" file.
      * @return text with VB script code.
      * @throws RuntimeException if reading of ".vbs" file failed.
      */
@@ -156,8 +155,8 @@ public class VBScript {
     /**
      * Puts VBS code into temp file and executes it. After script execution the temp file is deleted.
      *
-     * @param vbsText - text with VBS code to execute.
-     * @param args    - VB script arguments
+     * @param vbsText text with VBS code to execute.
+     * @param args    VB script arguments
      * @throws RuntimeException if script output don't contains EXIT_SUCCESS string.
      */
     private static void runVbs(String vbsText, String... args) {
@@ -188,8 +187,8 @@ public class VBScript {
     /**
      * Launch cscript command.
      *
-     * @param filePath - VBS file path to execute.
-     * @param args     - VB script arguments
+     * @param filePath VBS file path to execute.
+     * @param args     VB script arguments
      * @return execution output.
      */
     private static String launchCScriptCommand(String filePath, String... args) {
@@ -227,7 +226,7 @@ public class VBScript {
     /**
      * Check if string is in ""
      *
-     * @param argument - input string
+     * @param argument input string
      * @return true if in ""
      */
     private static boolean inBrackets(String argument) {

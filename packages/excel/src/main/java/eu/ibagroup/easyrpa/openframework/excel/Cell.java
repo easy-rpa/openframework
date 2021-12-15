@@ -72,6 +72,7 @@ public class Cell {
         if (String.class.isAssignableFrom(valueType)) {
             return (T) getValueAsString();
         } else if (Number.class.isAssignableFrom(valueType)) {
+            //TODO Fix conversion of Double to other "numbers"
             return (T) getValueAsNumeric();
         }
         return (T) getTypedValue();

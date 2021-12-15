@@ -9,6 +9,34 @@ import org.apache.poi.ss.util.CellRangeAddressList;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * <p>Represents format of some cells range.</p>
+ *
+ * <p>The format includes information about style of each cell in range, merged regions and regions with data
+ * validation constraints. This information can be applied multiple times to different cells ranges of any sheet
+ * within Excel Document.</p>
+ * <br>
+ * <p>If range size of this format is less than size of cells range to which this format is going to be applied then
+ * it will be repeatedly applied to each cells sub-range with size equals to size of this format range.</p>
+ * <p>
+ * E.g. lets take a format that keeps styles of cells range with 3 rows and 3 columns and style of cell in the center
+ * of range has a border:
+ * <table cellSpacing="0" cellPadding="10">
+ *      <tr><td>St11</td><td>St21</td><td>St31</td></tr>
+ *      <tr><td>St12</td><td style="border:1px solid">St22</td><td>St32</td></tr>
+ *      <tr><td>St13</td><td>St23</td><td>St33</td></tr>
+ * </table>
+ * If this format apply to cells range with 5 columns and 6 rows the result will be the following:
+ * <table cellSpacing="0" cellPadding="10">
+ *      <tr><td>St11</td><td>St21</td><td>St31</td><td>St11</td><td>St21</td></tr>
+ *      <tr><td>St12</td><td style="border:1px solid">St22</td><td>St32</td><td>St12</td><td style="border:1px solid">St22</td></tr>
+ *      <tr><td>St13</td><td>St23</td><td>St33</td><td>St13</td><td>St23</td></tr>
+ *      <tr><td>St11</td><td>St21</td><td>St31</td><td>St11</td><td>St21</td></tr>
+ *      <tr><td>St12</td><td style="border:1px solid">St22</td><td>St32</td><td>St12</td><td style="border:1px solid">St22</td></tr>
+ *      <tr><td>St13</td><td>St23</td><td>St33</td><td>St13</td><td>St23</td></tr>
+ * </table>
+ * </p>
+ */
 public class ExcelCellsFormat {
 
     private ExcelCellStyle[][] cellStyles;
