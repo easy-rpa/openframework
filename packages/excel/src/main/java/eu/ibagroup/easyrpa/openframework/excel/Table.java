@@ -10,7 +10,6 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-//TODO implement multi line header support. Currently only one line header is supported.
 public class Table<T> implements Iterable<T> {
 
     private Sheet parent;

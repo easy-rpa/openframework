@@ -29,12 +29,25 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * This is a main class of EasyRPA Open Framework Excel package.
+ */
 public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
 
+    /**
+     * Unique Excel Document identified.
+     */
     private int id = -1;
 
+    /**
+     * Path to related to this document Excel file. It's a place where the document
+     * is saved when method <code>save()</code> is called.
+     */
     private String filePath;
 
+    /**
+     * Reference to related POI Workbook.
+     */
     private Workbook workbook;
 
     private Set<String> availableMacros = new HashSet<>();
@@ -52,7 +65,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     /**
      * Create empty Excel Document.
      *
-     * @param saveMemoryMode - switch on the mode which works slowly but allows to work with large files.
+     * @param saveMemoryMode switch on the mode which works slowly but allows to work with large files.
      */
     public ExcelDocument(boolean saveMemoryMode) {
         initWorkbook(null, saveMemoryMode);
@@ -73,7 +86,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      * specified. Set first workbook sheet as active sheet.
      *
      * @param is             input stream with Excel workbook content. Creates empty document if it's null.
-     * @param saveMemoryMode - switch on the mode which works slowly but allows to work with large files.
+     * @param saveMemoryMode switch on the mode which works slowly but allows to work with large files.
      */
     public ExcelDocument(InputStream is, boolean saveMemoryMode) {
         initWorkbook(is, saveMemoryMode);
@@ -93,7 +106,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      * Create new Excel Document for specified file.
      *
      * @param file           input Excel file that needs to accessed via this document.
-     * @param saveMemoryMode - switch on the mode which works slowly but allows to work with large files.
+     * @param saveMemoryMode switch on the mode which works slowly but allows to work with large files.
      * @throws IllegalArgumentException if <code>file</code> is null or not exist.
      */
     public ExcelDocument(File file, boolean saveMemoryMode) {
@@ -122,7 +135,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      * Create new Excel Document for file specified using path.
      *
      * @param path           the path to input Excel file that needs to accessed via this document.
-     * @param saveMemoryMode - switch on the mode which works slowly but allows to work with large files.
+     * @param saveMemoryMode switch on the mode which works slowly but allows to work with large files.
      * @throws IllegalArgumentException if <code>path</code> is null or point to nonexistent file.
      */
     public ExcelDocument(Path path, boolean saveMemoryMode) {
@@ -151,7 +164,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      * Create new Excel Document for specified file.
      *
      * @param filePath       the path to input Excel file that needs to accessed via this document.
-     * @param saveMemoryMode - switch on the mode which works slowly but allows to work with large files.
+     * @param saveMemoryMode switch on the mode which works slowly but allows to work with large files.
      * @throws IllegalArgumentException if <code>filePath</code> is null or point to nonexistent file.
      */
     public ExcelDocument(String filePath, boolean saveMemoryMode) {
@@ -201,9 +214,10 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      * Get content type (MIME type) of the workbook. May be used to pass this
      * document by HTTP
      *
-     * @return for macro: application/vnd.ms-excel.sheet.macroEnabled.12 xlsx:
-     * application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-     * other: application/vnd.ms-excel
+     * @return for
+     * <tr><td>macro:</td><td><code>application/vnd.ms-excel.sheet.macroEnabled.12</code></td></tr>
+     * <tr><td>xlsx:</td><td><code>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</code></td></tr>
+     * <tr><td>other:</td><td><code>application/vnd.ms-excel</code></td></tr>
      */
     public String getContentType() {
         if (hasMacros()) {
@@ -248,7 +262,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     }
 
     /**
-     * Overwrite the original file specified by <code>filePath</code> with actual content of this Excel Document.
+     * Overwrites the original file specified by <code>filePath</code> with actual content of this Excel Document.
      */
     public void save() {
         if (filePath != null) {
@@ -257,10 +271,13 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     }
 
     /**
-     * Save this Excel Document to specified file. This will create parent folders if do not exist and
-     * create a file if not exists and throw a exception if file object is a directory or cannot be written to.
+     * Saves this Excel Document to specified file.
+     * <p>
+     * Overwrites the content of specified file if it's exist and creates new one otherwise.
+     * Also it will create all necessary parent folders if they do not exist either.
      *
      * @param filePath the path of the file to write.
+     * @throws RuntimeException if specified file is a directory or cannot be written to.
      */
     public void saveAs(String filePath) {
         try {
@@ -293,14 +310,18 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     /**
      * Update content of this Excel Document. Invokes Apache POI workbook reinitialization.
      *
-     * @param is - input stream with contents.
+     * @param is input stream with contents.
      */
     public void update(InputStream is) {
         initWorkbook(is, false);
     }
 
     /**
-     * Links external document to allow using of it in cell formulas.
+     * Links external Excel Document to allow using it's data in formulas.
+     * <p>
+     * The file name of specified <code>externalDoc</code> is used as name of this document in formulas.
+     *
+     * @param externalDoc instance of external Excel Document that should be linked.
      */
     public void linkExternalDocument(ExcelDocument externalDoc) {
         if (externalDoc != null) {
@@ -308,6 +329,16 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
         }
     }
 
+    /**
+     * Links external Excel Document to allow using it's data in formulas.
+     * <p>
+     * In order for formulas such as "[MyOtherDoc.xlsx]Sheet3!$A$5" to be evaluated for this document,
+     * related "MyOtherDoc" Excel Document must be linked using this method. Each external document needs linking
+     * only once.
+     *
+     * @param name        the name of external Excel Document that will be used in cell formulas. E.g. "MyOtherDoc.xlsx"
+     * @param externalDoc instance of external Excel Document that should be linked.
+     */
     public void linkExternalDocument(String name, ExcelDocument externalDoc) {
         if (name != null && externalDoc != null) {
             try {
@@ -324,7 +355,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     /**
      * Sets custom data formatter for this Excel Document.
      *
-     * @param formatter - instance of specific formatter
+     * @param formatter instance of specific formatter
      * @see org.apache.poi.ss.usermodel.DataFormatter
      */
     public void setDataFormatter(DataFormatter formatter) {
@@ -342,9 +373,9 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     }
 
 
-    /********************************************************
-     * Methods to work with sheets
-     ********************************************************/
+    /*--------------------------------------------------------
+                Methods to work with sheets
+     ---------------------------------------------------------*/
 
     /**
      * Get names of all sheets
@@ -362,7 +393,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     /**
      * Create a new sheet for this Excel Document and return the high level
      * representation. New sheet will set as active sheet. Will set existing sheet
-     * as active sheet and return it if sheet with name specified is exist already
+     * as active sheet and return it if sheet with name specified is exist already.
      *
      * @param sheetName The name to set for the sheet. Use 'null' if null.
      * @return Sheet representing the new sheet.
@@ -397,7 +428,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     /**
      * Removes given sheet.
      *
-     * @param sheet - sheet to remove
+     * @param sheet sheet to remove
      */
     public void removeSheet(Sheet sheet) {
         if (sheet.getDocument() == this) {
@@ -415,7 +446,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     /**
      * Set the sheet with given index as active and return it.
      *
-     * @param index - index of sheet that need to be activated.
+     * @param index index of sheet that need to be activated.
      * @return instance of activated sheet.
      */
     public Sheet selectSheet(int index) {
@@ -426,7 +457,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     /**
      * Set the sheet with given name as active and return it.
      *
-     * @param sheetName - name of sheet that need to be activated.
+     * @param sheetName name of sheet that need to be activated.
      * @return instance of activated sheet or <code>null</code> if sheet not found.
      */
     public Sheet selectSheet(String sheetName) {
@@ -439,7 +470,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     /**
      * Finds the sheet with a row that contains all given values and active it.
      *
-     * @param values - list of values to match.
+     * @param values list of values to match.
      * @return instance of found and activated sheet or <code>null</code> if sheet not found.
      */
     public Sheet findSheet(String... values) {
@@ -449,8 +480,8 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     /**
      * Finds the sheet with a row that contains all given values and active it.
      *
-     * @param matchMethod - method that defines how passed values are matched with each row values.
-     * @param values      - list of values to match.
+     * @param matchMethod method that defines how passed values are matched with each row values.
+     * @param values      list of values to match.
      * @return instance of found and activated sheet or <code>null</code> if sheet not found.
      * @see eu.ibagroup.easyrpa.openframework.excel.constants.MatchMethod
      */
@@ -467,9 +498,9 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
         return null;
     }
 
-    /***************************************************************
-     * Methods to perform specific Excel functionality using VBS
-     ***************************************************************/
+     /*--------------------------------------------------------
+      Methods to perform specific Excel functionality using VBS
+     ---------------------------------------------------------*/
 
     /**
      * Run the set of macros from this Excel Document.
@@ -499,7 +530,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     /**
      * Run VB script for this Excel Document
      *
-     * @param script - text of VB script or path to resource '.vbs' file
+     * @param script text of VB script or path to resource '.vbs' file
      * @throws VBScriptExecutionException with error description if execution of VB script failed.
      */
     public void runScript(String script) {
@@ -509,7 +540,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     /**
      * Run VB script for this Excel Document
      *
-     * @param script - instance of VBScript to run
+     * @param script instance of VBScript to run
      * @throws VBScriptExecutionException with error description if execution of VB script failed.
      */
     public void runScript(VBScript script) {
@@ -534,24 +565,25 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
         }
     }
 
-    /***************************************************************
-     * Protected methods
-     ***************************************************************/
+     /*--------------------------------------------------------
+                         Protected methods
+     ---------------------------------------------------------*/
+
     protected int getId() {
         return id;
     }
 
-    /***************************************************************
-     * Private methods
-     ***************************************************************/
+    /*--------------------------------------------------------
+                         Private methods
+     ---------------------------------------------------------*/
 
     /**
      * Creates and set workbook from input stream specified. Set first workbook
      * sheet as active sheet.
      *
-     * @param is             - input stream with workbook contents. Creates workbook with empty
+     * @param is             input stream with workbook contents. Creates workbook with empty
      *                       sheet if is is null.
-     * @param saveMemoryMode - switch on the mode which works slowly but allows to work with large files.
+     * @param saveMemoryMode switch on the mode which works slowly but allows to work with large files.
      */
     private void initWorkbook(InputStream is, boolean saveMemoryMode) {
         try {
@@ -582,10 +614,6 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
             collaboratingEvaluators.clear();
             collaboratingEvaluators.put(FilenameUtils.getName(getFilePath()), POIElementsCache.getEvaluator(id));
 
-            // For debug propose
-//            SpreadsheetUtil.outputPOILogsToConsole(1);
-//            formulaEvaluator.setDebugEvaluationOutputForNextEval(true);
-
         } catch (Exception e) {
             throw new RuntimeException(String.format("Initializing of workbook for spreadsheet '%s' has failed.", getFilePath()), e);
         }
@@ -595,7 +623,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      * Reads content of input stream and looks up modules with macros. Then extract names of available macros
      * from them using regexp.
      *
-     * @param is - Excel file input stream
+     * @param is Excel file input stream
      */
     private void extractAvailableMacros(InputStream is) throws IOException {
         availableMacros.clear();
@@ -620,6 +648,9 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
         }
     }
 
+    /**
+     * Sheets iterator. Allows iteration over all sheets present in Excel Document using "for" loop.
+     */
     private class SheetIterator implements Iterator<Sheet> {
 
         private int index = 0;

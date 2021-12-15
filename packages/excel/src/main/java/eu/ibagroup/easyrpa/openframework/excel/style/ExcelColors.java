@@ -3,6 +3,10 @@ package eu.ibagroup.easyrpa.openframework.excel.style;
 import eu.ibagroup.easyrpa.openframework.excel.ExcelColor;
 import org.apache.poi.ss.usermodel.IndexedColors;
 
+/**
+ * Provides list of built-in Excel colors. It helps to identify required colors to style specific cell
+ * of Excel Document.
+ */
 public enum ExcelColors {
 
     UNDEFINED(0, (short) -1),
@@ -73,8 +77,14 @@ public enum ExcelColors {
         }
     }
 
+    /**
+     * Serial index of the color
+     */
     private final int _idx;
 
+    /**
+     * Index of related built-in Excel color.
+     */
     private final short poiIndex;
 
     ExcelColors(int _idx, short poiIndex) {
@@ -82,10 +92,22 @@ public enum ExcelColors {
         this.poiIndex = poiIndex;
     }
 
+    /**
+     * Gets related color object.
+     *
+     * @return related color object.
+     * @see ExcelColor
+     */
     public ExcelColor get() {
         return _colors[_idx];
     }
 
+    /**
+     * Gets index of related built-in Excel color.
+     *
+     * @return index of related built-in Excel color.
+     * @see IndexedColors
+     */
     public short getPoiIndex() {
         return poiIndex;
     }
