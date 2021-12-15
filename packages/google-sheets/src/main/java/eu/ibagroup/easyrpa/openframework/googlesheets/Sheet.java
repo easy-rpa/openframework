@@ -73,7 +73,9 @@ public class Sheet implements Iterable<Row> {
 
     public Cell getCell(int rowIndex, int colIndex) {
         Row row = getRow(rowIndex);
-        return row != null ? row.getCell(colIndex) : null;
+//      TODO Decide colIndex or colIndex-1 is correct value
+//        return row != null ? row.getCell(colIndex) : null;
+        return row != null ? row.getCell(colIndex - 1) : null;
     }
 
     public Cell findCell(String value) {
@@ -194,8 +196,11 @@ public class Sheet implements Iterable<Row> {
 
     public Row getRow(int rowIndex) {
         if (rowIndex >= 0) {
-            RowData row = getGSheet().getData().get(0).getRowData().get(rowIndex);
-            return row != null ? new Row(this, rowIndex) : null;
+            List<RowData> rowData = getGSheet().getData().get(0).getRowData();
+            if(rowData != null) {
+                RowData row = rowData.get(rowIndex);
+                return row != null ? new Row(this, rowIndex) : null;
+            }
         }
         return null;
     }
@@ -231,6 +236,7 @@ public class Sheet implements Iterable<Row> {
     }
 
     public Row createRow(int rowIndex) {
+        //TODO investigate how to create Row if getGSheet().getData().get(0).getRowData() returns null
         getGSheet().getData().get(0).getRowData().add(rowIndex, new RowData());
         return new Row(this, rowIndex);
     }
@@ -246,7 +252,7 @@ public class Sheet implements Iterable<Row> {
         }
 
         int rowIndex = method == null || method == InsertMethod.BEFORE ? rowPos : rowPos + 1;
-        if (rowIndex > getLastRowIndex()) {
+        if (rowIndex > -1/*TODO change getLastRowIndex()*/) {
             putRange(rowIndex, startCol, data);
 
         } else {

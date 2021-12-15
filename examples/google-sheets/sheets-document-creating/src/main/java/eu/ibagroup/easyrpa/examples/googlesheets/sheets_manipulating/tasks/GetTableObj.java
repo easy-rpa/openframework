@@ -27,7 +27,7 @@ public class GetTableObj extends ApTask {
         Spreadsheet spreadsheet = service.getSpreadsheet(spreadsheetId);
         Sheet activeSheet = spreadsheet.getActiveSheet();
 
-        Table table = new Table(activeSheet, 15, 0, 15, 11, Passenger.class);
+        Table table = new Table(activeSheet, 14, 0, 14, 11, 905, Passenger.class);
 //        List data = table.getdata();
         List records = table.getRecords();
         log.info("records size = "+records.size());

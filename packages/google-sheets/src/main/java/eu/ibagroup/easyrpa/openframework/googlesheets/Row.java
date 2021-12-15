@@ -160,7 +160,7 @@ public class Row implements Iterable<Cell> {
     }
 
     public Cell getCell(int colIndex) {
-        if (colIndex >= 0) {
+        if (colIndex >= 0 && colIndex < getGSheetRow().getValues().size()) {
             CellData cell = getGSheetRow().getValues().get(colIndex);
             return cell != null ? new Cell(parent, rowIndex, colIndex) : null;
         }

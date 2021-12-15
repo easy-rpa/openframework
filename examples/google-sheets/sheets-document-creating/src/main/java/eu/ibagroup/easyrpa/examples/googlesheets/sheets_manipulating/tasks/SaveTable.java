@@ -40,7 +40,7 @@ public class SaveTable extends ApTask {
         Spreadsheet spreadsheet = service.getSpreadsheet(spreadsheetId);
         Sheet activeSheet = spreadsheet.getActiveSheet();
 
-        activeSheet.insertTable(0, 0, data.subList(0,3));
+        activeSheet.insertTable(1, 1, data.subList(0,3));
     }
 
     private List<Passenger> loadSampleData(String jsonFilePath) {

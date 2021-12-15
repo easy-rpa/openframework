@@ -43,6 +43,16 @@ public class Table<T> implements Iterable<T> {
         this.typeHelper = RecordTypeHelper.getFor(recordType);
     }
 
+    public Table(Sheet parent, int headerTopRow, int headerLeftCol, int headerBottomRow, int headerRightCol, int bottomRow, Class<T> recordType) {
+        this.parent = parent;
+        this.hTopRow = headerTopRow;
+        this.hLeftCol = headerLeftCol;
+        this.hBottomRow = headerBottomRow;
+        this.hRightCol = headerRightCol;
+        this.typeHelper = RecordTypeHelper.getFor(recordType);
+        this.bottomRow = bottomRow;
+    }
+
 //DELETED will not support
 //    public ExcelDocument getDocument() {
 //        return parent.getDocument();
@@ -110,7 +120,7 @@ public class Table<T> implements Iterable<T> {
         if (records == null) {
             Map<String, Integer> columnsIndexMap = getColumnNameToIndexMap();
             if (columnsIndexMap != null) {
-                List<List<Object>> data = parent.getRange(hBottomRow + 1, hLeftCol, getBottomRow(), hRightCol);
+                List<List<Object>> data = parent.getRange(hBottomRow + 1, hLeftCol + 1, getBottomRow(), hRightCol+1);
                 records = data.stream().map(values -> typeHelper.mapToRecord(values, columnsIndexMap)).collect(Collectors.toList());
             }
         } else {

@@ -9,11 +9,9 @@ import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.examples.googlesheets.sheets_manipulating.entities.Passenger;
-import eu.ibagroup.easyrpa.openframework.googlesheets.GSheetColor;
 import eu.ibagroup.easyrpa.openframework.googlesheets.GoogleSheets;
 import eu.ibagroup.easyrpa.openframework.googlesheets.Sheet;
 import eu.ibagroup.easyrpa.openframework.googlesheets.Spreadsheet;
-import eu.ibagroup.easyrpa.openframework.googlesheets.style.GSheetColors;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
@@ -75,9 +73,9 @@ public class CreateNewGoogleSheetsDocument extends ApTask {
 
         service.updateValues(spreadsheetId, "A15", "RAW", tableData);
    //     GSheetColor color = new GSheetColor("#FF44FF");
-        GSheetColor color = new GSheetColor(new java.awt.Color(128,128,128,255));
-        service.setBackground(spreadsheetId, "B17:D20", GSheetColors.DARK_GRAY.get());
-        service.setTextColor(spreadsheetId, "C25:E30", GSheetColors.RED.get());
+//        GSheetColor color = new GSheetColor(new java.awt.Color(128,128,128,255));
+//        service.setBackground(spreadsheetId, "B17:D20", GSheetColors.DARK_GRAY.get());
+//        service.setTextColor(spreadsheetId, "C25:E30", GSheetColors.RED.get());
 
     }
 

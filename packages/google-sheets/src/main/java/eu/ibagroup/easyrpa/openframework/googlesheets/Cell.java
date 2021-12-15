@@ -138,32 +138,38 @@ public class Cell {
         if (googleCell == null) {
             return null;
         }
-        Object value;
+        Object value = "";
         ExtendedValue extendedValue = googleCell.getUserEnteredValue();
 
-        if (extendedValue.getNumberValue() != null) {
-            value = extendedValue.getNumberValue();
-        } else if (!extendedValue.getFormulaValue().isEmpty()) {
-            value = extendedValue.getFormulaValue();
-        } else if (extendedValue.getBoolValue() != null) {
-            value = extendedValue.getBoolValue();
-        } else if (!extendedValue.getStringValue().isEmpty()) {
-            CellFormat format = googleCell.getUserEnteredFormat();
-            String type = format.getNumberFormat().getType();
-            switch (type){
-                case "DATE" : {
-                    try {
-                        value = new SimpleDateFormat("dd.MM.yyyy").parse(type);
-                    } catch (ParseException e) {
-                        value = "NaN";
+        if(extendedValue != null) {
+            if (extendedValue.getNumberValue() != null) {
+                value = extendedValue.getNumberValue();
+            } else if (extendedValue.getFormulaValue() != null && !extendedValue.getFormulaValue().isEmpty()) {
+                value = extendedValue.getFormulaValue();
+            } else if (extendedValue.getBoolValue() != null) {
+                value = extendedValue.getBoolValue();
+            } else if (!extendedValue.getStringValue().isEmpty()) {
+                CellFormat format = googleCell.getUserEnteredFormat();
+                if (format != null) {
+                    String type = format.getNumberFormat().getType();
+                    switch (type) {
+                        case "DATE": {
+                            try {
+                                value = new SimpleDateFormat("dd.MM.yyyy").parse(type);
+                            } catch (ParseException e) {
+                                value = "NaN";
+                            }
+                        }
+                        default:
+                            value = extendedValue.getStringValue();
                     }
                 }
-                default:  value = extendedValue.getStringValue();
+                value = extendedValue.getStringValue();
+            } else if (!extendedValue.getErrorValue().isEmpty()) {
+                value = extendedValue.getErrorValue().getMessage();
+            } else {
+                value = extendedValue.toString();
             }
-        } else if (!extendedValue.getErrorValue().isEmpty()) {
-            value = extendedValue.getErrorValue().getMessage();
-        } else {
-            value = extendedValue.toString();
         }
         return value;
     }
@@ -177,19 +183,21 @@ public class Cell {
 
         if (extendedValue.getNumberValue() != null) {
             return extendedValue.getNumberValue().toString();
-        } else if (!extendedValue.getFormulaValue().isEmpty()) {
+        } else if (extendedValue.getFormulaValue() != null && !extendedValue.getFormulaValue().isEmpty()) {
             return extendedValue.getFormulaValue();
         } else if (extendedValue.getBoolValue() != null) {
             return extendedValue.getBoolValue().toString();
         } else if (!extendedValue.getStringValue().isEmpty()) {
             CellFormat format = googleCell.getUserEnteredFormat();
-            String type = format.getNumberFormat().getType();
-            switch (type){
-                case "DATE" : {
-                    try {
-                        return new SimpleDateFormat("dd.MM.yyyy").parse(type).toString();
-                    } catch (ParseException e) {
-                        return "NaN";
+            if(format != null) {
+                String type = format.getNumberFormat().getType();
+                switch (type) {
+                    case "DATE": {
+                        try {
+                            return new SimpleDateFormat("dd.MM.yyyy").parse(type).toString();
+                        } catch (ParseException e) {
+                            return "NaN";
+                        }
                     }
                 }
             }
