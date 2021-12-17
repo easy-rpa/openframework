@@ -39,41 +39,108 @@ import java.util.List;
  */
 public class ExcelCellsFormat {
 
+    /**
+     * Contains styles of all cells in the range.
+     */
     private ExcelCellStyle[][] cellStyles;
+
+    /**
+     * Contains existing merged regions hit into the range.
+     */
     private CellRange[] mergedRegions;
+
+    /**
+     * Amount of rows in the range.
+     */
     private int rowsCount;
+
+    /**
+     * Amount of columns in the range.
+     */
     private int columnsCount;
 
+    /**
+     * Contains existing data validation constraints hit into the range.
+     */
     private DataValidation[] dataValidations;
 
+    /**
+     * Creates a new format object that includes formatting information of all cells of given sheet.
+     *
+     * @param sheet object representing source sheet.
+     */
     public ExcelCellsFormat(Sheet sheet) {
         this(sheet, 0, 0, sheet.getLastRowIndex(), sheet.getLastColumnIndex());
     }
 
+    /**
+     * Creates a new format object that includes formatting information of all cells of given range on sheet.
+     *
+     * @param sheet     object representing source sheet.
+     * @param cellRange the necessary range of source sheet cells.
+     */
     public ExcelCellsFormat(Sheet sheet, CellRange cellRange) {
         this(sheet, cellRange.getFirstRow(), cellRange.getFirstCol(), cellRange.getLastRow(), cellRange.getLastCol());
     }
 
+    /**
+     * Creates a new format object that includes formatting information of all cells of given column.
+     *
+     * @param column object representing source column.
+     */
     public ExcelCellsFormat(Column column) {
         this(column.getSheet(), column.getFirstRowIndex(), column.getIndex(), column.getLastRowIndex(), column.getIndex());
     }
 
+    /**
+     * Creates a new format object that includes formatting information of all cells of given range in specific column.
+     *
+     * @param column   object representing source column.
+     * @param firstRow 0-based index of the first row in necessary range of column cells.
+     * @param lastRow  0-based index of the last row in necessary range of column cells.
+     */
     public ExcelCellsFormat(Column column, int firstRow, int lastRow) {
         this(column.getSheet(), firstRow, column.getIndex(), lastRow, column.getIndex());
     }
 
+    /**
+     * Creates a new format object that includes formatting information of all cells of given row.
+     *
+     * @param row object representing source row.
+     */
     public ExcelCellsFormat(Row row) {
         this(row.getSheet(), row.getIndex(), row.getFirstCellIndex(), row.getIndex(), row.getLastCellIndex());
     }
 
+    /**
+     * Creates a new format object that includes formatting information of all cells of given range in specific row.
+     *
+     * @param row      object representing source row.
+     * @param firstCol 0-based index of the first column in necessary range of row cells.
+     * @param lastCol  0-based index of the last column in necessary range of row cells.
+     */
     public ExcelCellsFormat(Row row, int firstCol, int lastCol) {
         this(row.getSheet(), row.getIndex(), firstCol, row.getIndex(), lastCol);
     }
 
+    /**
+     * Creates a new format object that includes formatting information of given cell.
+     *
+     * @param cell object representing source cell.
+     */
     public ExcelCellsFormat(Cell cell) {
         this(cell.getSheet(), cell.getRowIndex(), cell.getColumnIndex(), cell.getRowIndex(), cell.getColumnIndex());
     }
 
+    /**
+     * Creates a new format object that includes formatting information of all cells of given range on sheet.
+     *
+     * @param sheet    object representing source sheet.
+     * @param firstRow 0-based index of the top row of the range.
+     * @param firstCol 0-based index of the left column of the range.
+     * @param lastRow  0-based index of the bottom row of the range.
+     * @param lastCol  0-based index of the right column of the range.
+     */
     public ExcelCellsFormat(Sheet sheet, int firstRow, int firstCol, int lastRow, int lastCol) {
         rowsCount = lastRow - firstRow + 1;
         columnsCount = lastCol - firstCol + 1;
@@ -82,40 +149,92 @@ public class ExcelCellsFormat {
         readDataValidations(sheet, firstRow, firstCol, lastRow, lastCol);
     }
 
+    /**
+     * Applies current formatting information to all cells of given sheet.
+     *
+     * @param sheet object representing target sheet.
+     */
     public void applyTo(Sheet sheet) {
         applyTo(sheet, 0, 0, sheet.getLastRowIndex(), sheet.getLastColumnIndex());
     }
 
+    /**
+     * Applies current formatting information to all cells of given range on specific sheet.
+     *
+     * @param sheet     object representing target sheet.
+     * @param cellRange the necessary range of target sheet cells.
+     */
     public void applyTo(Sheet sheet, CellRange cellRange) {
         applyTo(sheet, cellRange.getFirstRow(), cellRange.getFirstCol(), cellRange.getLastRow(), cellRange.getLastCol());
     }
 
+    /**
+     * Applies current formatting information to all cells of given column.
+     *
+     * @param column object representing target column.
+     */
     public void applyTo(Column column) {
         applyTo(column.getSheet(), column.getFirstRowIndex(), column.getIndex(), column.getLastRowIndex(), column.getIndex());
     }
 
-    public void applyTo(Row row, int firstCol, int lastCol) {
-        applyTo(row.getSheet(), row.getIndex(), firstCol, row.getIndex(), lastCol);
-    }
-
-    public void applyTo(Row row) {
-        applyTo(row.getSheet(), row.getIndex(), 0, row.getIndex(), row.getLastCellIndex());
-    }
-
+    /**
+     * Applies current formatting information to all cells of given range in specific column.
+     *
+     * @param column   object representing target column.
+     * @param firstRow 0-based index of the first row in the range of target column cells.
+     * @param lastRow  0-based index of the last row in the range of target column cells.
+     */
     public void applyTo(Column column, int firstRow, int lastRow) {
         applyTo(column.getSheet(), firstRow, column.getIndex(), lastRow, column.getIndex());
     }
 
+    /**
+     * Applies current formatting information to all cells of given row.
+     *
+     * @param row object representing target row.
+     */
+    public void applyTo(Row row) {
+        applyTo(row.getSheet(), row.getIndex(), 0, row.getIndex(), row.getLastCellIndex());
+    }
+
+    /**
+     * Applies current formatting information to all cells of given range in specific row.
+     *
+     * @param row      object representing target row.
+     * @param firstCol 0-based index of the first column in the range of target row cells.
+     * @param lastCol  0-based index of the last column in the range of target row cells.
+     */
+    public void applyTo(Row row, int firstCol, int lastCol) {
+        applyTo(row.getSheet(), row.getIndex(), firstCol, row.getIndex(), lastCol);
+    }
+
+    /**
+     * Applies current formatting information to given cell.
+     *
+     * @param cell object representing target cell.
+     */
     public void applyTo(Cell cell) {
         applyTo(cell.getSheet(), cell.getRowIndex(), cell.getColumnIndex(), cell.getRowIndex(), cell.getColumnIndex());
     }
 
+    /**
+     * Applies current formatting information to all cells of given range on specific sheet.
+     *
+     * @param sheet    object representing target sheet.
+     * @param firstRow 0-based index of the top row of the range.
+     * @param firstCol 0-based index of the left column of the range.
+     * @param lastRow  0-based index of the bottom row of the range.
+     * @param lastCol  0-based index of the right column of the range.
+     */
     public void applyTo(Sheet sheet, int firstRow, int firstCol, int lastRow, int lastCol) {
         applyMergedRegions(sheet, firstRow, firstCol, lastRow, lastCol);
         applyCellStyles(sheet, firstRow, firstCol, lastRow, lastCol);
         applyDataValidations(sheet, firstRow, firstCol, lastRow, lastCol);
     }
 
+    /**
+     * Applies contained cell styles to given cells range of sheet.
+     */
     private void applyCellStyles(Sheet sheet, int firstRow, int firstCol, int lastRow, int lastCol) {
         if (cellStyles.length == 0) {
             return;
@@ -138,6 +257,9 @@ public class ExcelCellsFormat {
         }
     }
 
+    /**
+     * Applies contained merged regions to given cells range of sheet.
+     */
     private void applyMergedRegions(Sheet sheet, int firstRow, int firstCol, int lastRow, int lastCol) {
         List<CellRange> regionsToAdd = new ArrayList<>();
         for (CellRange region : mergedRegions) {
@@ -165,6 +287,9 @@ public class ExcelCellsFormat {
         }
     }
 
+    /**
+     * Applies contained data validation constraints to given cells range of sheet.
+     */
     private void applyDataValidations(Sheet sheet, int firstRow, int firstCol, int lastRow, int lastCol) {
         org.apache.poi.ss.usermodel.Sheet poiSheet = sheet.getPoiSheet();
         for (DataValidation dv : dataValidations) {
@@ -192,6 +317,9 @@ public class ExcelCellsFormat {
         }
     }
 
+    /**
+     * Extracts cell styles from given cells range of sheet.
+     */
     private void readCellStyles(Sheet sheet, int firstRow, int firstCol, int lastRow, int lastCol) {
         cellStyles = new ExcelCellStyle[rowsCount][columnsCount];
         for (int rInd = firstRow, i = 0; rInd <= lastRow; rInd++, i++) {
@@ -207,6 +335,9 @@ public class ExcelCellsFormat {
         }
     }
 
+    /**
+     * Extracts merged regions that hit into given cells range of sheet.
+     */
     private void readMergedRegions(Sheet sheet, int firstRow, int firstCol, int lastRow, int lastCol) {
         List<CellRange> mergedRegions = new ArrayList<>();
 
@@ -227,6 +358,9 @@ public class ExcelCellsFormat {
         this.mergedRegions = mergedRegions.toArray(new CellRange[mergedRegions.size()]);
     }
 
+    /**
+     * Extracts data validation constraints that hit into given cells range of sheet.
+     */
     private void readDataValidations(Sheet sheet, int firstRow, int firstCol, int lastRow, int lastCol) {
         org.apache.poi.ss.usermodel.Sheet poiSheet = sheet.getPoiSheet();
 

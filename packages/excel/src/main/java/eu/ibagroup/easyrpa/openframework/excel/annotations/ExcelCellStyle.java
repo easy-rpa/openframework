@@ -216,21 +216,21 @@ public @interface ExcelCellStyle {
     ExcelColors leftBorderColor() default ExcelColors.BLACK;
 
     /**
-     * Specifies whether the cell should be hidden
+     * Specifies whether the cell should be hidden.
      * <br>
      * Default value: <code>false</code>
      */
     boolean hidden() default false;
 
     /**
-     * Specifies whether the cell should be locked
+     * Specifies whether the cell should be locked.
      * <br>
      * Default value: <code>false</code>
      */
     boolean locked() default false;
 
     /**
-     * Specifies the number of spaces to indent the text in the cell
+     * Specifies the number of spaces to indent the text in the cell.
      * <br>
      * Default value: <code>0</code>
      */

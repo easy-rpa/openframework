@@ -51,7 +51,7 @@ public enum FontOffsetType {
     /**
      * Checks whether the current offset type is defined and has corresponding POI constant.
      *
-     * @return <code>true</code> the current offset type is defined and has corresponding POI constant or
+     * @return <code>true</code> if the current offset type is defined and has corresponding POI constant or
      * <code>false</code> otherwise.
      * @see #UNDEFINED
      */

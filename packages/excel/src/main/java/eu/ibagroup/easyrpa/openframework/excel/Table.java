@@ -2,6 +2,7 @@ package eu.ibagroup.easyrpa.openframework.excel;
 
 import eu.ibagroup.easyrpa.openframework.excel.constants.InsertMethod;
 import eu.ibagroup.easyrpa.openframework.excel.constants.SortDirection;
+import eu.ibagroup.easyrpa.openframework.excel.exceptions.VBScriptExecutionException;
 import eu.ibagroup.easyrpa.openframework.excel.internal.RecordTypeHelper;
 import eu.ibagroup.easyrpa.openframework.excel.vbscript.Filter;
 import eu.ibagroup.easyrpa.openframework.excel.vbscript.Sorter;
@@ -10,31 +11,105 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+/**
+ * Represents rectangle area of cells on the sheet where the top row or rows has titles of corresponding columns.
+ * <p>
+ * The table is defined by its header bounds (headers top row, left column, bottom row and right column) and the index
+ * of the last row (bottom row). If bottom row is not specified then table ends at the last row of the sheet.
+ * <p>
+ * The content of table is represented with list of records. Record is an instance of POJO class where some fields are
+ * mapped to corresponding table columns using {@link eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelColumn}
+ * annotations. Each record corresponds to specific row of the table and indexed (0-based) starting with the row right
+ * below the header bottom row.
+ *
+ * @param <T> type of table records. Should be POJO class with at least one field annotated with
+ *            {@link eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelColumn}.
+ * @see eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelColumn
+ * @see eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelTable
+ */
 public class Table<T> implements Iterable<T> {
 
+    /**
+     * Reference to parent sheet.
+     */
     private Sheet parent;
 
+    /**
+     * Index of the header top row.
+     */
     private int hTopRow;
+
+    /**
+     * Index of the header left column.
+     */
     private int hLeftCol;
+
+    /**
+     * Index of the header bottom row.
+     */
     private int hBottomRow;
+
+    /**
+     * Index of the header right column.
+     */
     private int hRightCol;
 
+    /**
+     * Index of the last row of this table.
+     */
     private int bottomRow = -1;
 
+    /**
+     * Cached map that maps column titles to its 0-based ordering number.
+     */
     private Map<String, Integer> columnNameToIndexMap;
+
+    /**
+     * Cached list of table records.
+     */
     private List<T> records;
 
+    /**
+     * Helper that converts records to corresponding row data and vice versa. Also it's responsible for providing
+     * contained in record type meta information that necessary to build the table or its rows.
+     */
     private RecordTypeHelper<T> typeHelper;
 
+    /**
+     * Builds a new table on the given sheet at position defined by <code>topRow</code> and <code>leftCol</code>
+     * (top-left cell of the table).
+     *
+     * @param parent  parent sheet where the table should be placed.
+     * @param topRow  0-based index of row that defines top-left cell of the table.
+     * @param leftCol 0-based index of column that defines top-left cell of the table.
+     * @param records list of records to insert into the table after creation. Also this list provides information
+     *                about type of records with meta-information is necessary for table construction.
+     *                That's why this list should not be empty.
+     */
     @SuppressWarnings("unchecked")
     protected Table(Sheet parent, int topRow, int leftCol, List<T> records) {
         this.parent = parent;
         if (records != null && records.size() > 0) {
             this.typeHelper = RecordTypeHelper.getFor((Class<T>) records.get(0).getClass());
             buildTable(topRow, leftCol, records);
+        } else {
+            this.hTopRow = topRow;
+            this.hLeftCol = leftCol;
+            this.hBottomRow = topRow;
+            this.hRightCol = parent.getLastColumnIndex();
         }
     }
 
+    /**
+     * Creates a new instance of table that is defined by existing cells range on specified sheet.
+     *
+     * @param parent          the parent sheet where this table is located.
+     * @param headerTopRow    0-based index of table header top row.
+     * @param headerLeftCol   0-based index of table left column.
+     * @param headerBottomRow 0-based index of table header bottom row.
+     * @param headerRightCol  0-based index of table right column.
+     * @param recordType      class instance of records that this table should works with.
+     */
     protected Table(Sheet parent, int headerTopRow, int headerLeftCol, int headerBottomRow, int headerRightCol, Class<T> recordType) {
         this.parent = parent;
         this.hTopRow = headerTopRow;
@@ -44,50 +119,108 @@ public class Table<T> implements Iterable<T> {
         this.typeHelper = RecordTypeHelper.getFor(recordType);
     }
 
+    /**
+     * Gets parent Excel document.
+     *
+     * @return parent Excel document.
+     */
     public ExcelDocument getDocument() {
         return parent.getDocument();
     }
 
+    /**
+     * Gets parent sheet.
+     *
+     * @return parent Excel document.
+     */
     public Sheet getSheet() {
         return parent;
     }
 
+    /**
+     * Gets index of the top row of this table header.
+     *
+     * @return 0-based index of the top row of this table header.
+     */
     public int getHeaderTopRow() {
         return hTopRow;
     }
 
+    /**
+     * Sets new index of the top row of this table header.
+     *
+     * @param topRowIndex the new index of the top row to set.
+     */
     public void setHeaderTopRow(int topRowIndex) {
         this.hTopRow = topRowIndex;
         columnNameToIndexMap = null;
     }
 
+    /**
+     * Gets index of the left column of this table header.
+     *
+     * @return 0-based index of the left column  of this table header.
+     */
     public int getHeaderLeftCol() {
         return hLeftCol;
     }
 
+    /**
+     * Sets new index of the left column of this table header.
+     *
+     * @param leftColIndex the new index of the left column to set.
+     */
     public void setHeaderLeftCol(int leftColIndex) {
         this.hLeftCol = leftColIndex;
         columnNameToIndexMap = null;
     }
 
+    /**
+     * Gets index of the bottom row of this table header.
+     *
+     * @return 0-based index of the bottom row of this table header.
+     */
     public int getHeaderBottomRow() {
         return hBottomRow;
     }
 
+    /**
+     * Sets new index of the bottom row of this table header.
+     *
+     * @param bottomRowIndex the new index of the bottom row to set.
+     */
     public void setHeaderBottomRow(int bottomRowIndex) {
         this.hBottomRow = bottomRowIndex;
         columnNameToIndexMap = null;
     }
 
+    /**
+     * Gets index of the right column of this table header.
+     *
+     * @return 0-based index of the right column  of this table header.
+     */
     public int getHeaderRightCol() {
         return hRightCol;
     }
 
+    /**
+     * Sets new index of the right column of this table header.
+     *
+     * @param rightColIndex the new index of the right column to set.
+     */
     public void setHeaderRightCol(int rightColIndex) {
         this.hRightCol = rightColIndex;
         columnNameToIndexMap = null;
     }
 
+    /**
+     * Gets index of the last row of this table.
+     * <p>
+     * If the bottom row is not specified explicitly this method returns the actual index of the last row
+     * of parent sheet.
+     *
+     * @return an actual index of the last row of this table.
+     */
     public int getBottomRow() {
         if (bottomRow < 0) {
             return parent.getLastRowIndex();
@@ -95,10 +228,25 @@ public class Table<T> implements Iterable<T> {
         return bottomRow;
     }
 
+    /**
+     * Sets index of the last row of this table explicitly.
+     * <p>
+     * It's necessary to use when the table ends earlier than the last row of the parent sheet. Once this bottom row
+     * index is specified it will be automatically corrected during adding, inserting or removing records.
+     *
+     * @param bottomRowIndex 0-based index of the row that should be the last row of this table.
+     */
     public void setBottomRow(int bottomRowIndex) {
         this.bottomRow = bottomRowIndex;
     }
 
+    /**
+     * Gets map that maps column titles to its ordering number (0-based).
+     * <p>
+     * It's necessary to properly map table records to corresponding row data and vice versa.
+     *
+     * @return map that maps column titles to its ordering number.
+     */
     public Map<String, Integer> getColumnNameToIndexMap() {
         if (columnNameToIndexMap == null) {
             this.columnNameToIndexMap = getColumnNameToIndexMap(this.hTopRow, this.hLeftCol, this.hBottomRow, this.hRightCol);
@@ -106,6 +254,11 @@ public class Table<T> implements Iterable<T> {
         return columnNameToIndexMap;
     }
 
+    /**
+     * Gets full list of records that are contained in this table.
+     *
+     * @return list of table records.
+     */
     public List<T> getRecords() {
         if (records == null) {
             Map<String, Integer> columnsIndexMap = getColumnNameToIndexMap();
@@ -124,6 +277,14 @@ public class Table<T> implements Iterable<T> {
         return new ArrayList<>(records);
     }
 
+    /**
+     * Gets specific record by its index.
+     * <p>
+     * Records are indexed starting with the row right below the header bottom row.
+     *
+     * @param index 0-based index of the record to get.
+     * @return instance of corresponding record or <code>null</code> if record at such index is not exist.
+     */
     public T getRecord(int index) {
         int recordsCount = getRecordsCount();
         if (index < 0 || index >= recordsCount) {
@@ -142,11 +303,29 @@ public class Table<T> implements Iterable<T> {
         return record;
     }
 
+    /**
+     * Iterates over all records starting from the first till the moment when <code>isSatisfy</code> is return
+     * <code>true</code> for some record.
+     *
+     * @param isSatisfy lambda expression that accepts instance of each record and should return <code>true</code>
+     *                  if the record satisfies to some condition.
+     * @return instance of record for which <code>isSatisfy</code> returned <code>true</code> or <code>null</code>
+     * if there are no such records.
+     */
     public T findRecord(Predicate<T> isSatisfy) {
         int index = findRecordIndex(isSatisfy);
         return index >= 0 ? records.get(index) : null;
     }
 
+    /**
+     * Iterates over all records starting from the first till the moment when <code>isSatisfy</code> is return
+     * <code>true</code> for some record.
+     *
+     * @param isSatisfy lambda expression that accepts instance of each record and should return <code>true</code>
+     *                  if the record satisfies to some condition.
+     * @return index of record for which <code>isSatisfy</code> returned <code>true</code> or <code>-1</code>
+     * if there are no such records.
+     */
     public int findRecordIndex(Predicate<T> isSatisfy) {
         if (isSatisfy != null) {
             int recordsCount = getRecordsCount();
@@ -160,34 +339,107 @@ public class Table<T> implements Iterable<T> {
         return -1;
     }
 
+    /**
+     * Gets index of given record.
+     *
+     * @param record instance of record to lookup.
+     * @return index of given record or <code>-1</code> if record does not belong to this table.
+     */
     public int indexOf(T record) {
         return record != null ? findRecordIndex(record::equals) : -1;
     }
 
+    /**
+     * Gets amount of records that contained in this table.
+     *
+     * @return amount of records of this table.
+     */
     public int getRecordsCount() {
         return getBottomRow() - hBottomRow;
     }
 
+    /**
+     * Adds a new record at the end of this table.
+     * <p>
+     * The record will be converted to corresponding row data based on information specified within
+     * {@link eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelColumn} annotations. These annotations
+     * also provide styling information that is applied after row adding.
+     *
+     * @param record the record to add.
+     */
     public void addRecord(T record) {
         insertRecord(InsertMethod.BEFORE, getRecordsCount(), record);
     }
 
+    /**
+     * Adds list of records at the end of this table.
+     * <p>
+     * Each record will be converted to corresponding row data based on information specified within
+     * {@link eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelColumn} annotations. These annotations
+     * also provide styling information that is applied after rows adding.
+     *
+     * @param records list of records to add.
+     */
     public void addRecords(List<T> records) {
         insertRecords(InsertMethod.BEFORE, getRecordsCount(), records);
     }
 
+    /**
+     * Inserts new record into this table at given position.
+     * <p>
+     * The record will be converted to corresponding row data based on information specified within
+     * {@link eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelColumn} annotations. These annotations
+     * also provide styling information that is applied after row inserting.
+     *
+     * @param method        defines position for insertion relatively to record specified by <code>relatedRecord</code>.
+     * @param relatedRecord the record that identifies position for insertion.
+     * @param record        the record to insert.
+     */
     public void insertRecord(InsertMethod method, T relatedRecord, T record) {
         insertRecords(method, indexOf(relatedRecord), Collections.singletonList(record));
     }
 
+    /**
+     * Inserts new record into this table at given position.
+     * <p>
+     * The record will be converted to corresponding row data based on information specified within
+     * {@link eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelColumn} annotations. These annotations
+     * also provide styling information that is applied after row inserting.
+     *
+     * @param method      defines position for insertion relatively to record index specified by <code>recordIndex</code>.
+     * @param recordIndex the index of record that identifies position for insertion.
+     * @param record      the record to insert.
+     */
     public void insertRecord(InsertMethod method, int recordIndex, T record) {
         insertRecords(method, recordIndex, Collections.singletonList(record));
     }
 
+    /**
+     * Inserts list of records into this table at given position.
+     * <p>
+     * Each record will be converted to corresponding row data based on information specified within
+     * {@link eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelColumn} annotations. These annotations
+     * also provide styling information that is applied after rows inserting.
+     *
+     * @param method        defines position for insertion relatively to record specified by <code>relatedRecord</code>.
+     * @param relatedRecord the record that identifies position for insertion.
+     * @param records       list of records to insert.
+     */
     public void insertRecords(InsertMethod method, T relatedRecord, List<T> records) {
         insertRecords(method, indexOf(relatedRecord), records);
     }
 
+    /**
+     * Inserts list of records into this table at given position.
+     * <p>
+     * Each record will be converted to corresponding row data based on information specified within
+     * {@link eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelColumn} annotations. These annotations
+     * also provide styling information that is applied after rows inserting.
+     *
+     * @param method      defines position for insertion relatively to record index specified by <code>recordIndex</code>.
+     * @param recordIndex the index of record that identifies position for insertion.
+     * @param records     list of records to insert.
+     */
     public void insertRecords(InsertMethod method, int recordIndex, List<T> records) {
         if (recordIndex < 0 || records == null || records.isEmpty()) {
             return;
@@ -218,10 +470,20 @@ public class Table<T> implements Iterable<T> {
         }
     }
 
+    /**
+     * Transfers changes that have been done within given record to corresponding row of the sheet.
+     *
+     * @param record the record to update.
+     */
     public void updateRecord(T record) {
         updateRecords(Collections.singletonList(record));
     }
 
+    /**
+     * Transfers changes that have been done within given records to corresponding rows of the sheet.
+     *
+     * @param records list of records to update.
+     */
     public void updateRecords(List<T> records) {
         if (records == null) {
             return;
@@ -243,6 +505,13 @@ public class Table<T> implements Iterable<T> {
         }
     }
 
+    /**
+     * Removes given record and corresponding row from this table.
+     * <p>
+     * Do nothing if the record is <code>null</code> or does not belong to this table.
+     *
+     * @param record the record to remove.
+     */
     public void removeRecord(T record) {
         if (record != null) {
             int index = indexOf(record);
@@ -256,6 +525,11 @@ public class Table<T> implements Iterable<T> {
         }
     }
 
+    /**
+     * Removes given records and corresponding rows from this table.
+     *
+     * @param records list of records to remove. Do nothing if this list is <code>null</code>.
+     */
     public void removeRecords(List<T> records) {
         if (records != null) {
             for (T record : records) {
@@ -264,10 +538,17 @@ public class Table<T> implements Iterable<T> {
         }
     }
 
+    /**
+     * Clears records cache.
+     */
     public void clearCache() {
         records = null;
     }
 
+    /**
+     * Analyzes content of leading and trailing columns and if these columns are empty shifts indexes of left and
+     * right columns to exclude them from this table bounds.
+     */
     public void trimLeadingAndTrailingSpaces() {
         while (parent.getColumn(getHeaderLeftCol()).isEmpty()) {
             setHeaderLeftCol(getHeaderLeftCol() + 1);
@@ -278,6 +559,19 @@ public class Table<T> implements Iterable<T> {
         }
     }
 
+    /**
+     * Activates sorting/filtering for this table and sets list of values to display using <code>filterPattern</code> for
+     * specified column.
+     * <p><br>
+     * <b>IMPORTANT:</b> This function uses VB scripting. MS Excel application MUST be
+     * installed on the machine where RPA process that uses this function is working. Otherwise
+     * {@link VBScriptExecutionException} will be thrown.
+     *
+     * @param columnIndex   0-based index of tables column to filter.
+     * @param filterPattern is a regexp string that define subset of values that need to be displayed.
+     * @return this table instance to allow joining of methods calls into chain.
+     * @see Filter
+     */
     public Table<T> filter(int columnIndex, String filterPattern) {
         int lastColumnIndex = hRightCol - hLeftCol;
         if (columnIndex < 0 || columnIndex > lastColumnIndex) {
@@ -290,6 +584,18 @@ public class Table<T> implements Iterable<T> {
         return this;
     }
 
+    /**
+     * Activates sorting/filtering for this table and sets sorting for specified column.
+     * <p><br>
+     * <b>IMPORTANT:</b> This function uses VB scripting. MS Excel application MUST be
+     * installed on the machine where RPA process that uses this function is working. Otherwise
+     * {@link VBScriptExecutionException} will be thrown.
+     *
+     * @param columnIndex 0-based index of tables column to sort.
+     * @param direction   specifies direction of sorting.
+     * @return this table instance to allow joining of methods calls into chain.
+     * @see Sorter
+     */
     public Table<T> sort(int columnIndex, SortDirection direction) {
         int lastColumnIndex = hRightCol - hLeftCol;
         if (columnIndex < 0 || columnIndex > lastColumnIndex) {
@@ -302,11 +608,32 @@ public class Table<T> implements Iterable<T> {
         return this;
     }
 
+    /**
+     * Gets an iterator of records contained in this table.
+     * <p>
+     * This method allows using of this table object in "for" loop:
+     * <pre>
+     *     for(T record: table){
+     *         ...
+     *     }
+     * </pre>
+     *
+     * @return on iterator of records contained in this table.
+     */
     @Override
     public Iterator<T> iterator() {
         return new RecordIterator();
     }
 
+    /**
+     * Collects map that maps column titles to its ordering number (0-based).
+     *
+     * @param headerTopRow    0-based index of the top row to analyze on the parent sheet.
+     * @param headerLeftCol   0-based index of the left column to analyze on the parent sheet.
+     * @param headerBottomRow 0-based index of the bottom row to analyze on the parent sheet.
+     * @param headerRightCol  0-based index of the right column to analyze on the parent sheet.
+     * @return instance of map that maps column titles to its ordering number.
+     */
     private Map<String, Integer> getColumnNameToIndexMap(int headerTopRow, int headerLeftCol, int headerBottomRow, int headerRightCol) {
         Map<String, Integer> columnsIndex = new HashMap<>();
         List<List<String>> headerValues = parent.getRange(headerTopRow, headerLeftCol, headerBottomRow, headerRightCol, String.class);
@@ -335,6 +662,13 @@ public class Table<T> implements Iterable<T> {
         return columnsIndex.size() > 0 ? columnsIndex : null;
     }
 
+    /**
+     * Builds a new table at specified position.
+     *
+     * @param startRow 0-based index of row that defines top-left cell of the table to build.
+     * @param startCol 0-based index of column that defines top-left cell of the table to build.
+     * @param records  list of records to insert into the table after creation.
+     */
     private void buildTable(int startRow, int startCol, List<T> records) {
         RecordTypeHelper.ColumnNamesTree columnNamesTree = typeHelper.getColumnNames();
 
@@ -365,6 +699,9 @@ public class Table<T> implements Iterable<T> {
         insertRecords(InsertMethod.BEFORE, 0, records);
     }
 
+    /**
+     * Records iterator. Allows iteration over all existing records of this table using "for" loop.
+     */
     private class RecordIterator implements Iterator<T> {
 
         private int index = 0;

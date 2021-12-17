@@ -63,7 +63,7 @@ public enum FontUnderlineStyle {
     /**
      * Checks whether the current style of underline is defined and has corresponding POI constant.
      *
-     * @return <code>true</code> the current style of underline is defined and has corresponding POI constant or
+     * @return <code>true</code> if the current style of underline is defined and has corresponding POI constant or
      * <code>false</code> otherwise.
      * @see #UNDEFINED
      */

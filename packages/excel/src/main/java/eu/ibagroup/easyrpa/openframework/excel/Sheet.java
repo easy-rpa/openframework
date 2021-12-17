@@ -28,30 +28,30 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Represents specific sheet of Excel Document and provides functionality to work with it and its content.
+ * Represents specific sheet of Excel document and provides functionality to work with it and its content.
  */
 public class Sheet implements Iterable<Row> {
 
     /**
-     * Reference to parent Excel Document.
+     * Reference to parent Excel document.
      */
     private ExcelDocument parent;
 
     /**
-     * Unique id of parent Excel Document.
+     * Unique id of parent Excel document.
      */
     private int documentId;
 
     /**
-     * Index of this sheet within parent Excel Document.
+     * Index of this sheet within parent Excel document.
      */
     private int sheetIndex;
 
     /**
      * Creates a new Sheet instance.
      *
-     * @param parent     reference to parent Excel Document.
-     * @param sheetIndex index of the sheet within parent Excel Document.
+     * @param parent     reference to parent Excel document.
+     * @param sheetIndex index of the sheet within parent Excel document.
      */
     protected Sheet(ExcelDocument parent, int sheetIndex) {
         this.parent = parent;
@@ -60,25 +60,25 @@ public class Sheet implements Iterable<Row> {
     }
 
     /**
-     * Returns parent Excel Document.
+     * Gets parent Excel document.
      *
-     * @return parent Excel Document.
+     * @return parent Excel document.
      */
     public ExcelDocument getDocument() {
         return parent;
     }
 
     /**
-     * Returns index of this sheet within parent Excel Document.
+     * Gets index of this sheet within parent Excel document.
      *
-     * @return index of this sheet within parent Excel Document.
+     * @return index of this sheet within parent Excel document.
      */
     public int getIndex() {
         return sheetIndex;
     }
 
     /**
-     * Returns the name of this sheet.
+     * Gets the name of this sheet.
      *
      * @return the name of this sheet.
      */
@@ -169,7 +169,7 @@ public class Sheet implements Iterable<Row> {
      *
      * @param cellRef   reference string to necessary cell. E.g. "A23".
      * @param valueType class instance of return value.
-     * @param <T>       class type of return value. Defined by value of <code>valueType</code>.
+     * @param <T>       type of return value. Defined by value of <code>valueType</code>.
      * @return value of corresponding cell or <code>null</code> if nothing is found. The class of return
      * value is defined by <code>valueType</code>. If the actual class of cell value is different from
      * <code>valueType</code> the automatic conversion will be applied.
@@ -210,7 +210,7 @@ public class Sheet implements Iterable<Row> {
      * @param rowIndex  0-based row index of necessary cell.
      * @param colIndex  0-based column index of necessary cell.
      * @param valueType class instance of return value.
-     * @param <T>       class type of return value. Defined by value of <code>valueType</code>.
+     * @param <T>       type of return value. Defined by value of <code>valueType</code>.
      * @return value of corresponding cell or <code>null</code> if nothing is found. The class of return
      * value is defined by <code>valueType</code>. If the actual class of cell value is different from
      * <code>valueType</code> the automatic conversion will be applied.
@@ -309,7 +309,7 @@ public class Sheet implements Iterable<Row> {
      * @param startRef  reference string to top-left cell of the range. E.g. "A23".
      * @param endRef    reference string to bottom-right cell of the range. E.g. "D50".
      * @param valueType class instance of return cell values.
-     * @param <T>       class type of return cell values. Defined by value of <code>valueType</code>.
+     * @param <T>       type of return cell values. Defined by value of <code>valueType</code>.
      * @return list of cell value lists. Returns empty list if specified range is empty. The class of return
      * cell values is defined by <code>valueType</code>. If the actual class of cell values is different from
      * <code>valueType</code> the automatic conversion will be applied.
@@ -355,7 +355,7 @@ public class Sheet implements Iterable<Row> {
      * @param endRow    0-based index of bottom row of the range.
      * @param endCol    0-based index of right column of the range.
      * @param valueType class instance of return cell values.
-     * @param <T>       class type of return cell values. Defined by value of <code>valueType</code>.
+     * @param <T>       type of return cell values. Defined by value of <code>valueType</code>.
      * @return list of cell value lists. Returns empty list if specified range is empty. The class of return
      * cell values is defined by <code>valueType</code>. If the actual class of cell values is different from
      * <code>valueType</code> the automatic conversion will be applied.
@@ -1606,7 +1606,7 @@ public class Sheet implements Iterable<Row> {
     }
 
     /**
-     * Clones this sheet and place it to the end of Excel Document.
+     * Clones this sheet and place it to the end of Excel document.
      *
      * @param clonedSheetName the name that should be set for cloned sheet.
      * @return object representing the cloned sheet.
@@ -1621,7 +1621,7 @@ public class Sheet implements Iterable<Row> {
 
     /**
      * Copies the content of this sheet to another sheet with the same format. Destination sheet can be located
-     * in another Excel Document.
+     * in another Excel document.
      *
      * @param destSheet object representing destination sheet.
      */
@@ -1630,7 +1630,7 @@ public class Sheet implements Iterable<Row> {
     }
 
     /**
-     * Copies the content of this sheet to another sheet. Destination sheet can be located in another Excel Document.
+     * Copies the content of this sheet to another sheet. Destination sheet can be located in another Excel document.
      *
      * @param destSheet  object representing destination sheet.
      * @param copyFormat specifies whether it's necessary to copy the format of this sheet (styles, merged regions etc.).
@@ -1738,7 +1738,7 @@ public class Sheet implements Iterable<Row> {
      * Returns underlay POI object representing this sheet. This object can be used directly if some specific
      * POI functionality is necessary within RPA process.
      *
-     * @return Apache POI object representing this sheet
+     * @return Apache POI object representing this sheet.
      */
     public org.apache.poi.ss.usermodel.Sheet getPoiSheet() {
         return POIElementsCache.getPoiSheet(documentId, sheetIndex);
