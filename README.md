@@ -1,13 +1,11 @@
-<p align="center">
-  <img height="100px" src="https://i.postimg.cc/FKDhP2kT/Easy-RPA-Full-Logo.png">
-</p>
+
+<img height="80px" src="https://i.postimg.cc/FKDhP2kT/Easy-RPA-Full-Logo.png">
 
 # EasyRPA Open Framework
 
-## Table of Contents
+### Table of Contents
 * [Introduction](#introduction)
 * [Quick Start](#quick-start)
-* [Example](#example)
 * [Libraries](#libraries)
 * [Links](#links)
 * [License](#license)
@@ -45,23 +43,7 @@ E.g.:
 </dependency>
 ```
 
-After that you need to build the project via Maven command:
-```java
-mvn clean install
-```
-
-In result  you should see following message:
-<p align="center">
-  <img src="https://i.postimg.cc/s2Dmc3w1/Screenshot-1.png">
-</p>
-
-Note
-
-Java 1.8 or higher is required
-
-## Example
-
-After installation of the library it can be imported and used inside of your RPA process task:
+After adding of dependency the library can be used inside of your RPA process:
 
 ```java
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
@@ -100,8 +82,8 @@ The EasyRPA Open Framework currently includes the following libraries:
 | [Database](packages/database)           | Interact with databases (MySQL, PostgreSQL, Oracle, DB2, MS SQL Server) |
 | [Email](packages/email)                 | E-Mail operations |
 | [Excel](packages/excel)                 | Includes functionality related to Excel and CSV files. For optimal performance, all of the following functions can be used through the backend services without communicating with physical application |
-| [Google-drive](packages/google-drive)   | Operations with files and folders |
-| [Google-sheets](packages/google-sheets) | Manipulate Google Sheets files directly |
+| [Google Drive](packages/google-drive)   | Operations with files and folders |
+| [Google Sheets](packages/google-sheets) | Manipulate Google Sheets files directly |
 
 ## Links
 
