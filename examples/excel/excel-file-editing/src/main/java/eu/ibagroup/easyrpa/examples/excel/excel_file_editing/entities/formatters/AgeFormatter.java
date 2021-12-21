@@ -3,7 +3,7 @@ package eu.ibagroup.easyrpa.examples.excel.excel_file_editing.entities.formatter
 import eu.ibagroup.easyrpa.examples.excel.excel_file_editing.entities.Passenger;
 import eu.ibagroup.easyrpa.openframework.excel.Cell;
 import eu.ibagroup.easyrpa.openframework.excel.function.ColumnFormatter;
-import eu.ibagroup.easyrpa.openframework.excel.style.ExcelColors;
+import eu.ibagroup.easyrpa.openframework.excel.constants.ExcelColors;
 
 public class AgeFormatter implements ColumnFormatter<Passenger> {
 

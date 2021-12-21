@@ -1,9 +1,9 @@
 package eu.ibagroup.easyrpa.openframework.excel.annotations;
 
-import eu.ibagroup.easyrpa.openframework.excel.style.DataFormats;
-import eu.ibagroup.easyrpa.openframework.excel.style.ExcelColors;
-import eu.ibagroup.easyrpa.openframework.excel.style.FontOffsetType;
-import eu.ibagroup.easyrpa.openframework.excel.style.FontUnderlineStyle;
+import eu.ibagroup.easyrpa.openframework.excel.constants.DataFormats;
+import eu.ibagroup.easyrpa.openframework.excel.constants.ExcelColors;
+import eu.ibagroup.easyrpa.openframework.excel.constants.FontOffsetType;
+import eu.ibagroup.easyrpa.openframework.excel.constants.FontUnderlineStyle;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;

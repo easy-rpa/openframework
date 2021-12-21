@@ -1,6 +1,7 @@
 package eu.ibagroup.easyrpa.openframework.excel;
 
 import eu.ibagroup.easyrpa.openframework.excel.internal.poi.POIElementsCache;
+import eu.ibagroup.easyrpa.openframework.excel.style.ExcelCellStyle;
 import org.apache.poi.ss.usermodel.DataValidation;
 import org.apache.poi.ss.usermodel.DataValidationConstraint;
 import org.apache.poi.ss.util.CellRangeAddress;

@@ -2,7 +2,7 @@ package eu.ibagroup.easyrpa.examples.excel.excel_file_editing.entities.formatter
 
 import eu.ibagroup.easyrpa.examples.excel.excel_file_editing.entities.Passenger;
 import eu.ibagroup.easyrpa.openframework.excel.Cell;
-import eu.ibagroup.easyrpa.openframework.excel.ExcelColor;
+import eu.ibagroup.easyrpa.openframework.excel.style.ExcelColor;
 import eu.ibagroup.easyrpa.openframework.excel.function.ColumnFormatter;
 
 public class SurvivedFormatter implements ColumnFormatter<Passenger> {

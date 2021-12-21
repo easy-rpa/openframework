@@ -1,4 +1,4 @@
-package eu.ibagroup.easyrpa.openframework.excel;
+package eu.ibagroup.easyrpa.openframework.excel.style;
 
 /**
  * Represents specific data format for numeric value of cell.
@@ -20,7 +20,7 @@ package eu.ibagroup.easyrpa.openframework.excel;
  * </ol>
  *
  * <p>Placeholders explanation:</p>
- * <table vAlign="top">
+ * <table style="vertical-align:top">
  *     <tr><th style="padding-right:10px">Code</th><th style="padding-right:10px">Description</th><th>Example</th></tr>
  *     <tr><td>0</td><td>Digit placeholder that displays insignificant zeros.</td><td>#.00 - always
  *     displays 2 decimal places. If you type 5.5 in a cell, it will display as 5.50.</td></tr>

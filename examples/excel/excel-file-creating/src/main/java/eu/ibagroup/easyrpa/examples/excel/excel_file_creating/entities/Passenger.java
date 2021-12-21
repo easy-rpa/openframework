@@ -5,7 +5,7 @@ import eu.ibagroup.easyrpa.examples.excel.excel_file_creating.entities.formatter
 import eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelCellStyle;
 import eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelColumn;
 import eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelTable;
-import eu.ibagroup.easyrpa.openframework.excel.style.ExcelColors;
+import eu.ibagroup.easyrpa.openframework.excel.constants.ExcelColors;
 import lombok.Data;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;

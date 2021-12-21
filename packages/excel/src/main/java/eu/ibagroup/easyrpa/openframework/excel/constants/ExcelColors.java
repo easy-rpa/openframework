@@ -1,6 +1,6 @@
-package eu.ibagroup.easyrpa.openframework.excel.style;
+package eu.ibagroup.easyrpa.openframework.excel.constants;
 
-import eu.ibagroup.easyrpa.openframework.excel.ExcelColor;
+import eu.ibagroup.easyrpa.openframework.excel.style.ExcelColor;
 import org.apache.poi.ss.usermodel.IndexedColors;
 
 /**

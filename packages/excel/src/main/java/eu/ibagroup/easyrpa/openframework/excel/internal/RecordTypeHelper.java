@@ -2,7 +2,7 @@ package eu.ibagroup.easyrpa.openframework.excel.internal;
 
 import eu.ibagroup.easyrpa.openframework.core.utils.TypeUtils;
 import eu.ibagroup.easyrpa.openframework.excel.Cell;
-import eu.ibagroup.easyrpa.openframework.excel.ExcelCellStyle;
+import eu.ibagroup.easyrpa.openframework.excel.style.ExcelCellStyle;
 import eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelColumn;
 import eu.ibagroup.easyrpa.openframework.excel.annotations.ExcelTable;
 import eu.ibagroup.easyrpa.openframework.excel.function.ColumnFormatter;

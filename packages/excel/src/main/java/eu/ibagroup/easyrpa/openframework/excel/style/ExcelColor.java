@@ -1,4 +1,4 @@
-package eu.ibagroup.easyrpa.openframework.excel;
+package eu.ibagroup.easyrpa.openframework.excel.style;
 
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.IndexedColors;

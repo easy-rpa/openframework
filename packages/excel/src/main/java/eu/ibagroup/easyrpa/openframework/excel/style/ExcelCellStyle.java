@@ -1,11 +1,12 @@
-package eu.ibagroup.easyrpa.openframework.excel;
+package eu.ibagroup.easyrpa.openframework.excel.style;
 
 import eu.ibagroup.easyrpa.openframework.core.utils.TypeUtils;
+import eu.ibagroup.easyrpa.openframework.excel.Cell;
+import eu.ibagroup.easyrpa.openframework.excel.constants.DataFormats;
+import eu.ibagroup.easyrpa.openframework.excel.constants.ExcelColors;
+import eu.ibagroup.easyrpa.openframework.excel.constants.FontOffsetType;
+import eu.ibagroup.easyrpa.openframework.excel.constants.FontUnderlineStyle;
 import eu.ibagroup.easyrpa.openframework.excel.internal.poi.POIElementsCache;
-import eu.ibagroup.easyrpa.openframework.excel.style.DataFormats;
-import eu.ibagroup.easyrpa.openframework.excel.style.ExcelColors;
-import eu.ibagroup.easyrpa.openframework.excel.style.FontOffsetType;
-import eu.ibagroup.easyrpa.openframework.excel.style.FontUnderlineStyle;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -168,7 +169,7 @@ public class ExcelCellStyle {
     /**
      * Recent cell that has this style
      */
-    private Cell cell;
+    private eu.ibagroup.easyrpa.openframework.excel.Cell cell;
 
     /**
      * Creates cell style object with default parameters.
@@ -181,7 +182,7 @@ public class ExcelCellStyle {
      *
      * @param cell object representing source cell.
      */
-    protected ExcelCellStyle(Cell cell) {
+    public ExcelCellStyle(Cell cell) {
         org.apache.poi.ss.usermodel.Cell poiCell = cell.getPoiCell();
         Workbook workbook = poiCell.getSheet().getWorkbook();
         CellStyle cellStyle = poiCell.getCellStyle();
@@ -748,11 +749,11 @@ public class ExcelCellStyle {
      *
      * @param cell object representing target cell.
      */
-    public void applyTo(Cell cell) {
+    public void applyTo(eu.ibagroup.easyrpa.openframework.excel.Cell cell) {
         int documentId = cell.getDocument().getId();
         int sheetIndex = cell.getSheetIndex();
 
-        CellRange mr = cell.getMergedRegion();
+        eu.ibagroup.easyrpa.openframework.excel.CellRange mr = cell.getMergedRegion();
         if (mr == null) {
             applyToPoiCell(documentId, cell.getPoiCell());
         } else {

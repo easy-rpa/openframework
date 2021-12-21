@@ -1,4 +1,4 @@
-package eu.ibagroup.easyrpa.openframework.excel.style;
+package eu.ibagroup.easyrpa.openframework.excel.constants;
 
 import org.apache.poi.ss.usermodel.Font;
 
