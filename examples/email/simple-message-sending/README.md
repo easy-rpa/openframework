@@ -25,4 +25,4 @@ All necessary configuration files can be found in <code>src/main/resources</code
 
 Run `main()` method of `LocalRunner` class.
 
-<a href="https://github.com">Test</a>
+> :warning: Test
