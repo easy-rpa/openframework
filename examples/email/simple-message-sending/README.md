@@ -24,3 +24,5 @@ All necessary configuration files can be found in <code>src/main/resources</code
 ##Running
 
 Run `main()` method of `LocalRunner` class.
+
+<a onclick="alert('test')">Test</a>
