@@ -10,7 +10,8 @@ public void execute() {
     int endIndex = 360000;
 
     log.info("Open Excel file located at: {}", sourceFile);
-    ExcelDocument doc = new ExcelDocument(sourceFile, true); // second parameter is a special flag that allows to save memory
+    ExcelDocument doc = new ExcelDocument(sourceFile, true); // second parameter is a special flag 
+                                                             // that allows to save memory
     Sheet sheet = doc.getActiveSheet();
 
     log.info("Find table on sheet '{}'.", sheet.getName());
@@ -33,7 +34,8 @@ public void execute() {
     Integer passengerId = 35500;
 
     log.info("Open Excel file located at: {}", sourceFile);
-    ExcelDocument doc = new ExcelDocument(sourceFile, true); // second parameter is a special flag that allows to save memory
+    ExcelDocument doc = new ExcelDocument(sourceFile, true); // second parameter is a special flag 
+                                                             // that allows to save memory
     Sheet sheet = doc.getActiveSheet();
 
     log.info("Lookup Passengers table on sheet '{}'", sheet.getName());
