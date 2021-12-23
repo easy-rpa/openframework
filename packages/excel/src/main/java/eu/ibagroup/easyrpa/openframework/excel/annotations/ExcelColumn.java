@@ -22,7 +22,7 @@ public @interface ExcelColumn {
      * <p>If table has <b>one-line header</b> then value should be simple name of column. E.g. "Person Name".</p>
      *
      * <p>If table has <b>multi-line headers</b> and necessary column is grouped with other columns the value should
-     * be array of names. THis array includes names of all grouped columns in order from the top. E.g. lets take the
+     * be array of names. This array includes names of all grouped columns in order from the top. E.g. lets take the
      * following table:</p>
      * <table cellSpacing="0" cellPadding="10">
      *      <tr><th rowspan=2>Id</th><th colspan=2 align="center">Person</th></tr>
