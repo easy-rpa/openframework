@@ -1,4 +1,4 @@
 /**
- * Constants and enumerations used during Excel document manipulation and styling.
+ * Support package for Excel document styling.
  */
 package eu.ibagroup.easyrpa.openframework.excel.style;

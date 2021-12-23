@@ -56,14 +56,14 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     private Pattern macroNamesExtractor = Pattern.compile("^Sub (\\w+).*$", Pattern.MULTILINE);
 
     /**
-     * Create empty Excel document.
+     * Creates empty Excel document.
      */
     public ExcelDocument() {
         initWorkbook(null, false);
     }
 
     /**
-     * Create empty Excel document.
+     * Creates empty Excel document.
      *
      * @param saveMemoryMode switch on the mode which works slowly but allows to work with large files.
      */
@@ -72,20 +72,18 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     }
 
     /**
-     * Create new Excel document. Creates and set workbook from input stream
-     * specified. Set first workbook sheet as active sheet.
+     * Creates new Excel document from given input stream.
      *
-     * @param is input stream with Excel document content. Creates empty document if it's null.
+     * @param is input stream with Excel document content. Creates empty document if it's <code>null</code>.
      */
     public ExcelDocument(InputStream is) {
         initWorkbook(is, false);
     }
 
     /**
-     * Create new Excel document. Creates and set workbook from input stream
-     * specified. Set first workbook sheet as active sheet.
+     * Creates new Excel document from given input stream.
      *
-     * @param is             input stream with Excel document content. Creates empty document if it's null.
+     * @param is             input stream with Excel document content. Creates empty document if it's <code>null</code>.
      * @param saveMemoryMode switch on the mode which works slowly but allows to work with large files.
      */
     public ExcelDocument(InputStream is, boolean saveMemoryMode) {
@@ -93,21 +91,21 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     }
 
     /**
-     * Create new Excel document for specified file.
+     * Creates new Excel document for specified file.
      *
      * @param file input Excel file that needs to accessed via this document.
-     * @throws IllegalArgumentException if <code>file</code> is null or not exist.
+     * @throws IllegalArgumentException if <code>file</code> is <code>null</code> or not exist.
      */
     public ExcelDocument(File file) {
         this(file, false);
     }
 
     /**
-     * Create new Excel document for specified file.
+     * Creates new Excel document for specified file.
      *
      * @param file           input Excel file that needs to accessed via this document.
      * @param saveMemoryMode switch on the mode which works slowly but allows to work with large files.
-     * @throws IllegalArgumentException if <code>file</code> is null or not exist.
+     * @throws IllegalArgumentException if <code>file</code> is <code>null</code> or not exist.
      */
     public ExcelDocument(File file, boolean saveMemoryMode) {
         if (file == null) {
@@ -122,21 +120,21 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     }
 
     /**
-     * Create new Excel document for file specified using path.
+     * Creates new Excel document for file specified using path.
      *
      * @param path the path to input Excel file that needs to accessed via this document.
-     * @throws IllegalArgumentException if <code>path</code> is null or point to nonexistent file.
+     * @throws IllegalArgumentException if <code>path</code> is <code>null</code> or point to nonexistent file.
      */
     public ExcelDocument(Path path) {
         this(path, false);
     }
 
     /**
-     * Create new Excel document for file specified using path.
+     * Creates new Excel document for file specified using path.
      *
      * @param path           the path to input Excel file that needs to accessed via this document.
      * @param saveMemoryMode switch on the mode which works slowly but allows to work with large files.
-     * @throws IllegalArgumentException if <code>path</code> is null or point to nonexistent file.
+     * @throws IllegalArgumentException if <code>path</code> is <code>null</code> or point to nonexistent file.
      */
     public ExcelDocument(Path path, boolean saveMemoryMode) {
         if (path == null) {
@@ -151,21 +149,21 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     }
 
     /**
-     * Create new Excel document for specified file.
+     * Creates new Excel document for specified file.
      *
      * @param filePath the path to input Excel file that needs to accessed via this document.
-     * @throws IllegalArgumentException if <code>filePath</code> is null or point to nonexistent file.
+     * @throws IllegalArgumentException if <code>filePath</code> is <code>null</code> or point to nonexistent file.
      */
     public ExcelDocument(String filePath) {
         this(filePath, false);
     }
 
     /**
-     * Create new Excel document for specified file.
+     * Creates new Excel document for specified file.
      *
      * @param filePath       the path to input Excel file that needs to accessed via this document.
      * @param saveMemoryMode switch on the mode which works slowly but allows to work with large files.
-     * @throws IllegalArgumentException if <code>filePath</code> is null or point to nonexistent file.
+     * @throws IllegalArgumentException if <code>filePath</code> is <code>null</code> or point to nonexistent file.
      */
     public ExcelDocument(String filePath, boolean saveMemoryMode) {
         if (filePath == null) {
@@ -191,14 +189,16 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
 
 
     /**
-     * @return the filePath if specified. Otherwise <code>null</code>.
+     * Gets file path to related to this Excel document file.
+     *
+     * @return the <code>filePath</code> if specified. Otherwise <code>null</code>.
      */
     public String getFilePath() {
         return filePath;
     }
 
     /**
-     * Set file path for this Excel document. The Excel document is saved to file defined by this path when
+     * Sets file path for this Excel document. The Excel document is saved to file defined by this path when
      * method <code>save()</code> is called.
      *
      * @param filePath the absolute path to file where excel document is saved when method <code>save()</code> is called.
@@ -208,7 +208,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     }
 
     /**
-     * Get file name for this Excel document.
+     * Gets file name for this Excel document.
      *
      * @return name of file from file path if it's specified. Otherwise returns default name with
      * extension corresponding to this Excel document type.
@@ -221,7 +221,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     }
 
     /**
-     * Get content type (MIME type) of the workbook. May be used to pass this
+     * Gets content type (MIME type) of the workbook. May be used to pass this
      * document by HTTP
      *
      * @return for
@@ -237,9 +237,9 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     }
 
     /**
-     * Get file extension based on type of the workbook.
+     * Gets file extension based on type of workbook related to this Excel document.
      *
-     * @return spreadsheet file extension.
+     * @return Excel file extension.
      */
     public String getExtension() {
         if (hasMacros()) {
@@ -249,7 +249,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     }
 
     /**
-     * Check whether current Excel document has macros that can be executed.
+     * Checks whether current Excel document has macros that can be executed.
      *
      * @return <code>true</code> if document has macros.
      */
@@ -318,7 +318,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     }
 
     /**
-     * Update content of this Excel document. Invokes Apache POI workbook reinitialization.
+     * Updates content of this Excel document. Invokes Apache POI workbook reinitialization.
      *
      * @param is input stream with contents.
      */
@@ -388,7 +388,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      ---------------------------------------------------------*/
 
     /**
-     * Get names of all sheets
+     * Gets names of all sheets
      *
      * @return List of sheet names
      */
@@ -401,7 +401,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     }
 
     /**
-     * Create a new sheet for this Excel document and return the high level
+     * Creates a new sheet for this Excel document and return the high level
      * representation. New sheet will set as active sheet. Will set existing sheet
      * as active sheet and return it if sheet with name specified is exist already.
      *
@@ -454,7 +454,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     }
 
     /**
-     * Set the sheet with given index as active and return it.
+     * Sets the sheet with given index as active and return it.
      *
      * @param index index of sheet that need to be activated.
      * @return instance of activated sheet.
@@ -465,7 +465,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     }
 
     /**
-     * Set the sheet with given name as active and return it.
+     * Sets the sheet with given name as active and return it.
      *
      * @param sheetName name of sheet that need to be activated.
      * @return instance of activated sheet or <code>null</code> if sheet not found.
@@ -513,7 +513,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
      ---------------------------------------------------------*/
 
     /**
-     * Run the set of macros from this Excel document.
+     * Runs the set of macros from this Excel document.
      *
      * @param macros list of macros to execute.
      */
@@ -538,7 +538,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     }
 
     /**
-     * Run VB script for this Excel document
+     * Runs VB script for this Excel document
      *
      * @param script text of VB script or path to resource '.vbs' file
      * @throws VBScriptExecutionException with error description if execution of VB script failed.
@@ -548,7 +548,7 @@ public class ExcelDocument implements Iterable<Sheet>, AutoCloseable {
     }
 
     /**
-     * Run VB script for this Excel document
+     * Runs VB script for this Excel document
      *
      * @param script instance of VBScript to run
      * @throws VBScriptExecutionException with error description if execution of VB script failed.
