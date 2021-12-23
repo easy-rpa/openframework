@@ -26,8 +26,8 @@ See the full source of this example for more details or check following instruct
 
 ### Running
 
-> :heavy_exclamation_mark: **PREREQUISITES:** To be able to build and run this example it's necessary to have an access
->to some instance of EasyRPA Control Server.   
+>:warning: **To be able to build and run this example it's necessary to have an access
+>to some instance of EasyRPA Control Server.**   
 
 Its a fully workable process. To play around with it and run do the following:
 1. Download this example using [link][down_git_link].  
@@ -41,7 +41,7 @@ Its a fully workable process. To play around with it and run do the following:
         </repository>
     </repositories>
     ```
-4. If necessary, change version of `easy-rpa-engine-parent` in the same `pom.xml` to the version of 
+4. If necessary, change version of `easy-rpa-engine-parent` in the same `pom.xml` to corresponding version of 
 EasyRPA Control Server:
     ```xml
     <parent>

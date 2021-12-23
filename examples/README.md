@@ -56,11 +56,11 @@
  - [Editing of existing Excel file](excel/excel-file-editing) 
      * Edit specific cells
      * Edit specific cell range
-     * Edit table records   
+     * Edit sheet table records   
  
  - [Working with large Excel files](excel/working-with-large-files)
-     * Read records   
-     * Edit records
+     * Read sheet table records   
+     * Edit sheet table records
  
  - [Copying of sheet from one Excel file to another](excel/sheets-copying)    
  
