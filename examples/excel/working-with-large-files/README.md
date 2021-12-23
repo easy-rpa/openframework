@@ -89,7 +89,7 @@ EasyRPA Control Server:
 
 [down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/excel/working-with-large-files
 
-##№ Configuration
+### Configuration
 
 All necessary configuration files can be found in <code>src/main/resources</code> directory.
 
