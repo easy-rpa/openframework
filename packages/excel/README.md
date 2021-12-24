@@ -2,7 +2,7 @@
 
 ### Table of Contents
 * [Description](#description)
-* [Quick start](#quick-start)
+* [Usage](#usage)
 * [Reading of Excel files](#reading-of-excel-files)
 * [Creating of Excel files](#creating-of-excel-files)
 * [Other Examples](#other-examples)
@@ -13,7 +13,7 @@ Excel package is a library for working with spreadsheet documents. It wraps Apac
 to use interface that is adapted to work within EasyRPA platform or any other RPA platform where processes are built 
 using Java program language.
 
-### Quick start
+### Usage
 
 To start use the library first you need to add corresponding Maven dependency to your project:
 
@@ -26,16 +26,6 @@ To start use the library first you need to add corresponding Maven dependency to
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
-
-After that you need to build the project via Maven command:
-```java
-mvn clean install
-```
-
-In result  you should see following message:
-<p align="center">
-  <img src="https://i.postimg.cc/s2Dmc3w1/Screenshot-1.png">
-</p>
 
 ### Reading of Excel files
 

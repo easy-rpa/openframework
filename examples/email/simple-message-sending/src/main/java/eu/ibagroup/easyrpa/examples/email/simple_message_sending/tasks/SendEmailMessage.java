@@ -34,6 +34,7 @@ public class SendEmailMessage extends ApTask {
 
     @Override
     public void execute() {
+        EmailSender send = new EmailSender();
 
         log.info("Send simple email message to '{}' using service '{}', protocol '{}' and mailbox '{}'.",
                 simpleEmailRecipients, outboundEmailServer, outboundEmailProtocol, emailUserCredentials.getUser());
