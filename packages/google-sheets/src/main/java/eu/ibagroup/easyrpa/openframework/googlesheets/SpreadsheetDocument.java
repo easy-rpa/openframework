@@ -13,17 +13,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Spreadsheet {
+public class SpreadsheetDocument {
 
     private com.google.api.services.sheets.v4.model.Spreadsheet googleSpreadsheet;
 
     private int activeSheetIndex;
-
     private Sheets service;
-
     private List<Request> requests;
+    private boolean isSessionOpened;
+    private String sessionOwnerId;
 
-    public Spreadsheet(com.google.api.services.sheets.v4.model.Spreadsheet spreadsheet, Sheets service) {
+    public SpreadsheetDocument(com.google.api.services.sheets.v4.model.Spreadsheet spreadsheet, Sheets service) {
         this.googleSpreadsheet = spreadsheet;
         this.service = service;
         activeSheetIndex = 0;
@@ -42,7 +42,7 @@ public class Spreadsheet {
     }
 
     public Sheet getActiveSheet() {
-        return new Sheet( this,activeSheetIndex);
+        return new Sheet(this, activeSheetIndex);
     }
 
     public Sheet selectSheet(String name) {
@@ -50,10 +50,10 @@ public class Spreadsheet {
         for (int i = 0; i < list.size(); i++) {
             if (name.equals(list.get(i).getProperties().getTitle())) {
                 activeSheetIndex = i;
-                return new Sheet( this,activeSheetIndex);
+                return new Sheet(this, activeSheetIndex);
             }
         }
-        throw new SheetNotFound("Sheet with this name wasn't found");
+        throw new SheetNotFound(String.format("Sheet with name '%s' has not been found", name));
     }
 
     public Sheet selectSheet(int index) {
@@ -61,17 +61,17 @@ public class Spreadsheet {
             throw new SheetNotFound("Incorrect sheet id");
         }
         activeSheetIndex = index;
-        return new Sheet(this,activeSheetIndex);
+        return new Sheet(this, activeSheetIndex);
     }
 
-    public Sheet getSheetAt(int index){
+    public Sheet getSheetAt(int index) {
         if (index < 0 || googleSpreadsheet.getSheets().size() <= index) {
             throw new SheetNotFound("Incorrect sheet id");
         }
-        return new Sheet( this);
+        return new Sheet(this);
     }
 
-    public com.google.api.services.sheets.v4.model.Sheet getGSheetAt(int index){
+    public com.google.api.services.sheets.v4.model.Sheet getGSheetAt(int index) {
         if (index < 0 || googleSpreadsheet.getSheets().size() <= index) {
             throw new SheetNotFound("Incorrect sheet id");
         }
@@ -120,7 +120,7 @@ public class Spreadsheet {
                 .getProperties();
 
         sheet.setProperties(properties);
-        return new Sheet( this,newSheetIndex);
+        return new Sheet(this, newSheetIndex);
     }
 
     public void removeSheet(String sheetName) {
@@ -169,6 +169,20 @@ public class Spreadsheet {
         }
         //return null if there were no updates
         return null;
+    }
+
+    public void openSessionIfRequired(String sessionOwnerId) {
+        if (!isSessionOpened) {
+            this.sessionOwnerId = sessionOwnerId;
+            isSessionOpened = true;
+        }
+    }
+
+    public void closeSessionIfRequired(String sessionOwnerId) {
+        if (sessionOwnerId.equals(this.sessionOwnerId)) {
+            commit();
+            isSessionOpened = false;
+        }
     }
 
     public void copySheet(Sheet sheet) {

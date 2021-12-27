@@ -150,4 +150,8 @@ public class GSheetCellStyle {
         this.wrapStrategy = wrapStrategy;
         return this;
     }
+
+    public void applyTo(Cell cell) {
+        cell.setStyle(this);
+    }
 }

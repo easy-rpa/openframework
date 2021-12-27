@@ -29,7 +29,7 @@ public class Row implements Iterable<Cell> {
         this.id = this.sheetIndex + "|" + this.rowIndex;
     }
 
-    public Spreadsheet getDocument() {
+    public SpreadsheetDocument getDocument() {
         return parent.getParentSpreadsheet();
     }
 

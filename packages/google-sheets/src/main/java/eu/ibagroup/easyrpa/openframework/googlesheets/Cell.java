@@ -32,7 +32,7 @@ public class Cell {
         this.id = this.sheetIndex + "|" + this.rowIndex + "|" + this.columnIndex;
     }
 
-    public Spreadsheet getDocument() {
+    public SpreadsheetDocument getDocument() {
         return parent.getParentSpreadsheet();
     }
 
@@ -53,7 +53,7 @@ public class Cell {
     }
 
     public void setStyle(GSheetCellStyle newStyle) {
-//TODO        newStyle.applyTo(this);
+       newStyle.applyTo(this);
     }
 
     public GSheetCellStyle getStyle() {
@@ -77,7 +77,7 @@ public class Cell {
     public void setValue(Object value) {
         CellData googleCell = getGoogleCell();
         if (value == null) {
-            // poiCell.setBlank();
+            // poiCell.setBlank(); //todo check
 
         } else if (value instanceof Date) {
             SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
@@ -138,7 +138,7 @@ public class Cell {
         if (googleCell == null) {
             return null;
         }
-        Object value = "";
+        Object value = null;
         ExtendedValue extendedValue = googleCell.getUserEnteredValue();
 
         if(extendedValue != null) {
@@ -155,16 +155,16 @@ public class Cell {
                     switch (type) {
                         case "DATE": {
                             try {
-                                value = new SimpleDateFormat("dd.MM.yyyy").parse(type);
+                                value = new SimpleDateFormat("dd.MM.yyyy").parse(extendedValue.getStringValue());
                             } catch (ParseException e) {
                                 value = "NaN";
                             }
+                            break;
                         }
                         default:
                             value = extendedValue.getStringValue();
                     }
                 }
-                value = extendedValue.getStringValue();
             } else if (!extendedValue.getErrorValue().isEmpty()) {
                 value = extendedValue.getErrorValue().getMessage();
             } else {
