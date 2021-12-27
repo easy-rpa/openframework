@@ -71,27 +71,27 @@ public class GoogleSheets {
         return this;
     }
 
-    public Spreadsheet getSpreadsheet(String spreadsheetId) {
+    public SpreadsheetDocument getSpreadsheet(String spreadsheetId) {
         com.google.api.services.sheets.v4.model.Spreadsheet spreadsheet;
         try {
             Sheets.Spreadsheets.Get s = service.spreadsheets().get(spreadsheetId);
             s.getSpreadsheetId();
             spreadsheet = service.spreadsheets().get(spreadsheetId).setIncludeGridData(true).execute();
         } catch (IOException e) {
-            throw new SpreadsheetNotFound("Spreadsheet with such id not found");
+            throw new SpreadsheetNotFound("Spreadsheet with such id not found", e);
         }
         if (spreadsheet == null) {
             throw new SpreadsheetRequestFailed("Some errors occurred");
         }
         GSheetElementsCache.register(spreadsheet.getSpreadsheetId(),spreadsheet);
-        return new Spreadsheet(spreadsheet, service);
+        return new SpreadsheetDocument(spreadsheet, service);
     }
 
-    public void copySheet(Spreadsheet spreadsheetFrom, Sheet sheet, Spreadsheet spreadsheetTo) {
+    public void copySheet(SpreadsheetDocument spreadsheetDocumentFrom, Sheet sheet, SpreadsheetDocument spreadsheetDocumentTo) {
         CopySheetToAnotherSpreadsheetRequest requestBody = new CopySheetToAnotherSpreadsheetRequest();
-        requestBody.setDestinationSpreadsheetId(spreadsheetTo.getId());
+        requestBody.setDestinationSpreadsheetId(spreadsheetDocumentTo.getId());
         try {
-            service.spreadsheets().sheets().copyTo(spreadsheetFrom.getId(), sheet.getId(), requestBody).execute();
+            service.spreadsheets().sheets().copyTo(spreadsheetDocumentFrom.getId(), sheet.getId(), requestBody).execute();
         } catch (IOException e) {
             throw new CopySheetException(e.getMessage());
         }

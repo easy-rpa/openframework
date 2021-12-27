@@ -19,7 +19,7 @@ public class Column implements Iterable<Cell> {
         this.columnIndex = columnIndex;
     }
 
-    public Spreadsheet getDocument() {
+    public SpreadsheetDocument getDocument() {
         return parent.getParentSpreadsheet();
     }
 

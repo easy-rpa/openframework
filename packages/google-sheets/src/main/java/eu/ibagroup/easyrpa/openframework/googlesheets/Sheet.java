@@ -15,17 +15,17 @@ import java.util.stream.Collectors;
 
 public class Sheet implements Iterable<Row> {
 
-    private Spreadsheet parentSpreadsheet;
+    private SpreadsheetDocument parentSpreadsheetDocument;
 
     private int sheetIndex;
 
-    public Sheet(Spreadsheet parent, int sheetIndex) {
+    public Sheet(SpreadsheetDocument parent, int sheetIndex) {
         this.sheetIndex = sheetIndex;
-        this.parentSpreadsheet = parent;
+        this.parentSpreadsheetDocument = parent;
     }
 
-    public Sheet(Spreadsheet parent) {
-        this.parentSpreadsheet = parent;
+    public Sheet(SpreadsheetDocument parent) {
+        this.parentSpreadsheetDocument = parent;
     }
 
     public String getName() {
@@ -37,8 +37,8 @@ public class Sheet implements Iterable<Row> {
         return getGSheet().getProperties().getSheetId();
     }
 
-    public Spreadsheet getParentSpreadsheet() {
-        return parentSpreadsheet;
+    public SpreadsheetDocument getParentSpreadsheet() {
+        return parentSpreadsheetDocument;
     }
 
     public int getIndex() {
@@ -46,14 +46,14 @@ public class Sheet implements Iterable<Row> {
     }
 
     public void rename(String name) {
-        if(parentSpreadsheet.getSheetNames().stream().anyMatch(name::equalsIgnoreCase)){
+        if(parentSpreadsheetDocument.getSheetNames().stream().anyMatch(name::equalsIgnoreCase)){
             throw new SheetNameAlreadyExist("Name already defined in this scope");
         }
 
         //googleSheet.getProperties().setTitle(name);
         getGSheet().getProperties().setTitle(name);
 
-        parentSpreadsheet.getRequests().add(new Request().setUpdateSheetProperties(
+        parentSpreadsheetDocument.getRequests().add(new Request().setUpdateSheetProperties(
                 new UpdateSheetPropertiesRequest()
                         .setProperties(getGSheet().getProperties()) //опять же getGsheet не работает
                         //.setProperties(googleSheet.getProperties())
@@ -530,7 +530,7 @@ public class Sheet implements Iterable<Row> {
     }
 
     public com.google.api.services.sheets.v4.model.Sheet getGSheet() {
-        return GSheetElementsCache.getGSheet(parentSpreadsheet.getId(), sheetIndex);
+        return GSheetElementsCache.getGSheet(parentSpreadsheetDocument.getId(), sheetIndex);
     }
 
     private void shiftRows(int startRow, int rowsCount) {
