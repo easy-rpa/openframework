@@ -18,10 +18,10 @@ public class SpreadsheetDocument {
     private com.google.api.services.sheets.v4.model.Spreadsheet googleSpreadsheet;
 
     private int activeSheetIndex;
-
     private Sheets service;
-
     private List<Request> requests;
+    private boolean isSessionOpened;
+    private String sessionOwnerId;
 
     public SpreadsheetDocument(com.google.api.services.sheets.v4.model.Spreadsheet spreadsheet, Sheets service) {
         this.googleSpreadsheet = spreadsheet;
@@ -169,6 +169,20 @@ public class SpreadsheetDocument {
         }
         //return null if there were no updates
         return null;
+    }
+
+    public void openSessionIfRequired(String sessionOwnerId) {
+        if (!isSessionOpened) {
+            this.sessionOwnerId = sessionOwnerId;
+            isSessionOpened = true;
+        }
+    }
+
+    public void closeSessionIfRequired(String sessionOwnerId) {
+        if (sessionOwnerId.equals(this.sessionOwnerId)) {
+            commit();
+            isSessionOpened = false;
+        }
     }
 
     public void copySheet(Sheet sheet) {
