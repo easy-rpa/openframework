@@ -341,7 +341,7 @@ public class CellRef {
             throw new RuntimeException(var5);
         }
     }
-    
+
     boolean needsDelimiting(String rawSheetName) {
         if (rawSheetName == null) {
             return false;

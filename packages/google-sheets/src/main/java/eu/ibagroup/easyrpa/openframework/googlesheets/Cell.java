@@ -4,10 +4,13 @@ import com.google.api.services.sheets.v4.model.CellData;
 import com.google.api.services.sheets.v4.model.CellFormat;
 import com.google.api.services.sheets.v4.model.ExtendedValue;
 import com.google.api.services.sheets.v4.model.NumberFormat;
+import com.google.api.services.sheets.v4.model.RepeatCellRequest;
+import com.google.api.services.sheets.v4.model.Request;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 public class Cell {
 
@@ -22,6 +25,8 @@ public class Cell {
     private int rowIndex;
 
     private int columnIndex;
+
+    private List<Request> requests;
 
     protected Cell(Sheet parent, int rowIndex, int columnIndex) {
         this.parent = parent;
@@ -53,7 +58,7 @@ public class Cell {
     }
 
     public void setStyle(GSheetCellStyle newStyle) {
-       newStyle.applyTo(this);
+        newStyle.applyTo(this, getDocument());
     }
 
     public GSheetCellStyle getStyle() {
@@ -75,6 +80,8 @@ public class Cell {
     }
 
     public void setValue(Object value) {
+        String sessionId = getDocument().generateNewSessionId();
+        getDocument().openSessionIfRequired(sessionId);
         CellData googleCell = getGoogleCell();
         if (value == null) {
             // poiCell.setBlank(); //todo check
@@ -104,6 +111,8 @@ public class Cell {
         } else {
             googleCell.setUserEnteredValue(new ExtendedValue().setStringValue(value.toString()));
         }
+        new Request().setRepeatCell(new RepeatCellRequest().setCell(googleCell));
+        getDocument().closeSessionIfRequired(sessionId, requests);
     }
 
     public boolean isEmpty() {
@@ -126,7 +135,13 @@ public class Cell {
     }
 
     public void setFormula(String newCellFormula) {
-        getGoogleCell().setUserEnteredValue(new ExtendedValue().setFormulaValue(newCellFormula));
+        String sessionId = getDocument().generateNewSessionId();
+        getDocument().openSessionIfRequired(sessionId);
+        new Request()
+                .setRepeatCell(new RepeatCellRequest()
+                        .setCell(getGoogleCell()
+                                .setUserEnteredValue(new ExtendedValue().setFormulaValue(newCellFormula))));
+        getDocument().closeSessionIfRequired(sessionId, requests);
     }
 
     public CellData getGoogleCell() {

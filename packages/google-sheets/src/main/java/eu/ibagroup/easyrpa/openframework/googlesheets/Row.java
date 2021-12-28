@@ -2,7 +2,9 @@ package eu.ibagroup.easyrpa.openframework.googlesheets;
 
 
 import com.google.api.services.sheets.v4.model.CellData;
+import com.google.api.services.sheets.v4.model.Request;
 import com.google.api.services.sheets.v4.model.RowData;
+import com.google.api.services.sheets.v4.model.UpdateCellsRequest;
 import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSheetElementsCache;
 
 import java.util.ArrayList;
@@ -20,6 +22,8 @@ public class Row implements Iterable<Cell> {
     private int sheetIndex;
 
     private int rowIndex;
+
+    private List<Request> requests;
 
     protected Row(Sheet parent, int rowIndex) {
         this.parent = parent;
@@ -86,6 +90,15 @@ public class Row implements Iterable<Cell> {
             cell = createCell(colIndex);
         }
         cell.setValue(value);
+    }
+
+    public void setValue(List<RowData> rowDataList) {
+        String sessionId = getDocument().generateNewSessionId();
+        getDocument().openSessionIfRequired(sessionId);
+        if (rowDataList != null && !rowDataList.isEmpty()) {
+            requests.add(new Request().setUpdateCells(new UpdateCellsRequest().setRows(rowDataList)));
+        }
+        getDocument().closeSessionIfRequired(sessionId, requests);
     }
 
     public List<Object> getValues() {
