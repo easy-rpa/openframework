@@ -1,10 +1,7 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets;
 
 
-import com.google.api.services.sheets.v4.model.CellData;
-import com.google.api.services.sheets.v4.model.Request;
-import com.google.api.services.sheets.v4.model.RowData;
-import com.google.api.services.sheets.v4.model.UpdateCellsRequest;
+import com.google.api.services.sheets.v4.model.*;
 import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSheetElementsCache;
 
 import java.util.ArrayList;
@@ -96,7 +93,16 @@ public class Row implements Iterable<Cell> {
         String sessionId = getDocument().generateNewSessionId();
         getDocument().openSessionIfRequired(sessionId);
         if (rowDataList != null && !rowDataList.isEmpty()) {
-            requests.add(new Request().setUpdateCells(new UpdateCellsRequest().setRows(rowDataList)));
+            requests.add(new Request().setUpdateCells(new UpdateCellsRequest()
+                    .setRange(new GridRange()
+                            .setSheetId(getDocument().getActiveSheet().getId())
+                            .setStartRowIndex(this.rowIndex)
+                            .setEndRowIndex(this.rowIndex + 1)
+                            .setStartColumnIndex(this.getFirstCellIndex())
+                            .setEndColumnIndex(this.getLastCellIndex())
+                    )
+                    .setRows(rowDataList)
+                    .setFields("userEnteredValue")));
         }
         getDocument().closeSessionIfRequired(sessionId, requests);
     }
@@ -182,7 +188,7 @@ public class Row implements Iterable<Cell> {
 
     public Cell createCell(int colIndex) {
         Cell cell = new Cell(parent, rowIndex, colIndex);
-        getGSheetRow().getValues().add(colIndex,cell.getGoogleCell());
+        getGSheetRow().getValues().add(colIndex, cell.getGoogleCell());
         return cell;
     }
 
@@ -199,7 +205,7 @@ public class Row implements Iterable<Cell> {
     }
 
     public int getLastCellIndex() {
-        return  getGSheetRow().getValues().size()-1;
+        return getGSheetRow().getValues().size() - 1;
         //return getGSheetRow().getLastCellNum();
     }
 
