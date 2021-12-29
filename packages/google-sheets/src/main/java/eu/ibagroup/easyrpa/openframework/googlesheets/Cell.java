@@ -57,6 +57,10 @@ public class Cell {
         newStyle.applyTo(this, getDocument());
     }
 
+    public void setStyle(GSheetCellStyle newStyle, CellRange cellRange) {
+        newStyle.applyTo(this, getDocument(), cellRange);
+    }
+
     public GSheetCellStyle getStyle() {
         return new GSheetCellStyle(this);
     }
@@ -75,7 +79,9 @@ public class Cell {
         return (T) getTypedValue();
     }
 
-    public CellData setValue(Object value) {
+    public void setValue(Object value) {
+        String sessionId = getDocument().generateNewSessionId();
+        getDocument().openSessionIfRequired(sessionId);
         CellData googleCell = getGoogleCell();
         if (value == null) {
             // poiCell.setBlank(); //todo check
@@ -105,20 +111,13 @@ public class Cell {
         } else {
             googleCell.setUserEnteredValue(new ExtendedValue().setStringValue(value.toString()));
         }
-        return googleCell;
-    }
-
-    public void setValue(Object value, CellRef ref) {
-        String sessionId = getDocument().generateNewSessionId();
-        getDocument().openSessionIfRequired(sessionId);
-        CellData googleCell = setValue(value);
         requests.add(new Request().setRepeatCell(new RepeatCellRequest()
                 .setRange(new GridRange()
                         .setSheetId(getDocument().getActiveSheet().getId())
-                        .setStartRowIndex(ref.getRow())
-                        .setEndRowIndex(ref.getRow()+1)
-                        .setStartColumnIndex(ref.getCol())
-                        .setEndColumnIndex(ref.getCol()+1)
+                        .setStartRowIndex(this.getRowIndex())
+                        .setEndRowIndex(this.getRowIndex() + 1)
+                        .setStartColumnIndex(this.getColumnIndex())
+                        .setEndColumnIndex(this.getColumnIndex() + 1)
                 )
                 .setCell(googleCell).setFields("userEnteredValue")));
         getDocument().closeSessionIfRequired(sessionId, requests);
@@ -127,7 +126,35 @@ public class Cell {
     public void setValue(Object value, CellRange cellRange) {
         String sessionId = getDocument().generateNewSessionId();
         getDocument().openSessionIfRequired(sessionId);
-        CellData googleCell = setValue(value);
+        CellData googleCell = getGoogleCell();
+        if (value == null) {
+            // poiCell.setBlank(); //todo check
+
+        } else if (value instanceof Date) {
+            SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
+            googleCell.setUserEnteredValue(new ExtendedValue().setStringValue(formatter.format((Date) value)));
+            googleCell.setUserEnteredFormat(
+                    new CellFormat().setNumberFormat(
+                            new NumberFormat().setType("DATE").setPattern("dd.MM.yyyy")
+                    )
+            );
+
+        } else if (value instanceof Double) {
+            googleCell.setUserEnteredValue(new ExtendedValue().setNumberValue((Double) value));
+            googleCell.setUserEnteredFormat(
+                    new CellFormat().setNumberFormat(
+                            new NumberFormat().setType("NUMBER")
+                    )
+            );
+        } else if (value instanceof Boolean) {
+            googleCell.setUserEnteredValue(new ExtendedValue().setBoolValue((Boolean) value));
+
+        } else if (value instanceof String && value.toString().startsWith("=")) {
+            googleCell.setUserEnteredValue(new ExtendedValue().setFormulaValue((String) value));
+
+        } else {
+            googleCell.setUserEnteredValue(new ExtendedValue().setStringValue(value.toString()));
+        }
         requests.add(new Request().setRepeatCell(new RepeatCellRequest()
                 .setRange(new GridRange()
                         .setSheetId(getDocument().getActiveSheet().getId())
@@ -159,13 +186,39 @@ public class Cell {
         return getGoogleCell().getUserEnteredValue().getFormulaValue();
     }
 
+    public void setFormula(String newCellFormula, CellRange cellRange) {
+        String sessionId = getDocument().generateNewSessionId();
+        getDocument().openSessionIfRequired(sessionId);
+        requests.add(new Request()
+                .setRepeatCell(new RepeatCellRequest()
+                        .setRange(new GridRange()
+                                .setSheetId(getDocument().getActiveSheet().getId())
+                                .setStartRowIndex(cellRange.getFirstRow())
+                                .setEndRowIndex(cellRange.getLastRow())
+                                .setStartColumnIndex(cellRange.getFirstCol())
+                                .setEndColumnIndex(cellRange.getLastCol())
+                        )
+                        .setCell(getGoogleCell()
+                                .setUserEnteredValue(new ExtendedValue().setFormulaValue(newCellFormula)))
+                        .setFields("userEnteredValue")));
+        getDocument().closeSessionIfRequired(sessionId, requests);
+    }
+
     public void setFormula(String newCellFormula) {
         String sessionId = getDocument().generateNewSessionId();
         getDocument().openSessionIfRequired(sessionId);
         requests.add(new Request()
                 .setRepeatCell(new RepeatCellRequest()
+                        .setRange(new GridRange()
+                                .setSheetId(getDocument().getActiveSheet().getId())
+                                .setStartRowIndex(this.getRowIndex())
+                                .setEndRowIndex(this.getRowIndex()+1)
+                                .setStartColumnIndex(this.getColumnIndex())
+                                .setEndColumnIndex(this.getColumnIndex()+1)
+                        )
                         .setCell(getGoogleCell()
-                                .setUserEnteredValue(new ExtendedValue().setFormulaValue(newCellFormula)))));
+                                .setUserEnteredValue(new ExtendedValue().setFormulaValue(newCellFormula)))
+                        .setFields("userEnteredValue")));
         getDocument().closeSessionIfRequired(sessionId, requests);
     }
 
@@ -181,7 +234,7 @@ public class Cell {
         Object value = null;
         ExtendedValue extendedValue = googleCell.getUserEnteredValue();
 
-        if(extendedValue != null) {
+        if (extendedValue != null) {
             if (extendedValue.getNumberValue() != null) {
                 value = extendedValue.getNumberValue();
             } else if (extendedValue.getFormulaValue() != null && !extendedValue.getFormulaValue().isEmpty()) {
@@ -229,7 +282,7 @@ public class Cell {
             return extendedValue.getBoolValue().toString();
         } else if (!extendedValue.getStringValue().isEmpty()) {
             CellFormat format = googleCell.getUserEnteredFormat();
-            if(format != null) {
+            if (format != null) {
                 String type = format.getNumberFormat().getType();
                 switch (type) {
                     case "DATE": {

@@ -163,8 +163,34 @@ public class GSheetCellStyle {
         document.openSessionIfRequired(sessionId);
         requests.add(new Request()
                 .setRepeatCell(new RepeatCellRequest()
+                        .setRange(new GridRange()
+                                .setSheetId(document.getActiveSheet().getId())
+                                .setStartRowIndex(cell.getRowIndex())
+                                .setEndRowIndex(cell.getRowIndex()+1)
+                                .setStartColumnIndex(cell.getColumnIndex())
+                                .setEndColumnIndex(cell.getColumnIndex()+1)
+                        )
                         .setCell(cell.getGoogleCell()
-                                .setUserEnteredFormat(this.cellFormat))));
+                                .setUserEnteredFormat(this.cellFormat))
+                        .setFields("userEnteredValue")));
+        document.closeSessionIfRequired(sessionId, requests);
+    }
+
+    public void applyTo(Cell cell, SpreadsheetDocument document, CellRange cellRange) {
+        String sessionId = document.generateNewSessionId();
+        document.openSessionIfRequired(sessionId);
+        requests.add(new Request()
+                .setRepeatCell(new RepeatCellRequest()
+                        .setRange(new GridRange()
+                                .setSheetId(document.getActiveSheet().getId())
+                                .setStartRowIndex(cellRange.getFirstRow())
+                                .setEndRowIndex(cellRange.getLastRow())
+                                .setStartColumnIndex(cellRange.getFirstCol())
+                                .setEndColumnIndex(cellRange.getLastCol())
+                        )
+                        .setCell(cell.getGoogleCell()
+                                .setUserEnteredFormat(this.cellFormat))
+                        .setFields("userEnteredValue")));
         document.closeSessionIfRequired(sessionId, requests);
     }
 }
