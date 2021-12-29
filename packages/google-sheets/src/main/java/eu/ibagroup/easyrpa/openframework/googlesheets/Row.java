@@ -23,7 +23,7 @@ public class Row implements Iterable<Cell> {
 
     private int rowIndex;
 
-    private List<Request> requests;
+    private List<Request> requests = new ArrayList<>();
 
     protected Row(Sheet parent, int rowIndex) {
         this.parent = parent;

@@ -2,6 +2,7 @@ package eu.ibagroup.easyrpa.openframework.googlesheets;
 
 import com.google.api.services.sheets.v4.model.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GSheetCellStyle {
@@ -17,7 +18,7 @@ public class GSheetCellStyle {
     private TextRotation textRotation = new TextRotation().setAngle(0).setVertical(false);
     private String verticalAlignment;
     private String wrapStrategy;
-    private List<Request> requests;
+    private List<Request> requests = new ArrayList<>();
     private CellFormat cellFormat;
 
     public GSheetCellStyle(CellFormat cellFormat) {
@@ -160,10 +161,10 @@ public class GSheetCellStyle {
     public void applyTo(Cell cell, SpreadsheetDocument document) {
         String sessionId = document.generateNewSessionId();
         document.openSessionIfRequired(sessionId);
-        new Request()
+        requests.add(new Request()
                 .setRepeatCell(new RepeatCellRequest()
                         .setCell(cell.getGoogleCell()
-                                .setUserEnteredFormat(this.cellFormat)));
+                                .setUserEnteredFormat(this.cellFormat))));
         document.closeSessionIfRequired(sessionId, requests);
     }
 }
