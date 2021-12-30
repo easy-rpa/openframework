@@ -2,6 +2,7 @@ package eu.ibagroup.easyrpa.openframework.googlesheets.internal;
 
 import eu.ibagroup.easyrpa.openframework.core.utils.TypeUtils;
 import eu.ibagroup.easyrpa.openframework.googlesheets.Cell;
+import eu.ibagroup.easyrpa.openframework.googlesheets.CellRef;
 import eu.ibagroup.easyrpa.openframework.googlesheets.GSheetCellStyle;
 import eu.ibagroup.easyrpa.openframework.googlesheets.annotations.GSheetColumn;
 import eu.ibagroup.easyrpa.openframework.googlesheets.annotations.GSheetTable;

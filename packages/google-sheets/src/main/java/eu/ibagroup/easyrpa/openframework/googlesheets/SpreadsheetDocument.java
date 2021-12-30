@@ -6,7 +6,6 @@ import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.CopySheetExcept
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SheetNameAlreadyExist;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SheetNotFound;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.UpdateException;
-import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSheetElementsCache;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -178,11 +177,16 @@ public class SpreadsheetDocument {
         }
     }
 
-    public void closeSessionIfRequired(String sessionOwnerId) {
+    public void closeSessionIfRequired(String sessionOwnerId, List<Request> requests) {
         if (sessionOwnerId.equals(this.sessionOwnerId)) {
+            this.requests = requests;
             commit();
             isSessionOpened = false;
         }
+    }
+
+    public String generateNewSessionId(){
+        return (int) (Math.random() * 100) + "" + (System.currentTimeMillis() % 1000000);
     }
 
     public void copySheet(Sheet sheet) {

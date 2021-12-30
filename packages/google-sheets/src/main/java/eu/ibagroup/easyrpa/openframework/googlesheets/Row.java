@@ -1,8 +1,7 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets;
 
 
-import com.google.api.services.sheets.v4.model.CellData;
-import com.google.api.services.sheets.v4.model.RowData;
+import com.google.api.services.sheets.v4.model.*;
 import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSheetElementsCache;
 
 import java.util.ArrayList;
@@ -20,6 +19,8 @@ public class Row implements Iterable<Cell> {
     private int sheetIndex;
 
     private int rowIndex;
+
+    private List<Request> requests = new ArrayList<>();
 
     protected Row(Sheet parent, int rowIndex) {
         this.parent = parent;
@@ -86,6 +87,69 @@ public class Row implements Iterable<Cell> {
             cell = createCell(colIndex);
         }
         cell.setValue(value);
+    }
+
+    public List<Request> setValuesInOneTransaction(List<?> rowDataList) {
+        String sessionId = getDocument().generateNewSessionId();
+        getDocument().openSessionIfRequired(sessionId);
+        if (rowDataList != null && !rowDataList.isEmpty()) {
+            int i = 0;
+            for (Object currentCellValue : rowDataList) {
+                Cell cell = new Cell(parent, rowIndex, this.getFirstCellIndex()+i);
+                requests.addAll(cell.setValue(currentCellValue));
+                i++;
+            }
+        }
+        getDocument().closeSessionIfRequired(sessionId, requests);
+        return requests;
+    }
+
+    public List<Request> setFormulasInOneTransaction(List<String> rowDataList) {
+        String sessionId = getDocument().generateNewSessionId();
+        getDocument().openSessionIfRequired(sessionId);
+        if (rowDataList != null && !rowDataList.isEmpty()) {
+            int i = 0;
+            for (String currentCellValue : rowDataList) {
+                Cell cell = new Cell(parent, rowIndex, this.getFirstCellIndex()+i);
+                requests.addAll(cell.setFormula(currentCellValue));
+                i++;
+            }
+        }
+        getDocument().closeSessionIfRequired(sessionId, requests);
+        return requests;
+    }
+
+    public List<Request> setStylesInOneTransaction(List<GSheetCellStyle> rowDataList) {
+        String sessionId = getDocument().generateNewSessionId();
+        getDocument().openSessionIfRequired(sessionId);
+        if (rowDataList != null && !rowDataList.isEmpty()) {
+            int i = 0;
+            for (GSheetCellStyle currentCellValue : rowDataList) {
+                Cell cell = new Cell(parent, rowIndex, this.getFirstCellIndex()+i);
+                requests.addAll(cell.setStyle(currentCellValue));
+                i++;
+            }
+        }
+        getDocument().closeSessionIfRequired(sessionId, requests);
+        return requests;
+    }
+
+    public void setValue(List<RowData> rowDataList) {
+        String sessionId = getDocument().generateNewSessionId();
+        getDocument().openSessionIfRequired(sessionId);
+        if (rowDataList != null && !rowDataList.isEmpty()) {
+            requests.add(new Request().setUpdateCells(new UpdateCellsRequest()
+                    .setRange(new GridRange()
+                            .setSheetId(getDocument().getActiveSheet().getId())
+                            .setStartRowIndex(this.rowIndex)
+                            .setEndRowIndex(this.rowIndex + 1)
+                            .setStartColumnIndex(this.getFirstCellIndex())
+                            .setEndColumnIndex(this.getLastCellIndex())
+                    )
+                    .setRows(rowDataList)
+                    .setFields("userEnteredValue")));
+        }
+        getDocument().closeSessionIfRequired(sessionId, requests);
     }
 
     public List<Object> getValues() {
@@ -169,7 +233,7 @@ public class Row implements Iterable<Cell> {
 
     public Cell createCell(int colIndex) {
         Cell cell = new Cell(parent, rowIndex, colIndex);
-        getGSheetRow().getValues().add(colIndex,cell.getGoogleCell());
+        getGSheetRow().getValues().add(colIndex, cell.getGoogleCell());
         return cell;
     }
 
@@ -186,7 +250,7 @@ public class Row implements Iterable<Cell> {
     }
 
     public int getLastCellIndex() {
-        return  getGSheetRow().getValues().size()-1;
+        return getGSheetRow().getValues().size() - 1;
         //return getGSheetRow().getLastCellNum();
     }
 
