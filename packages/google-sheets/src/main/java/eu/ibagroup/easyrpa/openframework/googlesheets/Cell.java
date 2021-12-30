@@ -53,12 +53,12 @@ public class Cell {
         return new CellRef(rowIndex, columnIndex);
     }
 
-    public void setStyle(GSheetCellStyle newStyle) {
-        newStyle.applyTo(this, getDocument());
+    public List<Request> setStyle(GSheetCellStyle newStyle) {
+        return newStyle.applyTo(this, getDocument());
     }
 
-    public void setStyle(GSheetCellStyle newStyle, CellRange cellRange) {
-        newStyle.applyTo(this, getDocument(), cellRange);
+    public List<Request> setStyle(GSheetCellStyle newStyle, CellRange cellRange) {
+        return newStyle.applyTo(this, getDocument(), cellRange);
     }
 
     public GSheetCellStyle getStyle() {
@@ -205,7 +205,7 @@ public class Cell {
         getDocument().closeSessionIfRequired(sessionId, requests);
     }
 
-    public void setFormula(String newCellFormula) {
+    public List<Request> setFormula(String newCellFormula) {
         String sessionId = getDocument().generateNewSessionId();
         getDocument().openSessionIfRequired(sessionId);
         requests.add(new Request()
@@ -221,6 +221,7 @@ public class Cell {
                                 .setUserEnteredValue(new ExtendedValue().setFormulaValue(newCellFormula)))
                         .setFields("userEnteredValue")));
         getDocument().closeSessionIfRequired(sessionId, requests);
+        return requests;
     }
 
     public CellData getGoogleCell() {

@@ -78,7 +78,7 @@ public class Column implements Iterable<Cell> {
         cell.setValue(value);
     }
 
-    public List<Request> setValueInOneTransaction(List<?> columnDataList) {
+    public List<Request> setValuesInOneTransaction(List<?> columnDataList) {
         String sessionId = getDocument().generateNewSessionId();
         getDocument().openSessionIfRequired(sessionId);
         if (columnDataList != null && !columnDataList.isEmpty()) {
@@ -86,6 +86,36 @@ public class Column implements Iterable<Cell> {
             for (Object currentCellValue : columnDataList) {
                 Cell cell = new Cell(parent, this.getFirstRowIndex() + i, columnIndex);
                 requests.addAll(cell.setValue(currentCellValue));
+                i++;
+            }
+        }
+        getDocument().closeSessionIfRequired(sessionId, requests);
+        return requests;
+    }
+
+    public List<Request> setFormulasInOneTransaction(List<String> columnDataList) {
+        String sessionId = getDocument().generateNewSessionId();
+        getDocument().openSessionIfRequired(sessionId);
+        if (columnDataList != null && !columnDataList.isEmpty()) {
+            int i = 0;
+            for (String currentCellValue : columnDataList) {
+                Cell cell = new Cell(parent, this.getFirstRowIndex() + i, columnIndex);
+                requests.addAll(cell.setFormula(currentCellValue));
+                i++;
+            }
+        }
+        getDocument().closeSessionIfRequired(sessionId, requests);
+        return requests;
+    }
+
+    public List<Request> setStylesInOneTransaction(List<GSheetCellStyle> columnDataList) {
+        String sessionId = getDocument().generateNewSessionId();
+        getDocument().openSessionIfRequired(sessionId);
+        if (columnDataList != null && !columnDataList.isEmpty()) {
+            int i = 0;
+            for (GSheetCellStyle currentCellValue : columnDataList) {
+                Cell cell = new Cell(parent, this.getFirstRowIndex() + i, columnIndex);
+                requests.addAll(cell.setStyle(currentCellValue));
                 i++;
             }
         }

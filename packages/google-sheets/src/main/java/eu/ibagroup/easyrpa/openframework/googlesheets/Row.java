@@ -89,7 +89,7 @@ public class Row implements Iterable<Cell> {
         cell.setValue(value);
     }
 
-    public List<Request> setValueInOneTransaction(List<?> rowDataList) {
+    public List<Request> setValuesInOneTransaction(List<?> rowDataList) {
         String sessionId = getDocument().generateNewSessionId();
         getDocument().openSessionIfRequired(sessionId);
         if (rowDataList != null && !rowDataList.isEmpty()) {
@@ -97,6 +97,36 @@ public class Row implements Iterable<Cell> {
             for (Object currentCellValue : rowDataList) {
                 Cell cell = new Cell(parent, rowIndex, this.getFirstCellIndex()+i);
                 requests.addAll(cell.setValue(currentCellValue));
+                i++;
+            }
+        }
+        getDocument().closeSessionIfRequired(sessionId, requests);
+        return requests;
+    }
+
+    public List<Request> setFormulasInOneTransaction(List<String> rowDataList) {
+        String sessionId = getDocument().generateNewSessionId();
+        getDocument().openSessionIfRequired(sessionId);
+        if (rowDataList != null && !rowDataList.isEmpty()) {
+            int i = 0;
+            for (String currentCellValue : rowDataList) {
+                Cell cell = new Cell(parent, rowIndex, this.getFirstCellIndex()+i);
+                requests.addAll(cell.setFormula(currentCellValue));
+                i++;
+            }
+        }
+        getDocument().closeSessionIfRequired(sessionId, requests);
+        return requests;
+    }
+
+    public List<Request> setStylesInOneTransaction(List<GSheetCellStyle> rowDataList) {
+        String sessionId = getDocument().generateNewSessionId();
+        getDocument().openSessionIfRequired(sessionId);
+        if (rowDataList != null && !rowDataList.isEmpty()) {
+            int i = 0;
+            for (GSheetCellStyle currentCellValue : rowDataList) {
+                Cell cell = new Cell(parent, rowIndex, this.getFirstCellIndex()+i);
+                requests.addAll(cell.setStyle(currentCellValue));
                 i++;
             }
         }

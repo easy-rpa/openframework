@@ -141,7 +141,41 @@ public class Sheet implements Iterable<Row> {
             for (List<?> currentRowData : rangeData) {
                 if (currentRowData != null && !currentRowData.isEmpty()) {
                     Row row = new Row(this, i);
-                    requests.addAll(row.setValueInOneTransaction(currentRowData));
+                    requests.addAll(row.setValuesInOneTransaction(currentRowData));
+                    i++;
+                }
+            }
+        }
+        parentSpreadsheetDocument.closeSessionIfRequired(sessionId, requests);
+        return requests;
+    }
+
+    public List<Request> setFormulasInOneTransaction(List<List<String>> rangeData) {
+        String sessionId = parentSpreadsheetDocument.generateNewSessionId();
+        parentSpreadsheetDocument.openSessionIfRequired(sessionId);
+        if (rangeData != null && !rangeData.isEmpty()) {
+            int i = 0;
+            for (List<String> currentRowData : rangeData) {
+                if (currentRowData != null && !currentRowData.isEmpty()) {
+                    Row row = new Row(this, i);
+                    requests.addAll(row.setFormulasInOneTransaction(currentRowData));
+                    i++;
+                }
+            }
+        }
+        parentSpreadsheetDocument.closeSessionIfRequired(sessionId, requests);
+        return requests;
+    }
+
+    public List<Request> setStylesInOneTransaction(List<List<GSheetCellStyle>> rangeData) {
+        String sessionId = parentSpreadsheetDocument.generateNewSessionId();
+        parentSpreadsheetDocument.openSessionIfRequired(sessionId);
+        if (rangeData != null && !rangeData.isEmpty()) {
+            int i = 0;
+            for (List<GSheetCellStyle> currentRowData : rangeData) {
+                if (currentRowData != null && !currentRowData.isEmpty()) {
+                    Row row = new Row(this, i);
+                    requests.addAll(row.setStylesInOneTransaction(currentRowData));
                     i++;
                 }
             }
@@ -158,7 +192,41 @@ public class Sheet implements Iterable<Row> {
             for (List<?> currentColumnData : rangeData) {
                 if (currentColumnData != null && !currentColumnData.isEmpty()) {
                     Column column = new Column(this, i);
-                    requests.addAll(column.setValueInOneTransaction(currentColumnData));
+                    requests.addAll(column.setValuesInOneTransaction(currentColumnData));
+                    i++;
+                }
+            }
+        }
+        parentSpreadsheetDocument.closeSessionIfRequired(sessionId, requests);
+        return requests;
+    }
+
+    public List<Request> setFormulasInOneTransactionByColumns(List<List<String>> rangeData) {
+        String sessionId = parentSpreadsheetDocument.generateNewSessionId();
+        parentSpreadsheetDocument.openSessionIfRequired(sessionId);
+        if (rangeData != null && !rangeData.isEmpty()) {
+            int i = 0;
+            for (List<String> currentColumnData : rangeData) {
+                if (currentColumnData != null && !currentColumnData.isEmpty()) {
+                    Column column = new Column(this, i);
+                    requests.addAll(column.setFormulasInOneTransaction(currentColumnData));
+                    i++;
+                }
+            }
+        }
+        parentSpreadsheetDocument.closeSessionIfRequired(sessionId, requests);
+        return requests;
+    }
+
+    public List<Request> setStylesInOneTransactionByColumns(List<List<GSheetCellStyle>> rangeData) {
+        String sessionId = parentSpreadsheetDocument.generateNewSessionId();
+        parentSpreadsheetDocument.openSessionIfRequired(sessionId);
+        if (rangeData != null && !rangeData.isEmpty()) {
+            int i = 0;
+            for (List<GSheetCellStyle> currentColumnData : rangeData) {
+                if (currentColumnData != null && !currentColumnData.isEmpty()) {
+                    Column column = new Column(this, i);
+                    requests.addAll(column.setStylesInOneTransaction(currentColumnData));
                     i++;
                 }
             }

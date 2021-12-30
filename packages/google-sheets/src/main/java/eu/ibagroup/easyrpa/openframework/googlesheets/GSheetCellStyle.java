@@ -158,7 +158,7 @@ public class GSheetCellStyle {
         return this;
     }
 
-    public void applyTo(Cell cell, SpreadsheetDocument document) {
+    public List<Request> applyTo(Cell cell, SpreadsheetDocument document) {
         String sessionId = document.generateNewSessionId();
         document.openSessionIfRequired(sessionId);
         requests.add(new Request()
@@ -174,9 +174,10 @@ public class GSheetCellStyle {
                                 .setUserEnteredFormat(this.cellFormat))
                         .setFields("userEnteredValue")));
         document.closeSessionIfRequired(sessionId, requests);
+        return requests;
     }
 
-    public void applyTo(Cell cell, SpreadsheetDocument document, CellRange cellRange) {
+    public List<Request> applyTo(Cell cell, SpreadsheetDocument document, CellRange cellRange) {
         String sessionId = document.generateNewSessionId();
         document.openSessionIfRequired(sessionId);
         requests.add(new Request()
@@ -192,5 +193,6 @@ public class GSheetCellStyle {
                                 .setUserEnteredFormat(this.cellFormat))
                         .setFields("userEnteredValue")));
         document.closeSessionIfRequired(sessionId, requests);
+        return requests;
     }
 }
