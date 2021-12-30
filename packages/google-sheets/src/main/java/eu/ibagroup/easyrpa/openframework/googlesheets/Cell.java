@@ -79,7 +79,7 @@ public class Cell {
         return (T) getTypedValue();
     }
 
-    public void setValue(Object value) {
+    public List<Request> setValue(Object value) {
         String sessionId = getDocument().generateNewSessionId();
         getDocument().openSessionIfRequired(sessionId);
         CellData googleCell = getGoogleCell();
@@ -121,6 +121,7 @@ public class Cell {
                 )
                 .setCell(googleCell).setFields("userEnteredValue")));
         getDocument().closeSessionIfRequired(sessionId, requests);
+        return requests;
     }
 
     public void setValue(Object value, CellRange cellRange) {

@@ -89,6 +89,21 @@ public class Row implements Iterable<Cell> {
         cell.setValue(value);
     }
 
+    public List<Request> setValueInOneTransaction(List<?> rowDataList) {
+        String sessionId = getDocument().generateNewSessionId();
+        getDocument().openSessionIfRequired(sessionId);
+        if (rowDataList != null && !rowDataList.isEmpty()) {
+            int i = 0;
+            for (Object currentCellValue : rowDataList) {
+                Cell cell = new Cell(parent, rowIndex, this.getFirstCellIndex()+i);
+                requests.addAll(cell.setValue(currentCellValue));
+                i++;
+            }
+        }
+        getDocument().closeSessionIfRequired(sessionId, requests);
+        return requests;
+    }
+
     public void setValue(List<RowData> rowDataList) {
         String sessionId = getDocument().generateNewSessionId();
         getDocument().openSessionIfRequired(sessionId);

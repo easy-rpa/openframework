@@ -1,8 +1,6 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets;
 
-import com.google.api.services.sheets.v4.model.CellData;
-import com.google.api.services.sheets.v4.model.GridData;
-import com.google.api.services.sheets.v4.model.RowData;
+import com.google.api.services.sheets.v4.model.*;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -13,6 +11,8 @@ public class Column implements Iterable<Cell> {
     private Sheet parent;
 
     private int columnIndex;
+
+    private List<Request> requests = new ArrayList<>();
 
     protected Column(Sheet parent, int columnIndex) {
         this.parent = parent;
@@ -76,6 +76,21 @@ public class Column implements Iterable<Cell> {
             cell = createCell(rowIndex);
         }
         cell.setValue(value);
+    }
+
+    public List<Request> setValueInOneTransaction(List<?> columnDataList) {
+        String sessionId = getDocument().generateNewSessionId();
+        getDocument().openSessionIfRequired(sessionId);
+        if (columnDataList != null && !columnDataList.isEmpty()) {
+            int i = 0;
+            for (Object currentCellValue : columnDataList) {
+                Cell cell = new Cell(parent, this.getFirstRowIndex() + i, columnIndex);
+                requests.addAll(cell.setValue(currentCellValue));
+                i++;
+            }
+        }
+        getDocument().closeSessionIfRequired(sessionId, requests);
+        return requests;
     }
 
     public List<Object> getValues() {
@@ -167,7 +182,7 @@ public class Column implements Iterable<Cell> {
             row = new RowData();
             gSheet.getRowData().add(rowIndex, row);
         }
-        row.getValues().add(columnIndex,new CellData());
+        row.getValues().add(columnIndex, new CellData());
         return new Cell(parent, rowIndex, columnIndex);
     }
 
@@ -207,7 +222,7 @@ public class Column implements Iterable<Cell> {
         @Override
         public boolean hasNext() {
             if (index < cellsCount) {
-               RowData nextRow = gSheet.getData().get(0).getRowData().get(index);
+                RowData nextRow = gSheet.getData().get(0).getRowData().get(index);
                 while ((nextRow == null || nextRow.getValues().get(columnIndex) == null) && index + 1 < cellsCount) {
                     nextRow = gSheet.getData().get(0).getRowData().get(++index);
                 }
