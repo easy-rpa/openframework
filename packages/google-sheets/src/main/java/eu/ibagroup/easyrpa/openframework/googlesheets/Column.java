@@ -1,6 +1,8 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets;
 
-import com.google.api.services.sheets.v4.model.*;
+import com.google.api.services.sheets.v4.model.CellData;
+import com.google.api.services.sheets.v4.model.RowData;
+import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSheetElementsCache;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -8,19 +10,26 @@ import java.util.List;
 
 public class Column implements Iterable<Cell> {
 
+    private String id;
+
     private Sheet parent;
+
+    private int sheetIndex;
 
     private int columnIndex;
 
-    private List<Request> requests = new ArrayList<>();
+    private String documentId;
 
     protected Column(Sheet parent, int columnIndex) {
         this.parent = parent;
         this.columnIndex = columnIndex;
+        this.documentId = parent.getDocument().getId();
+        this.sheetIndex = parent.getIndex();
+        this.id = sheetIndex + "|" + columnIndex;
     }
 
     public SpreadsheetDocument getDocument() {
-        return parent.getParentSpreadsheet();
+        return parent.getDocument();
     }
 
     public Sheet getSheet() {
@@ -78,49 +87,40 @@ public class Column implements Iterable<Cell> {
         cell.setValue(value);
     }
 
-    public List<Request> setValuesInOneTransaction(List<?> columnDataList) {
-        String sessionId = getDocument().generateNewSessionId();
-        getDocument().openSessionIfRequired(sessionId);
-        if (columnDataList != null && !columnDataList.isEmpty()) {
-            int i = 0;
-            for (Object currentCellValue : columnDataList) {
-                Cell cell = new Cell(parent, this.getFirstRowIndex() + i, columnIndex);
-                requests.addAll(cell.setValue(currentCellValue));
-                i++;
-            }
-        }
-        getDocument().closeSessionIfRequired(sessionId, requests);
-        return requests;
+    public void setFormula(String cellRef, String formula) {
+        setFormula(new CellRef(cellRef), formula);
     }
 
-    public List<Request> setFormulasInOneTransaction(List<String> columnDataList) {
-        String sessionId = getDocument().generateNewSessionId();
-        getDocument().openSessionIfRequired(sessionId);
-        if (columnDataList != null && !columnDataList.isEmpty()) {
-            int i = 0;
-            for (String currentCellValue : columnDataList) {
-                Cell cell = new Cell(parent, this.getFirstRowIndex() + i, columnIndex);
-                requests.addAll(cell.setFormula(currentCellValue));
-                i++;
-            }
+    public void setFormula(CellRef cellRef, String formula) {
+        if (cellRef != null) {
+            setFormula(cellRef.getRow(), formula);
         }
-        getDocument().closeSessionIfRequired(sessionId, requests);
-        return requests;
     }
 
-    public List<Request> setStylesInOneTransaction(List<GSheetCellStyle> columnDataList) {
-        String sessionId = getDocument().generateNewSessionId();
-        getDocument().openSessionIfRequired(sessionId);
-        if (columnDataList != null && !columnDataList.isEmpty()) {
-            int i = 0;
-            for (GSheetCellStyle currentCellValue : columnDataList) {
-                Cell cell = new Cell(parent, this.getFirstRowIndex() + i, columnIndex);
-                requests.addAll(cell.setStyle(currentCellValue));
-                i++;
-            }
+    public void setFormula(int rowIndex, String formula) {
+        Cell cell = getCell(rowIndex);
+        if (cell == null) {
+            cell = createCell(rowIndex);
         }
-        getDocument().closeSessionIfRequired(sessionId, requests);
-        return requests;
+        cell.setFormula(formula);
+    }
+
+    public void setStyle(String cellRef, GSheetCellStyle style) {
+        setStyle(new CellRef(cellRef), style);
+    }
+
+    public void setStyle(CellRef cellRef, GSheetCellStyle style) {
+        if (cellRef != null) {
+            setStyle(cellRef.getRow(), style);
+        }
+    }
+
+    public void setStyle(int rowIndex, GSheetCellStyle style) {
+        Cell cell = getCell(rowIndex);
+        if (cell == null) {
+            cell = createCell(rowIndex);
+        }
+        cell.setStyle(style);
     }
 
     public List<Object> getValues() {
@@ -133,6 +133,14 @@ public class Column implements Iterable<Cell> {
 
     public void setValues(List<?> values) {
         putRange(0, values);
+    }
+
+    public void setFormulas(List<String> formulas) {
+        putFormulasRange(0, formulas);
+    }
+
+    public void setStyles(List<GSheetCellStyle> styles) {
+        putStylesRange(0, styles);
     }
 
     public List<Object> getRange(String startRef, String endRef) {
@@ -171,17 +179,88 @@ public class Column implements Iterable<Cell> {
         putRange(new CellRef(startRef), data);
     }
 
+    public void putFormulasRange(String startRef, List<String> data) {
+        putFormulasRange(new CellRef(startRef), data);
+    }
+
+    public void putStylesRange(String startRef, List<GSheetCellStyle> data) {
+        putStylesRange(new CellRef(startRef), data);
+    }
+
     public void putRange(CellRef startRef, List<?> data) {
         if (startRef != null) {
             putRange(startRef.getRow(), data);
         }
     }
 
+    public void putFormulasRange(CellRef startRef, List<String> data) {
+        if (startRef != null) {
+            putFormulasRange(startRef.getRow(), data);
+        }
+    }
+
+    public void putStylesRange(CellRef startRef, List<GSheetCellStyle> data) {
+        if (startRef != null) {
+            putStylesRange(startRef.getRow(), data);
+        }
+    }
+
     public void putRange(int startRow, List<?> data) {
         if (data != null) {
-            int row = startRow;
-            for (Object cellValue : data) {
-                setValue(row++, cellValue);
+            boolean isSessionHasBeenOpened = false;
+            try {
+                if (!GConnectionManager.isSessionOpened()) {
+                    GConnectionManager.openSession(getDocument());
+                    isSessionHasBeenOpened = true;
+                }
+                int row = startRow;
+                for (Object cellValue : data) {
+                    setValue(row++, cellValue);
+                }
+            } finally {
+                if (isSessionHasBeenOpened) {
+                    GConnectionManager.closeSession();
+                }
+            }
+        }
+    }
+
+    public void putFormulasRange(int startRow, List<String> data) {
+        if (data != null) {
+            boolean isSessionHasBeenOpened = false;
+            try {
+                if (!GConnectionManager.isSessionOpened()) {
+                    GConnectionManager.openSession(getDocument());
+                    isSessionHasBeenOpened = true;
+                }
+                int row = startRow;
+                for (String cellFormula : data) {
+                    setFormula(row++, cellFormula);
+                }
+            } finally {
+                if (isSessionHasBeenOpened) {
+                    GConnectionManager.closeSession();
+                }
+            }
+        }
+    }
+
+    public void putStylesRange(int startRow, List<GSheetCellStyle> data) {
+        if (data != null) {
+            boolean isSessionHasBeenOpened = false;
+            try {
+                if (!GConnectionManager.isSessionOpened()) {
+                    GConnectionManager.openSession(getDocument());
+                    isSessionHasBeenOpened = true;
+                }
+                int row = startRow;
+                for (GSheetCellStyle cellStyle : data) {
+                    setStyle(row++, cellStyle);
+                }
+            } finally {
+                if (isSessionHasBeenOpened) {
+                    GConnectionManager.closeSession();
+                }
             }
         }
     }
@@ -196,21 +275,22 @@ public class Column implements Iterable<Cell> {
 
     public Cell getCell(int rowIndex) {
         if (rowIndex >= 0) {
-            RowData row = parent.getGSheet().getData().get(0).getRowData().get(rowIndex);
-            if (row != null) {
+            RowData row = GSheetElementsCache.getGRow(documentId, sheetIndex, rowIndex);
+            if (row != null && row.size() > 0 && row.getValues().size() > columnIndex) {
                 CellData cell = row.getValues().get(columnIndex);
                 return cell != null ? new Cell(parent, rowIndex, columnIndex) : null;
+
             }
         }
         return null;
     }
 
     public Cell createCell(int rowIndex) {
-        GridData gSheet = parent.getGSheet().getData().get(0);
-        RowData row = gSheet.getRowData().get(rowIndex);
+        RowData row = GSheetElementsCache.getGRow(documentId, sheetIndex, rowIndex);
+        ;
         if (row == null) {
             row = new RowData();
-            gSheet.getRowData().add(rowIndex, row);
+            GSheetElementsCache.getGSheet(documentId, sheetIndex).getData().get(0).getRowData().add(rowIndex, row);
         }
         row.getValues().add(columnIndex, new CellData());
         return new Cell(parent, rowIndex, columnIndex);

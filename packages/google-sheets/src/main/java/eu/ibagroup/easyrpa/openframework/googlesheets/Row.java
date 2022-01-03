@@ -1,7 +1,8 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets;
 
 
-import com.google.api.services.sheets.v4.model.*;
+import com.google.api.services.sheets.v4.model.CellData;
+import com.google.api.services.sheets.v4.model.RowData;
 import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSheetElementsCache;
 
 import java.util.ArrayList;
@@ -20,18 +21,20 @@ public class Row implements Iterable<Cell> {
 
     private int rowIndex;
 
-    private List<Request> requests = new ArrayList<>();
+    public int getRowIndex() {
+        return rowIndex;
+    }
 
     protected Row(Sheet parent, int rowIndex) {
         this.parent = parent;
-        this.documentId = parent.getParentSpreadsheet().getId();
+        this.documentId = parent.getDocument().getId();
         this.sheetIndex = parent.getIndex();
         this.rowIndex = rowIndex;
         this.id = this.sheetIndex + "|" + this.rowIndex;
     }
 
     public SpreadsheetDocument getDocument() {
-        return parent.getParentSpreadsheet();
+        return parent.getDocument();
     }
 
     public Sheet getSheet() {
@@ -89,67 +92,57 @@ public class Row implements Iterable<Cell> {
         cell.setValue(value);
     }
 
-    public List<Request> setValuesInOneTransaction(List<?> rowDataList) {
-        String sessionId = getDocument().generateNewSessionId();
-        getDocument().openSessionIfRequired(sessionId);
-        if (rowDataList != null && !rowDataList.isEmpty()) {
-            int i = 0;
-            for (Object currentCellValue : rowDataList) {
-                Cell cell = new Cell(parent, rowIndex, this.getFirstCellIndex()+i);
-                requests.addAll(cell.setValue(currentCellValue));
-                i++;
-            }
-        }
-        getDocument().closeSessionIfRequired(sessionId, requests);
-        return requests;
+    public void setFormula(String cellRef, String formula) {
+        setFormula(new CellRef(cellRef), formula);
     }
 
-    public List<Request> setFormulasInOneTransaction(List<String> rowDataList) {
-        String sessionId = getDocument().generateNewSessionId();
-        getDocument().openSessionIfRequired(sessionId);
-        if (rowDataList != null && !rowDataList.isEmpty()) {
-            int i = 0;
-            for (String currentCellValue : rowDataList) {
-                Cell cell = new Cell(parent, rowIndex, this.getFirstCellIndex()+i);
-                requests.addAll(cell.setFormula(currentCellValue));
-                i++;
-            }
+    public void setFormula(CellRef cellRef, String formula) {
+        if (cellRef != null) {
+            setFormula(cellRef.getCol(), formula);
         }
-        getDocument().closeSessionIfRequired(sessionId, requests);
-        return requests;
     }
 
-    public List<Request> setStylesInOneTransaction(List<GSheetCellStyle> rowDataList) {
-        String sessionId = getDocument().generateNewSessionId();
-        getDocument().openSessionIfRequired(sessionId);
-        if (rowDataList != null && !rowDataList.isEmpty()) {
-            int i = 0;
-            for (GSheetCellStyle currentCellValue : rowDataList) {
-                Cell cell = new Cell(parent, rowIndex, this.getFirstCellIndex()+i);
-                requests.addAll(cell.setStyle(currentCellValue));
-                i++;
-            }
+    public void setFormula(int colIndex, String formula) {
+        Cell cell = getCell(colIndex);
+        if (cell == null) {
+            cell = createCell(colIndex);
         }
-        getDocument().closeSessionIfRequired(sessionId, requests);
-        return requests;
+        cell.setFormula(formula);
+    }
+
+    public void setStyle(String cellRef, GSheetCellStyle style) {
+        setStyle(new CellRef(cellRef), style);
+    }
+
+    public void setStyle(CellRef cellRef, GSheetCellStyle style) {
+        if (cellRef != null) {
+            setStyle(cellRef.getCol(), style);
+        }
+    }
+
+    public void setStyle(int colIndex, GSheetCellStyle style) {
+        Cell cell = getCell(colIndex);
+        if (cell == null) {
+            cell = createCell(colIndex);
+        }
+        cell.setStyle(style);
     }
 
     public void setValue(List<RowData> rowDataList) {
-        String sessionId = getDocument().generateNewSessionId();
-        getDocument().openSessionIfRequired(sessionId);
-        if (rowDataList != null && !rowDataList.isEmpty()) {
-            requests.add(new Request().setUpdateCells(new UpdateCellsRequest()
-                    .setRange(new GridRange()
-                            .setSheetId(getDocument().getActiveSheet().getId())
-                            .setStartRowIndex(this.rowIndex)
-                            .setEndRowIndex(this.rowIndex + 1)
-                            .setStartColumnIndex(this.getFirstCellIndex())
-                            .setEndColumnIndex(this.getLastCellIndex())
-                    )
-                    .setRows(rowDataList)
-                    .setFields("userEnteredValue")));
+        boolean isSessionHasBeenOpened = false;
+        try {
+            if (!GConnectionManager.isSessionOpened()) {
+                GConnectionManager.openSession(getDocument());
+                isSessionHasBeenOpened = true;
+            }
+            if (rowDataList != null && !rowDataList.isEmpty()) {
+                GConnectionManager.addRowValue(this, rowDataList);
+            }
+        } finally {
+            if (isSessionHasBeenOpened) {
+                GConnectionManager.closeSession();
+            }
         }
-        getDocument().closeSessionIfRequired(sessionId, requests);
     }
 
     public List<Object> getValues() {
@@ -162,6 +155,14 @@ public class Row implements Iterable<Cell> {
 
     public void setValues(List<?> values) {
         putRange(0, values);
+    }
+
+    public void setFormulasValues(List<String> values) {
+        putFormulasRange(0, values);
+    }
+
+    public void setStylesValues(List<GSheetCellStyle> values) {
+        putStylesRange(0, values);
     }
 
     public List<Object> getRange(String startRef, String endRef) {
@@ -208,9 +209,79 @@ public class Row implements Iterable<Cell> {
 
     public void putRange(int startCol, List<?> data) {
         if (data != null) {
-            int col = startCol;
-            for (Object cellValue : data) {
-                setValue(col++, cellValue);
+            boolean isSessionHasBeenOpened = false;
+            try {
+                if (!GConnectionManager.isSessionOpened()) {
+                    GConnectionManager.openSession(getDocument());
+                    isSessionHasBeenOpened = true;
+                }
+                int col = startCol;
+                for (Object cellValue : data) {
+                    setValue(col++, cellValue);
+                }
+            } finally {
+                if (isSessionHasBeenOpened) {
+                    GConnectionManager.closeSession();
+                }
+            }
+        }
+    }
+
+    public void putFormulasRange(String startRef, List<String> data) {
+        putFormulasRange(new CellRef(startRef), data);
+    }
+
+    public void putFormulasRange(CellRef startRef, List<String> data) {
+        if (startRef != null) {
+            putFormulasRange(startRef.getCol(), data);
+        }
+    }
+
+    public void putFormulasRange(int startCol, List<String> data) {
+        if (data != null) {
+            boolean isSessionHasBeenOpened = false;
+            try {
+                if (!GConnectionManager.isSessionOpened()) {
+                    GConnectionManager.openSession(getDocument());
+                    isSessionHasBeenOpened = true;
+                }
+                int col = startCol;
+                for (String cellValue : data) {
+                    setFormula(col++, cellValue);
+                }
+            } finally {
+                if (isSessionHasBeenOpened) {
+                    GConnectionManager.closeSession();
+                }
+            }
+        }
+    }
+    public void putStylesRange(String startRef, List<GSheetCellStyle> data) {
+        putRange(new CellRef(startRef), data);
+    }
+
+    public void putStylesRange(CellRef startRef, List<GSheetCellStyle> data) {
+        if (startRef != null) {
+            putRange(startRef.getCol(), data);
+        }
+    }
+
+    public void putStylesRange(int startCol, List<GSheetCellStyle> data) {
+        if (data != null) {
+            boolean isSessionHasBeenOpened = false;
+            try {
+                if (!GConnectionManager.isSessionOpened()) {
+                    GConnectionManager.openSession(getDocument());
+                    isSessionHasBeenOpened = true;
+                }
+                int col = startCol;
+                for (GSheetCellStyle cellValue : data) {
+                    setStyle(col++, cellValue);
+                }
+            } finally {
+                if (isSessionHasBeenOpened) {
+                    GConnectionManager.closeSession();
+                }
             }
         }
     }
@@ -233,7 +304,7 @@ public class Row implements Iterable<Cell> {
 
     public Cell createCell(int colIndex) {
         Cell cell = new Cell(parent, rowIndex, colIndex);
-        getGSheetRow().getValues().add(colIndex, cell.getGoogleCell());
+        getGSheetRow().getValues().add(colIndex, cell.getGCell());
         return cell;
     }
 
@@ -244,14 +315,17 @@ public class Row implements Iterable<Cell> {
     }
 
     public int getFirstCellIndex() {
-        //???
+        List<CellData> row = getGSheetRow().getValues();
+        for (int i = 0; i < row.size(); i++) {
+            if (row.get(i).getUserEnteredValue() != null) {
+                return i;
+            }
+        }
         return 0;
-        //return getGSheetRow().getValues().get(0);
     }
 
     public int getLastCellIndex() {
         return getGSheetRow().getValues().size() - 1;
-        //return getGSheetRow().getLastCellNum();
     }
 
     @Override
@@ -260,7 +334,7 @@ public class Row implements Iterable<Cell> {
     }
 
     public RowData getGSheetRow() {
-        return GSheetElementsCache.getGSheetRow(documentId, id, sheetIndex, rowIndex);
+        return GSheetElementsCache.getGRow(documentId, id, sheetIndex, rowIndex);
     }
 
     private class CellIterator implements Iterator<Cell> {
