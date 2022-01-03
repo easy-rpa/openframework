@@ -94,7 +94,6 @@ public class Cell {
                                 new NumberFormat().setType("DATE").setPattern("dd.MM.yyyy")
                         )
                 );
-
             } else if (value instanceof Double) {
                 googleCell.setUserEnteredValue(new ExtendedValue().setNumberValue((Double) value));
                 googleCell.setUserEnteredFormat(
@@ -151,7 +150,6 @@ public class Cell {
                 GConnectionManager.closeSession();
             }
         }
-
     }
 
     public CellData getGCell() {
@@ -228,7 +226,6 @@ public class Cell {
         if (googleCell == null || googleCell.size() == 0) {
             return null;
         }
-
         if (hasFormula()) {
             return googleCell.getEffectiveValue().getNumberValue();
         } else {
