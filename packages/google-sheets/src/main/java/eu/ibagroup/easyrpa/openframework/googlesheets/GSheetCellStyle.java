@@ -40,7 +40,7 @@ public class GSheetCellStyle {
     }
 
     public GSheetCellStyle(Cell cell) {
-        CellFormat cellFormat = cell.getGoogleCell().getUserEnteredFormat();
+        CellFormat cellFormat = cell.getGCell().getUserEnteredFormat();
         this.cellFormat = cellFormat;
         backgroundColor = cellFormat.getBackgroundColor();
         borders = cellFormat.getBorders();
@@ -170,7 +170,7 @@ public class GSheetCellStyle {
                                 .setStartColumnIndex(cell.getColumnIndex())
                                 .setEndColumnIndex(cell.getColumnIndex()+1)
                         )
-                        .setCell(cell.getGoogleCell()
+                        .setCell(cell.getGCell()
                                 .setUserEnteredFormat(this.cellFormat))
                         .setFields("userEnteredValue")));
         document.closeSessionIfRequired(sessionId, requests);
@@ -189,7 +189,7 @@ public class GSheetCellStyle {
                                 .setStartColumnIndex(cellRange.getFirstCol())
                                 .setEndColumnIndex(cellRange.getLastCol())
                         )
-                        .setCell(cell.getGoogleCell()
+                        .setCell(cell.getGCell()
                                 .setUserEnteredFormat(this.cellFormat))
                         .setFields("userEnteredValue")));
         document.closeSessionIfRequired(sessionId, requests);

@@ -24,14 +24,14 @@ public class Row implements Iterable<Cell> {
 
     protected Row(Sheet parent, int rowIndex) {
         this.parent = parent;
-        this.documentId = parent.getParentSpreadsheet().getId();
+        this.documentId = parent.getDocument().getId();
         this.sheetIndex = parent.getIndex();
         this.rowIndex = rowIndex;
         this.id = this.sheetIndex + "|" + this.rowIndex;
     }
 
     public SpreadsheetDocument getDocument() {
-        return parent.getParentSpreadsheet();
+        return parent.getDocument();
     }
 
     public Sheet getSheet() {
@@ -233,7 +233,7 @@ public class Row implements Iterable<Cell> {
 
     public Cell createCell(int colIndex) {
         Cell cell = new Cell(parent, rowIndex, colIndex);
-        getGSheetRow().getValues().add(colIndex, cell.getGoogleCell());
+        getGSheetRow().getValues().add(colIndex, cell.getGCell());
         return cell;
     }
 
@@ -244,14 +244,17 @@ public class Row implements Iterable<Cell> {
     }
 
     public int getFirstCellIndex() {
-        //???
+        List<CellData> row = getGSheetRow().getValues();
+        for(int i=0; i<row.size();i++){
+            if(row.get(i).getUserEnteredValue()!=null){
+                return i;
+            }
+        }
         return 0;
-        //return getGSheetRow().getValues().get(0);
     }
 
     public int getLastCellIndex() {
         return getGSheetRow().getValues().size() - 1;
-        //return getGSheetRow().getLastCellNum();
     }
 
     @Override
@@ -260,7 +263,7 @@ public class Row implements Iterable<Cell> {
     }
 
     public RowData getGSheetRow() {
-        return GSheetElementsCache.getGSheetRow(documentId, id, sheetIndex, rowIndex);
+        return GSheetElementsCache.getGRow(documentId, id, sheetIndex, rowIndex);
     }
 
     private class CellIterator implements Iterator<Cell> {

@@ -1,7 +1,15 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets;
 
 import com.google.api.services.sheets.v4.Sheets;
-import com.google.api.services.sheets.v4.model.*;
+import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest;
+import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetResponse;
+import com.google.api.services.sheets.v4.model.CopySheetToAnotherSpreadsheetRequest;
+import com.google.api.services.sheets.v4.model.DeleteSheetRequest;
+import com.google.api.services.sheets.v4.model.DuplicateSheetRequest;
+import com.google.api.services.sheets.v4.model.Request;
+import com.google.api.services.sheets.v4.model.SheetProperties;
+import com.google.api.services.sheets.v4.model.SpreadsheetProperties;
+import com.google.api.services.sheets.v4.model.UpdateSpreadsheetPropertiesRequest;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.CopySheetException;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SheetNameAlreadyExist;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SheetNotFound;
@@ -96,7 +104,7 @@ public class SpreadsheetDocument {
     }
 
     public Sheet cloneSheet(String sheetName) {
-        com.google.api.services.sheets.v4.model.Sheet sheet = getGoogleSheet(sheetName).clone();
+        com.google.api.services.sheets.v4.model.Sheet sheet = getGSheet(sheetName).clone();
 
         int newSheetIndex = googleSpreadsheet.getSheets().size();
         sheet.getProperties().setIndex(newSheetIndex);
@@ -123,7 +131,7 @@ public class SpreadsheetDocument {
     }
 
     public void removeSheet(String sheetName) {
-        com.google.api.services.sheets.v4.model.Sheet sheet = getGoogleSheet(sheetName);
+        com.google.api.services.sheets.v4.model.Sheet sheet = getGSheet(sheetName);
         googleSpreadsheet.getSheets().remove(sheet);
 
         requests.add(new Request().setDeleteSheet(
@@ -145,7 +153,7 @@ public class SpreadsheetDocument {
         return googleSpreadsheet.getProperties();
     }
 
-    public com.google.api.services.sheets.v4.model.Sheet getGoogleSheet(String sheetName) {
+    public com.google.api.services.sheets.v4.model.Sheet getGSheet(String sheetName) {
         return googleSpreadsheet.getSheets()
                 .stream()
                 .filter(sheet -> sheetName.equals(sheet.getProperties().getTitle()))
@@ -193,7 +201,7 @@ public class SpreadsheetDocument {
         CopySheetToAnotherSpreadsheetRequest requestBody = new CopySheetToAnotherSpreadsheetRequest();
         requestBody.setDestinationSpreadsheetId(googleSpreadsheet.getSpreadsheetId());
         try {
-            service.spreadsheets().sheets().copyTo(sheet.getParentSpreadsheet().getId(), sheet.getId(), requestBody).execute();
+            service.spreadsheets().sheets().copyTo(sheet.getDocument().getId(), sheet.getId(), requestBody).execute();
         } catch (IOException e) {
             throw new CopySheetException(e.getMessage());
         }

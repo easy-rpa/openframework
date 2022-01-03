@@ -26,7 +26,7 @@ public class Cell {
 
     protected Cell(Sheet parent, int rowIndex, int columnIndex) {
         this.parent = parent;
-        this.documentId = parent.getParentSpreadsheet().getId();
+        this.documentId = parent.getDocument().getId();
         this.sheetIndex = parent.getIndex();
         this.rowIndex = rowIndex;
         this.columnIndex = columnIndex;
@@ -34,7 +34,7 @@ public class Cell {
     }
 
     public SpreadsheetDocument getDocument() {
-        return parent.getParentSpreadsheet();
+        return parent.getDocument();
     }
 
     public Sheet getSheet() {
@@ -82,7 +82,7 @@ public class Cell {
     public List<Request> setValue(Object value) {
         String sessionId = getDocument().generateNewSessionId();
         getDocument().openSessionIfRequired(sessionId);
-        CellData googleCell = getGoogleCell();
+        CellData googleCell = getGCell();
         if (value == null) {
             // poiCell.setBlank(); //todo check
 
@@ -127,7 +127,7 @@ public class Cell {
     public void setValue(Object value, CellRange cellRange) {
         String sessionId = getDocument().generateNewSessionId();
         getDocument().openSessionIfRequired(sessionId);
-        CellData googleCell = getGoogleCell();
+        CellData googleCell = getGCell();
         if (value == null) {
             // poiCell.setBlank(); //todo check
 
@@ -169,7 +169,7 @@ public class Cell {
     }
 
     public boolean isEmpty() {
-        CellData googleCell = getGoogleCell();
+        CellData googleCell = getGCell();
         ExtendedValue value = googleCell.getUserEnteredValue();
         if (value.isEmpty())
             return true;
@@ -180,11 +180,11 @@ public class Cell {
     }
 
     public boolean hasFormula() {
-        return getGoogleCell().getUserEnteredValue().getFormulaValue() != null;
+        return getGCell().getUserEnteredValue().getFormulaValue() != null;
     }
 
     public String getFormula() {
-        return getGoogleCell().getUserEnteredValue().getFormulaValue();
+        return getGCell().getUserEnteredValue().getFormulaValue();
     }
 
     public void setFormula(String newCellFormula, CellRange cellRange) {
@@ -199,7 +199,7 @@ public class Cell {
                                 .setStartColumnIndex(cellRange.getFirstCol())
                                 .setEndColumnIndex(cellRange.getLastCol())
                         )
-                        .setCell(getGoogleCell()
+                        .setCell(getGCell()
                                 .setUserEnteredValue(new ExtendedValue().setFormulaValue(newCellFormula)))
                         .setFields("userEnteredValue")));
         getDocument().closeSessionIfRequired(sessionId, requests);
@@ -217,20 +217,20 @@ public class Cell {
                                 .setStartColumnIndex(this.getColumnIndex())
                                 .setEndColumnIndex(this.getColumnIndex()+1)
                         )
-                        .setCell(getGoogleCell()
+                        .setCell(getGCell()
                                 .setUserEnteredValue(new ExtendedValue().setFormulaValue(newCellFormula)))
                         .setFields("userEnteredValue")));
         getDocument().closeSessionIfRequired(sessionId, requests);
         return requests;
     }
 
-    public CellData getGoogleCell() {
+    public CellData getGCell() {
         return parent.getData().getRowData().get(rowIndex).getValues().get(columnIndex);
     }
 
     private Object getTypedValue() {
-        CellData googleCell = getGoogleCell();
-        if (googleCell == null) {
+        CellData googleCell = getGCell();
+        if (googleCell == null || googleCell.size() == 0) {
             return null;
         }
         Object value = null;
@@ -270,32 +270,23 @@ public class Cell {
     }
 
     private String getValueAsString() {
-        CellData googleCell = getGoogleCell();
-        if (googleCell == null) {
+        CellData googleCell = getGCell();
+        if (googleCell == null || googleCell.size() == 0) {
             return "";
         }
         ExtendedValue extendedValue = googleCell.getUserEnteredValue();
+        if(extendedValue == null){
+            return "";
+        }
 
         if (extendedValue.getNumberValue() != null) {
             return extendedValue.getNumberValue().toString();
         } else if (extendedValue.getFormulaValue() != null && !extendedValue.getFormulaValue().isEmpty()) {
-            return extendedValue.getFormulaValue();
+            return googleCell.getFormattedValue();
         } else if (extendedValue.getBoolValue() != null) {
             return extendedValue.getBoolValue().toString();
         } else if (!extendedValue.getStringValue().isEmpty()) {
-            CellFormat format = googleCell.getUserEnteredFormat();
-            if (format != null) {
-                String type = format.getNumberFormat().getType();
-                switch (type) {
-                    case "DATE": {
-                        try {
-                            return new SimpleDateFormat("dd.MM.yyyy").parse(type).toString();
-                        } catch (ParseException e) {
-                            return "NaN";
-                        }
-                    }
-                }
-            }
+           return extendedValue.getStringValue();
         } else if (!extendedValue.getErrorValue().isEmpty()) {
             return extendedValue.getErrorValue().getMessage();
         }
@@ -303,10 +294,16 @@ public class Cell {
     }
 
     private Double getValueAsNumeric() {
-        CellData googleCell = getGoogleCell();
-        if (googleCell == null) {
+        CellData googleCell = getGCell();
+        if (googleCell == null || googleCell.size() == 0) {
             return null;
         }
-        return googleCell.getUserEnteredValue().getNumberValue();
+
+        if(hasFormula()){
+            return googleCell.getEffectiveValue().getNumberValue();
+        }else
+        {
+            return googleCell.getUserEnteredValue().getNumberValue();
+        }
     }
 }
