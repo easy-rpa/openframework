@@ -131,7 +131,7 @@ public class Sheet implements Iterable<Row> {
     }
 
     public List<List<Object>> getValues() {
-        return getRange(getFirstRowIndex(), getFirstColumnIndex(), getLastRowIndex(), getLastColumnIndex());
+        return getRange(getFirstRowIndex(), getFirstColumnIndex(), getLastRowIndex(), getLastColumnIndex(), Object.class);
     }
 
     public void setValues(List<List<?>> values) {
@@ -141,11 +141,11 @@ public class Sheet implements Iterable<Row> {
     public List<List<Object>> getRange(String startRef, String endRef) {
         CellRef sRef = new CellRef(startRef);
         CellRef eRef = new CellRef(endRef);
-        return getRange(sRef.getRow(), sRef.getCol(), eRef.getRow(), eRef.getCol());
+        return getRange(sRef.getRow(), sRef.getCol(), eRef.getRow(), eRef.getCol(), Object.class);
     }
 
-    public List<List<Object>> getRange(int startRow, int startCol, int endRow, int endCol) {
-        List<List<Object>> data = new ArrayList<>();
+    public <T> List<List<T>> getRange(int startRow, int startCol, int endRow, int endCol, Class<T> valueType) {
+        List<List<T>> data = new ArrayList<>();
 
         if (startRow < 0 || startCol < 0 || endRow < 0 || endCol < 0) {
             return data;
@@ -157,9 +157,9 @@ public class Sheet implements Iterable<Row> {
         int c2 = Math.max(startCol, endCol);
 
         for (int row = r1; row <= r2; row++) {
-            List<Object> rowList = new ArrayList<>();
+            List<T> rowList = new ArrayList<>();
             for (int col = c1; col <= c2; col++) {
-                rowList.add(getValue(row, col));
+                rowList.add(getValue(row, col, valueType));
             }
             data.add(rowList);
         }
