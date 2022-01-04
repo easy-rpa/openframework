@@ -11,7 +11,7 @@ import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.examples.googlesheets.sheets_manipulating.entities.Passenger;
 import eu.ibagroup.easyrpa.openframework.googlesheets.GoogleSheets;
 import eu.ibagroup.easyrpa.openframework.googlesheets.Sheet;
-import eu.ibagroup.easyrpa.openframework.googlesheets.Spreadsheet;
+import eu.ibagroup.easyrpa.openframework.googlesheets.SpreadsheetDocument;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
@@ -42,7 +42,7 @@ public class CreateNewGoogleSheetsDocument extends ApTask {
 
         List<List<Object>> tableData = new ArrayList<>();
 
-        List<Object> headerRow = new ArrayList();
+        List<Object> headerRow = new ArrayList<>();
         headerRow.add("Passenger Id");
         headerRow.add("Name");
         headerRow.add("Sex");
@@ -62,10 +62,10 @@ public class CreateNewGoogleSheetsDocument extends ApTask {
             tableData.add(passenger.toObjectList());
         }
 
-        Spreadsheet spreadsheet = service.getSpreadsheet(spreadsheetId);
-        Sheet activeSheet = spreadsheet.getActiveSheet();
+        SpreadsheetDocument spreadsheetDocument = service.getSpreadsheet(spreadsheetId);
+        Sheet activeSheet = spreadsheetDocument.getActiveSheet();
 
-        String docName = spreadsheet.getName();
+        String docName = spreadsheetDocument.getName();
 
         log.info("docName = "+ docName);
 

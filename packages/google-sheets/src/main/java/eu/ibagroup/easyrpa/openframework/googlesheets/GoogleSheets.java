@@ -25,93 +25,100 @@ import javax.inject.Inject;
 import java.io.*;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-
 
 public class GoogleSheets {
 
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
-    // provides read and write access by default
     private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS);
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+    private static final String DEFAULT_ALIAS_VALUE = "google.credentials";
 
-    private NetHttpTransport HTTP_TRANSPORT;
-
-    private String credString;
+    private String secret;
 
     private List<String> scopes;
 
     private Sheets service;
 
+    private String alias;
+
     @Inject
     public GoogleSheets(RPAServicesAccessor rpaServices) {
-        this.credString = rpaServices.getSecret("google.credentials", String.class);
-        connect();
+        this.secret = rpaServices.getSecret(DEFAULT_ALIAS_VALUE, String.class);
     }
 
     public GoogleSheets() {
+    }
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        service = null;
+        this.alias = alias;
+        //this.credString =
+    }
+
+    public GoogleSheets alias(String alias){
+        setAlias(alias);
+        return this;
     }
 
     public List<String> getScopes() {
         return scopes == null ? SCOPES : scopes;
     }
 
-    public GoogleSheets setScopes(List<String> scopes) {
+    public void setScopes(List<String> scopes) {
         service = null;
         this.scopes = scopes;
+    }
+
+    public GoogleSheets scopes(List<String> scopes){
+        setScopes(scopes);
         return this;
     }
 
-    public GoogleSheets setSecret(String secret) {
+    public void setSecret(String secret) {
         service = null;
-        this.credString = secret;
+        this.secret = secret;
+    }
+    public GoogleSheets secret(String secret){
+        setSecret(secret);
         return this;
     }
 
-    public Spreadsheet getSpreadsheet(String spreadsheetId) {
+    public SpreadsheetDocument getSpreadsheet(String spreadsheetId) {
         com.google.api.services.sheets.v4.model.Spreadsheet spreadsheet;
         try {
             Sheets.Spreadsheets.Get s = service.spreadsheets().get(spreadsheetId);
             s.getSpreadsheetId();
             spreadsheet = service.spreadsheets().get(spreadsheetId).setIncludeGridData(true).execute();
         } catch (IOException e) {
-            throw new SpreadsheetNotFound("Spreadsheet with such id not found");
+            throw new SpreadsheetNotFound("Spreadsheet with such id not found", e);
         }
         if (spreadsheet == null) {
             throw new SpreadsheetRequestFailed("Some errors occurred");
         }
         GSheetElementsCache.register(spreadsheet.getSpreadsheetId(),spreadsheet);
-        return new Spreadsheet(spreadsheet, service);
+        return new SpreadsheetDocument(spreadsheet, service);
     }
 
-    public void copySheet(Spreadsheet spreadsheetFrom, Sheet sheet, Spreadsheet spreadsheetTo) {
+    public void copySheet(SpreadsheetDocument spreadsheetDocumentFrom, Sheet sheet, SpreadsheetDocument spreadsheetDocumentTo) {
         CopySheetToAnotherSpreadsheetRequest requestBody = new CopySheetToAnotherSpreadsheetRequest();
-        requestBody.setDestinationSpreadsheetId(spreadsheetTo.getId());
+        requestBody.setDestinationSpreadsheetId(spreadsheetDocumentTo.getId());
         try {
-            service.spreadsheets().sheets().copyTo(spreadsheetFrom.getId(), sheet.getId(), requestBody).execute();
+            service.spreadsheets().sheets().copyTo(spreadsheetDocumentFrom.getId(), sheet.getId(), requestBody).execute();
         } catch (IOException e) {
             throw new CopySheetException(e.getMessage());
-        }
-    }
-
-    private void connect() {
-        if (service == null) {
-            try {
-                HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-                this.service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT)).build();
-            } catch (IOException | GeneralSecurityException e) {
-                throw new GoogleSheetsInstanceCreationException("creation failed");
-            }
         }
     }
 
     private Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         List<String> scopeList = scopes == null ? SCOPES : scopes;
 
-        InputStream in = new ByteArrayInputStream(credString.getBytes());
+        InputStream in = new ByteArrayInputStream(secret.getBytes());
         if (in == null) {
             throw new FileNotFoundException("Credentials not found: ");
         }
@@ -141,35 +148,30 @@ public class GoogleSheets {
 
         Sheets service = this.service;
 //        service.spreadsheets().
-        CellData cellData = service.spreadsheets().get(spreadsheetId).setIncludeGridData(true).execute().getSheets().get(0).getData().get(0).getRowData().get(ref.getRow()).getValues().get(ref.getCol());
-        return cellData;
+
+        return service.spreadsheets().get(spreadsheetId).setIncludeGridData(true).execute().getSheets().get(0).getData().get(0).getRowData().get(ref.getRow()).getValues().get(ref.getCol());
     }
 
     public UpdateValuesResponse updateValues(String spreadsheetId, String range,
                                              String valueInputOption, List<List<Object>> _values)
             throws IOException {
+        connect();
         Sheets service = this.service;
-        List<List<Object>> values = Arrays.asList(
-                Arrays.asList(
-                )
-        );
+        List<List<Object>> values;
         values = _values;
         ValueRange body = new ValueRange()
                 .setValues(values);
 
-        UpdateValuesResponse result =
-                service.spreadsheets().values().update(spreadsheetId, range, body)
-                        .setValueInputOption(valueInputOption)
-                        .execute();
-        return result;
+        return service.spreadsheets().values().update(spreadsheetId, range, body)
+                .setValueInputOption(valueInputOption)
+                .execute();
     }
 
     public BatchUpdateValuesResponse batchUpdateValues(String spreadsheetId, String range,
                                                        String valueInputOption,
                                                        List<List<Object>> values)
             throws IOException {
-
-
+        connect();
         Sheets service = this.service;
 
         fixNullValues(values);
@@ -211,6 +213,7 @@ public class GoogleSheets {
     }
 
     public void setBackground(String spreadsheetId, String range, GSheetColor color) throws IOException {
+        connect();
         CellRange rng = new CellRange(range);
         List<Request> requests = new ArrayList<>();
         requests.add(new Request()
@@ -244,6 +247,7 @@ public class GoogleSheets {
     }
 
     public void setTextColor(String spreadsheetId, String range, GSheetColor color) throws IOException {
+        connect();
         CellRange rng = new CellRange(range);
         List<Request> requests = new ArrayList<>();
         requests.add(new Request()
@@ -276,6 +280,7 @@ public class GoogleSheets {
     }
 
     public void setCellData(String spreadsheetId, String cell1Ref, CellData cellData) throws IOException {
+        connect();
         CellRef ref = new CellRef(cell1Ref);
         List<Request> requests = new ArrayList<>();
         System.out.println(cell1Ref);
@@ -298,4 +303,16 @@ public class GoogleSheets {
                 new BatchUpdateSpreadsheetRequest().setRequests(requests);
         service.spreadsheets().batchUpdate(spreadsheetId ,bodyReq).execute();
     }
+
+    private void connect() {
+        if (service == null) {
+            try {
+                NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+                this.service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT)).build();
+            } catch (IOException | GeneralSecurityException e) {
+                throw new GoogleSheetsInstanceCreationException("Creation failed");
+            }
+        }
+    }
+
 }

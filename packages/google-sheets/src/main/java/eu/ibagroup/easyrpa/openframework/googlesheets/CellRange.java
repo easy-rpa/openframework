@@ -1,8 +1,5 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets;
 
-import org.apache.poi.ss.util.AreaReference;
-import org.apache.poi.ss.util.CellReference;
-
 import java.util.Objects;
 
 public class CellRange {
@@ -11,17 +8,31 @@ public class CellRange {
      * The character (:) that separates the two cell references in a multi-cell area reference
      */
     private static final char CELL_DELIMITER = ':';
+    private static final char SPECIAL_NAME_DELIMITER = '\'';
+    private static final char SHEET_NAME_DELIMITER = '!';
     private CellRef firstCell;
     private CellRef lastCell;
+    private boolean isSingleCell;
+
 
     private String ref;
     private String rowColRef;
 
     public CellRange(String rangeRef) {
-        AreaReference poiRef = new AreaReference(rangeRef, null);
-        this.firstCell = new CellRef(poiRef.getFirstCell().formatAsString());
-        this.lastCell = new CellRef(poiRef.getLastCell().formatAsString());
-        this.ref = poiRef.formatAsString();
+        String[] parts = separateRangeRefs(rangeRef);
+        String part0 = parts[0];
+        if (parts.length == 1) {
+            firstCell = new CellRef(part0);
+            lastCell = firstCell;
+            isSingleCell = true;
+        } else if (parts.length != 2) {
+            throw new IllegalArgumentException("Bad range ref '" + rangeRef + "'");
+        } else {
+            String part1 = parts[1];
+            firstCell = new CellRef(part0);
+            lastCell = new CellRef(part1);
+            isSingleCell = part0.equals(part1);
+        }
     }
 
     public CellRange(int firstRow, int firstCol, int lastRow, int lastCol) {
@@ -145,13 +156,17 @@ public class CellRange {
 
     public String formatAsString() {
         if (ref == null) {
-            CellReference firstRef = new CellReference(firstCell.getSheetName(),
-                    firstCell.getRow(), firstCell.getCol(),
-                    firstCell.isRowAbsolute(), firstCell.isColAbsolute());
-            CellReference lastRef = new CellReference(lastCell.getSheetName(),
-                    lastCell.getRow(), lastCell.getCol(),
-                    lastCell.isRowAbsolute(), lastCell.isColAbsolute());
-            ref = new AreaReference(firstRef, lastRef, null).formatAsString();
+            StringBuilder sb = new StringBuilder(32);
+            sb.append(firstCell.formatAsString());
+            if (!isSingleCell) {
+                sb.append(CELL_DELIMITER);
+                if (lastCell.getSheetName() == null) {
+                    sb.append(lastCell.formatAsString());
+                } else {
+                    lastCell.appendCellReference(sb);
+                }
+            }
+            return sb.toString();
         }
         return ref;
     }
@@ -172,6 +187,58 @@ public class CellRange {
         return sheetName != null && sheetName.length() > 0;
     }
 
+    private String[] separateRangeRefs(String reference) {
+        int len = reference.length();
+        int delimiterPos = -1;
+        boolean insideDelimitedName = false;
+
+        for (int i = 0; i < len; ++i) {
+            switch (reference.charAt(i)) {
+                case SPECIAL_NAME_DELIMITER:
+                    if (!insideDelimitedName) {
+                        insideDelimitedName = true;
+                    } else {
+                        if (i >= len - 1) {
+                            throw new IllegalArgumentException("Range reference '" + reference + "' ends with special name delimiter '" + SPECIAL_NAME_DELIMITER + "'");
+                        }
+
+                        if (reference.charAt(i + 1) == SPECIAL_NAME_DELIMITER) {
+                            ++i;
+                        } else {
+                            insideDelimitedName = false;
+                        }
+                    }
+                    break;
+                case CELL_DELIMITER:
+                    if (!insideDelimitedName) {
+                        if (delimiterPos >= 0) {
+                            throw new IllegalArgumentException("More than one cell delimiter ':' appears in range reference '" + reference + "'");
+                        }
+
+                        delimiterPos = i;
+                    }
+            }
+        }
+
+        if (delimiterPos < 0) {
+            return new String[]{reference};
+        } else {
+            String partA = reference.substring(0, delimiterPos);
+            String partB = reference.substring(delimiterPos + 1);
+            if (partB.indexOf(SHEET_NAME_DELIMITER) >= 0) {
+                throw new RuntimeException("Unexpected ! in second cell reference of '" + reference + "'");
+            } else {
+                int plingPos = partA.lastIndexOf(SHEET_NAME_DELIMITER);
+                if (plingPos < 0) {
+                    return new String[]{partA, partB};
+                } else {
+                    String sheetName = partA.substring(0, plingPos + 1);
+                    return new String[]{partA, sheetName + partB};
+                }
+            }
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -184,5 +251,20 @@ public class CellRange {
     @Override
     public int hashCode() {
         return Objects.hash(firstCell, lastCell);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(64);
+        sb.append(this.getClass().getName()).append(" [");
+
+        try {
+            sb.append(this.formatAsString());
+        } catch (Exception var3) {
+            sb.append(var3);
+        }
+
+        sb.append(']');
+        return sb.toString();
     }
 }

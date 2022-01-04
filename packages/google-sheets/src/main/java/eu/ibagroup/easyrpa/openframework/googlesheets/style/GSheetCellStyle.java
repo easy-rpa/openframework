@@ -3,6 +3,9 @@ package eu.ibagroup.easyrpa.openframework.googlesheets.style;
 import com.google.api.services.sheets.v4.model.*;
 import eu.ibagroup.easyrpa.openframework.googlesheets.Cell;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GSheetCellStyle {
 
     private Color backgroundColor;
@@ -16,8 +19,11 @@ public class GSheetCellStyle {
     private TextRotation textRotation = new TextRotation().setAngle(0).setVertical(false);
     private String verticalAlignment;
     private String wrapStrategy;
+    private List<Request> requests = new ArrayList<>();
+    private CellFormat cellFormat;
 
     public GSheetCellStyle(CellFormat cellFormat) {
+        this.cellFormat = cellFormat;
         backgroundColor = cellFormat.getBackgroundColor();
         borders = cellFormat.getBorders();
         horizontalAlignment = cellFormat.getHorizontalAlignment();
@@ -35,7 +41,8 @@ public class GSheetCellStyle {
     }
 
     public GSheetCellStyle(Cell cell) {
-        CellFormat cellFormat = cell.getGoogleCell().getUserEnteredFormat();
+        CellFormat cellFormat = cell.getGCell().getUserEnteredFormat();
+        this.cellFormat = cellFormat;
         backgroundColor = cellFormat.getBackgroundColor();
         borders = cellFormat.getBorders();
         horizontalAlignment = cellFormat.getHorizontalAlignment();
@@ -150,5 +157,43 @@ public class GSheetCellStyle {
     public GSheetCellStyle setWrapStrategy(String wrapStrategy) {
         this.wrapStrategy = wrapStrategy;
         return this;
+    }
+
+    public List<Request> applyTo(Cell cell, SpreadsheetDocument document) {
+        String sessionId = document.generateNewSessionId();
+        document.openSessionIfRequired(sessionId);
+        requests.add(new Request()
+                .setRepeatCell(new RepeatCellRequest()
+                        .setRange(new GridRange()
+                                .setSheetId(document.getActiveSheet().getId())
+                                .setStartRowIndex(cell.getRowIndex())
+                                .setEndRowIndex(cell.getRowIndex()+1)
+                                .setStartColumnIndex(cell.getColumnIndex())
+                                .setEndColumnIndex(cell.getColumnIndex()+1)
+                        )
+                        .setCell(cell.getGCell()
+                                .setUserEnteredFormat(this.cellFormat))
+                        .setFields("userEnteredValue")));
+        document.closeSessionIfRequired(sessionId, requests);
+        return requests;
+    }
+
+    public List<Request> applyTo(Cell cell, SpreadsheetDocument document, CellRange cellRange) {
+        String sessionId = document.generateNewSessionId();
+        document.openSessionIfRequired(sessionId);
+        requests.add(new Request()
+                .setRepeatCell(new RepeatCellRequest()
+                        .setRange(new GridRange()
+                                .setSheetId(document.getActiveSheet().getId())
+                                .setStartRowIndex(cellRange.getFirstRow())
+                                .setEndRowIndex(cellRange.getLastRow())
+                                .setStartColumnIndex(cellRange.getFirstCol())
+                                .setEndColumnIndex(cellRange.getLastCol())
+                        )
+                        .setCell(cell.getGCell()
+                                .setUserEnteredFormat(this.cellFormat))
+                        .setFields("userEnteredValue")));
+        document.closeSessionIfRequired(sessionId, requests);
+        return requests;
     }
 }

@@ -16,17 +16,20 @@ import java.util.stream.Collectors;
 
 public class Sheet implements Iterable<Row> {
 
-    private Spreadsheet parentSpreadsheet;
+    private SpreadsheetDocument parent;
 
     private int sheetIndex;
 
-    public Sheet(Spreadsheet parent, int sheetIndex) {
+    private List<Request> requests = new ArrayList<>();
+
+
+    public Sheet(SpreadsheetDocument parent, int sheetIndex) {
         this.sheetIndex = sheetIndex;
-        this.parentSpreadsheet = parent;
+        this.parent = parent;
     }
 
-    public Sheet(Spreadsheet parent) {
-        this.parentSpreadsheet = parent;
+    public Sheet(SpreadsheetDocument parent) {
+        this.parent = parent;
     }
 
     public String getName() {
@@ -38,8 +41,8 @@ public class Sheet implements Iterable<Row> {
         return getGSheet().getProperties().getSheetId();
     }
 
-    public Spreadsheet getParentSpreadsheet() {
-        return parentSpreadsheet;
+    public SpreadsheetDocument getDocument() {
+        return parent;
     }
 
     public int getIndex() {
@@ -47,14 +50,14 @@ public class Sheet implements Iterable<Row> {
     }
 
     public void rename(String name) {
-        if(parentSpreadsheet.getSheetNames().stream().anyMatch(name::equalsIgnoreCase)){
+        if (parent.getSheetNames().stream().anyMatch(name::equalsIgnoreCase)) {
             throw new SheetNameAlreadyExist("Name already defined in this scope");
         }
 
         //googleSheet.getProperties().setTitle(name);
         getGSheet().getProperties().setTitle(name);
 
-        parentSpreadsheet.getRequests().add(new Request().setUpdateSheetProperties(
+        parent.getRequests().add(new Request().setUpdateSheetProperties(
                 new UpdateSheetPropertiesRequest()
                         .setProperties(getGSheet().getProperties()) //опять же getGsheet не работает
                         //.setProperties(googleSheet.getProperties())
@@ -129,6 +132,108 @@ public class Sheet implements Iterable<Row> {
             }
             row.setValue(colIndex, value);
         }
+    }
+
+    public List<Request> setValueInOneTransaction(List<List<?>> rangeData) {
+        String sessionId = parent.generateNewSessionId();
+        parent.openSessionIfRequired(sessionId);
+        if (rangeData != null && !rangeData.isEmpty()) {
+            int i = 0;
+            for (List<?> currentRowData : rangeData) {
+                if (currentRowData != null && !currentRowData.isEmpty()) {
+                    Row row = new Row(this, i);
+                    requests.addAll(row.setValuesInOneTransaction(currentRowData));
+                    i++;
+                }
+            }
+        }
+        parent.closeSessionIfRequired(sessionId, requests);
+        return requests;
+    }
+
+    public List<Request> setFormulasInOneTransaction(List<List<String>> rangeData) {
+        String sessionId = parent.generateNewSessionId();
+        parent.openSessionIfRequired(sessionId);
+        if (rangeData != null && !rangeData.isEmpty()) {
+            int i = 0;
+            for (List<String> currentRowData : rangeData) {
+                if (currentRowData != null && !currentRowData.isEmpty()) {
+                    Row row = new Row(this, i);
+                    requests.addAll(row.setFormulasInOneTransaction(currentRowData));
+                    i++;
+                }
+            }
+        }
+        parent.closeSessionIfRequired(sessionId, requests);
+        return requests;
+    }
+
+    public List<Request> setStylesInOneTransaction(List<List<GSheetCellStyle>> rangeData) {
+        String sessionId = parent.generateNewSessionId();
+        parent.openSessionIfRequired(sessionId);
+        if (rangeData != null && !rangeData.isEmpty()) {
+            int i = 0;
+            for (List<GSheetCellStyle> currentRowData : rangeData) {
+                if (currentRowData != null && !currentRowData.isEmpty()) {
+                    Row row = new Row(this, i);
+                    requests.addAll(row.setStylesInOneTransaction(currentRowData));
+                    i++;
+                }
+            }
+        }
+        parent.closeSessionIfRequired(sessionId, requests);
+        return requests;
+    }
+
+    public List<Request> setValueInOneTransactionByColumns(List<List<?>> rangeData) {
+        String sessionId = parent.generateNewSessionId();
+        parent.openSessionIfRequired(sessionId);
+        if (rangeData != null && !rangeData.isEmpty()) {
+            int i = 0;
+            for (List<?> currentColumnData : rangeData) {
+                if (currentColumnData != null && !currentColumnData.isEmpty()) {
+                    Column column = new Column(this, i);
+                    requests.addAll(column.setValuesInOneTransaction(currentColumnData));
+                    i++;
+                }
+            }
+        }
+        parent.closeSessionIfRequired(sessionId, requests);
+        return requests;
+    }
+
+    public List<Request> setFormulasInOneTransactionByColumns(List<List<String>> rangeData) {
+        String sessionId = parent.generateNewSessionId();
+        parent.openSessionIfRequired(sessionId);
+        if (rangeData != null && !rangeData.isEmpty()) {
+            int i = 0;
+            for (List<String> currentColumnData : rangeData) {
+                if (currentColumnData != null && !currentColumnData.isEmpty()) {
+                    Column column = new Column(this, i);
+                    requests.addAll(column.setFormulasInOneTransaction(currentColumnData));
+                    i++;
+                }
+            }
+        }
+        parent.closeSessionIfRequired(sessionId, requests);
+        return requests;
+    }
+
+    public List<Request> setStylesInOneTransactionByColumns(List<List<GSheetCellStyle>> rangeData) {
+        String sessionId = parent.generateNewSessionId();
+        parent.openSessionIfRequired(sessionId);
+        if (rangeData != null && !rangeData.isEmpty()) {
+            int i = 0;
+            for (List<GSheetCellStyle> currentColumnData : rangeData) {
+                if (currentColumnData != null && !currentColumnData.isEmpty()) {
+                    Column column = new Column(this, i);
+                    requests.addAll(column.setStylesInOneTransaction(currentColumnData));
+                    i++;
+                }
+            }
+        }
+        parent.closeSessionIfRequired(sessionId, requests);
+        return requests;
     }
 
     public List<List<Object>> getValues() {
@@ -227,7 +332,7 @@ public class Sheet implements Iterable<Row> {
     public Row getRow(int rowIndex) {
         if (rowIndex >= 0) {
             List<RowData> rowData = getGSheet().getData().get(0).getRowData();
-            if(rowData != null) {
+            if (rowData != null) {
                 RowData row = rowData.get(rowIndex);
                 return row != null ? new Row(this, rowIndex) : null;
             }
@@ -340,7 +445,7 @@ public class Sheet implements Iterable<Row> {
     //is this correct?
     public int getLastRowIndex() {
         GridData data = getGSheet().getData().get(0);
-        return data.getStartRow() + data.getRowData().size() - 1;
+        return getFirstRowIndex() + data.getRowData().size() - 1;
     }
 
     public Column getColumn(String colRef) {
@@ -560,7 +665,7 @@ public class Sheet implements Iterable<Row> {
     }
 
     public com.google.api.services.sheets.v4.model.Sheet getGSheet() {
-        return GSheetElementsCache.getGSheet(parentSpreadsheet.getId(), sheetIndex);
+        return GSheetElementsCache.getGSheet(parent.getId(), sheetIndex);
     }
 
     private void shiftRows(int startRow, int rowsCount) {
