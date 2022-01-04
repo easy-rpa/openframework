@@ -1,6 +1,7 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets;
 
 import com.google.api.services.sheets.v4.model.*;
+import eu.ibagroup.easyrpa.openframework.googlesheets.style.GSheetCellStyle;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

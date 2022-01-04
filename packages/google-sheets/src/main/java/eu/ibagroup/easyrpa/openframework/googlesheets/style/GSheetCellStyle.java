@@ -2,6 +2,8 @@ package eu.ibagroup.easyrpa.openframework.googlesheets.style;
 
 import com.google.api.services.sheets.v4.model.*;
 import eu.ibagroup.easyrpa.openframework.googlesheets.Cell;
+import eu.ibagroup.easyrpa.openframework.googlesheets.CellRange;
+import eu.ibagroup.easyrpa.openframework.googlesheets.SpreadsheetDocument;
 
 import java.util.ArrayList;
 import java.util.List;
