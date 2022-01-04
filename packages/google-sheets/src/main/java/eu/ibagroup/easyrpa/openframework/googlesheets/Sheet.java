@@ -5,6 +5,7 @@ import eu.ibagroup.easyrpa.openframework.googlesheets.constants.InsertMethod;
 import eu.ibagroup.easyrpa.openframework.googlesheets.constants.MatchMethod;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SheetNameAlreadyExist;
 import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSheetElementsCache;
+import org.apache.poi.ss.util.CellRangeAddress;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -188,6 +189,35 @@ public class Sheet implements Iterable<Row> {
                 }
             }
         }
+    }
+
+    /**
+     * Merges cells range of this sheet. The range is defined by given top row, left column, bottom row
+     * and right column indexes.
+     * <p>
+     * <b>NOTICE:</b> If range intersects with an existing merged regions on this sheet all these regions will
+     * be unmerged at first.
+     *
+     * @param startRow 0-based index of top row of the range.
+     * @param startCol 0-based index of left column of the range.
+     * @param endRow   0-based index of bottom row of the range.
+     * @param endCol   0-based index of right column of the range.
+     * @return top-left cell of merged region that represents it.
+     * @throws IllegalArgumentException if range contains fewer than 2 cells
+     */
+
+    // TODO Is it supported in sheets api?
+    public Cell mergeCells(int startRow, int startCol, int endRow, int endCol) {
+        /* unmergeCells(startRow, startCol, endRow, endCol);
+        CellRangeAddress region = new CellRangeAddress(startRow, endRow, startCol, endCol);
+        int regionIndex = getPoiSheet().addMergedRegion(region);
+        if (regionIndex >= 0) {
+            POIElementsCache.addMergedRegion(documentId, sheetIndex, regionIndex, region);
+            Cell topLeftCell = new Cell(this, region.getFirstRow(), region.getFirstColumn());
+            topLeftCell.getStyle().apply();
+            return topLeftCell;
+        }*/
+        return null;
     }
 
     public Row getRow(String rowRef) {
