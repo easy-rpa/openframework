@@ -178,8 +178,8 @@ public class Sheet implements Iterable<Row> {
         if (data != null && data.size() > 0) {
             boolean isSessionHasBeenOpened = false;
             try {
-                if (!GConnectionManager.isSessionOpened()) {
-                    GConnectionManager.openSession(getDocument());
+                if (!GSessionManager.isSessionOpened(getDocument())) {
+                    GSessionManager.openSession(getDocument());
                     isSessionHasBeenOpened = true;
                 }
                 if (!(data.get(0) instanceof List)) {
@@ -198,7 +198,7 @@ public class Sheet implements Iterable<Row> {
                 }
             } finally {
                 if (isSessionHasBeenOpened) {
-                    GConnectionManager.closeSession();
+                    GSessionManager.closeSession(getDocument());
                 }
             }
         }
@@ -213,8 +213,8 @@ public class Sheet implements Iterable<Row> {
         if (data != null && data.size() > 0) {
             boolean isSessionHasBeenOpened = false;
             try {
-                if (!GConnectionManager.isSessionOpened()) {
-                    GConnectionManager.openSession(getDocument());
+                if (!GSessionManager.isSessionOpened(getDocument())) {
+                    GSessionManager.openSession(getDocument());
                     isSessionHasBeenOpened = true;
                 }
                 if (data.get(0) == null) {
@@ -233,7 +233,7 @@ public class Sheet implements Iterable<Row> {
                 }
             } finally {
                 if (isSessionHasBeenOpened) {
-                    GConnectionManager.closeSession();
+                    GSessionManager.closeSession(getDocument());
                 }
             }
         }
@@ -248,8 +248,8 @@ public class Sheet implements Iterable<Row> {
         if (data != null && data.size() > 0) {
             boolean isSessionHasBeenOpened = false;
             try {
-                if (!GConnectionManager.isSessionOpened()) {
-                    GConnectionManager.openSession(getDocument());
+                if (!GSessionManager.isSessionOpened(getDocument())) {
+                    GSessionManager.openSession(getDocument());
                     isSessionHasBeenOpened = true;
                 }
                 if (data.get(0) == null) {
@@ -268,7 +268,7 @@ public class Sheet implements Iterable<Row> {
                 }
             } finally {
                 if (isSessionHasBeenOpened) {
-                    GConnectionManager.closeSession();
+                    GSessionManager.closeSession(getDocument());
                 }
             }
         }

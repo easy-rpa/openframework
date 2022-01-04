@@ -77,8 +77,8 @@ public class Cell {
     public void setValue(Object value) {
         boolean isSessionHasBeenOpened = false;
         try {
-            if (!GConnectionManager.isSessionOpened()) {
-                GConnectionManager.openSession(getDocument());
+            if (!GSessionManager.isSessionOpened(getDocument())) {
+                GSessionManager.openSession(getDocument());
                 isSessionHasBeenOpened = true;
             }
 
@@ -94,6 +94,7 @@ public class Cell {
                                 new NumberFormat().setType("DATE").setPattern("dd.MM.yyyy")
                         )
                 );
+
             } else if (value instanceof Double) {
                 googleCell.setUserEnteredValue(new ExtendedValue().setNumberValue((Double) value));
                 googleCell.setUserEnteredFormat(
@@ -110,10 +111,10 @@ public class Cell {
             } else {
                 googleCell.setUserEnteredValue(new ExtendedValue().setStringValue(value.toString()));
             }
-            GConnectionManager.addCellValue(this, googleCell);
+            GSessionManager.getSession(getDocument()).addCellValueRequest(this, googleCell, getDocument());
         } finally {
             if (isSessionHasBeenOpened) {
-                GConnectionManager.closeSession();
+                GSessionManager.closeSession(getDocument());
             }
         }
     }
@@ -140,16 +141,17 @@ public class Cell {
     public void setFormula(String newCellFormula) {
         boolean isSessionHasBeenOpened = false;
         try {
-            if (!GConnectionManager.isSessionOpened()) {
-                GConnectionManager.openSession(getDocument());
+            if (!GSessionManager.isSessionOpened(getDocument())) {
+                GSessionManager.openSession(getDocument());
                 isSessionHasBeenOpened = true;
             }
-            GConnectionManager.addCellFormula(this, getGCell(), newCellFormula);
+            GSessionManager.getSession(getDocument()).addCellFormulaRequest(this, getGCell(), newCellFormula, getDocument());
         } finally {
             if (isSessionHasBeenOpened) {
-                GConnectionManager.closeSession();
+                GSessionManager.closeSession(getDocument());
             }
         }
+
     }
 
     public CellData getGCell() {
@@ -226,6 +228,7 @@ public class Cell {
         if (googleCell == null || googleCell.size() == 0) {
             return null;
         }
+
         if (hasFormula()) {
             return googleCell.getEffectiveValue().getNumberValue();
         } else {

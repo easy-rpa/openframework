@@ -15,32 +15,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GConnectionManager {
-    private static List<Request> requests = new ArrayList<>();
-    private static boolean isSessionOpened;
-    private static SpreadsheetDocument document;
+public class GSession {
+    private List<Request> requests = new ArrayList<>();
 
-    public static void setDocument(SpreadsheetDocument document) {
-        GConnectionManager.document = document;
-    }
-
-    public static boolean isSessionOpened() {
-        return isSessionOpened;
-    }
-
-    public static void openSession(SpreadsheetDocument document) {
-        if (!isSessionOpened) {
-            setDocument(document);
-            isSessionOpened = true;
-        }
-    }
-
-    public static  void closeSession() {
-        commit();
-        isSessionOpened = false;
-    }
-
-    public static void addCellValue(Cell cell, CellData googleCell) {
+    public void addCellValueRequest(Cell cell, CellData googleCell, SpreadsheetDocument document) {
         requests.add(new Request().setRepeatCell(new RepeatCellRequest()
                 .setRange(new GridRange()
                         .setSheetId(document.getActiveSheet().getId())
@@ -52,7 +30,7 @@ public class GConnectionManager {
                 .setCell(googleCell).setFields("userEnteredValue")));
     }
 
-    public static void addCellFormula(Cell cell, CellData googleCell, String newCellFormula) {
+    public void addCellFormulaRequest(Cell cell, CellData googleCell, String newCellFormula, SpreadsheetDocument document) {
         requests.add(new Request()
                 .setRepeatCell(new RepeatCellRequest()
                         .setRange(new GridRange()
@@ -67,22 +45,22 @@ public class GConnectionManager {
                         .setFields("userEnteredValue")));
     }
 
-    public static void addCellStyle(Cell cell, GSheetCellStyle gSheetCellStyle) {
+    public void addCellStyle(Cell cell, GSheetCellStyle gSheetCellStyle, SpreadsheetDocument document) {
         requests.add(new Request()
                 .setRepeatCell(new RepeatCellRequest()
                         .setRange(new GridRange()
                                 .setSheetId(document.getActiveSheet().getId())
                                 .setStartRowIndex(cell.getRowIndex())
-                                .setEndRowIndex(cell.getRowIndex()+1)
+                                .setEndRowIndex(cell.getRowIndex() + 1)
                                 .setStartColumnIndex(cell.getColumnIndex())
-                                .setEndColumnIndex(cell.getColumnIndex()+1)
+                                .setEndColumnIndex(cell.getColumnIndex() + 1)
                         )
                         .setCell(cell.getGCell()
                                 .setUserEnteredFormat(gSheetCellStyle.getCellFormat()))
                         .setFields("userEnteredValue")));
     }
 
-    public static void addRowValue(Row row, List<RowData> rowDataList) {
+    public void addRowValue(Row row, List<RowData> rowDataList, SpreadsheetDocument document) {
         requests.add(new Request().setUpdateCells(new UpdateCellsRequest()
                 .setRange(new GridRange()
                         .setSheetId(document.getActiveSheet().getId())
@@ -95,7 +73,7 @@ public class GConnectionManager {
                 .setFields("userEnteredValue")));
     }
 
-    private static void commit() {
+    public void commit(SpreadsheetDocument document) {
         if (requests.size() > 0) {
             BatchUpdateSpreadsheetRequest body =
                     new BatchUpdateSpreadsheetRequest().setRequests(requests);

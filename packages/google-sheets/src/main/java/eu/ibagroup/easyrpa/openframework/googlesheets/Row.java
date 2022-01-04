@@ -131,16 +131,16 @@ public class Row implements Iterable<Cell> {
     public void setValue(List<RowData> rowDataList) {
         boolean isSessionHasBeenOpened = false;
         try {
-            if (!GConnectionManager.isSessionOpened()) {
-                GConnectionManager.openSession(getDocument());
+            if (!GSessionManager.isSessionOpened(getDocument())) {
+                GSessionManager.openSession(getDocument());
                 isSessionHasBeenOpened = true;
             }
             if (rowDataList != null && !rowDataList.isEmpty()) {
-                GConnectionManager.addRowValue(this, rowDataList);
+                GSessionManager.getSession(getDocument()).addRowValue(this, rowDataList, getDocument());
             }
         } finally {
             if (isSessionHasBeenOpened) {
-                GConnectionManager.closeSession();
+                GSessionManager.closeSession(getDocument());
             }
         }
     }
@@ -211,8 +211,8 @@ public class Row implements Iterable<Cell> {
         if (data != null) {
             boolean isSessionHasBeenOpened = false;
             try {
-                if (!GConnectionManager.isSessionOpened()) {
-                    GConnectionManager.openSession(getDocument());
+                if (!GSessionManager.isSessionOpened(getDocument())) {
+                    GSessionManager.openSession(getDocument());
                     isSessionHasBeenOpened = true;
                 }
                 int col = startCol;
@@ -221,7 +221,7 @@ public class Row implements Iterable<Cell> {
                 }
             } finally {
                 if (isSessionHasBeenOpened) {
-                    GConnectionManager.closeSession();
+                    GSessionManager.closeSession(getDocument());
                 }
             }
         }
@@ -241,8 +241,8 @@ public class Row implements Iterable<Cell> {
         if (data != null) {
             boolean isSessionHasBeenOpened = false;
             try {
-                if (!GConnectionManager.isSessionOpened()) {
-                    GConnectionManager.openSession(getDocument());
+                if (!GSessionManager.isSessionOpened(getDocument())) {
+                    GSessionManager.openSession(getDocument());
                     isSessionHasBeenOpened = true;
                 }
                 int col = startCol;
@@ -251,7 +251,7 @@ public class Row implements Iterable<Cell> {
                 }
             } finally {
                 if (isSessionHasBeenOpened) {
-                    GConnectionManager.closeSession();
+                    GSessionManager.closeSession(getDocument());
                 }
             }
         }
@@ -270,8 +270,8 @@ public class Row implements Iterable<Cell> {
         if (data != null) {
             boolean isSessionHasBeenOpened = false;
             try {
-                if (!GConnectionManager.isSessionOpened()) {
-                    GConnectionManager.openSession(getDocument());
+                if (!GSessionManager.isSessionOpened(getDocument())) {
+                    GSessionManager.openSession(getDocument());
                     isSessionHasBeenOpened = true;
                 }
                 int col = startCol;
@@ -280,7 +280,7 @@ public class Row implements Iterable<Cell> {
                 }
             } finally {
                 if (isSessionHasBeenOpened) {
-                    GConnectionManager.closeSession();
+                    GSessionManager.closeSession(getDocument());
                 }
             }
         }

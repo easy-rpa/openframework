@@ -167,14 +167,14 @@ public class GSheetCellStyle {
     public void applyTo(Cell cell, SpreadsheetDocument document) {
         boolean isSessionHasBeenOpened = false;
         try {
-            if (!GConnectionManager.isSessionOpened()) {
-                GConnectionManager.openSession(document);
+            if (!GSessionManager.isSessionOpened(document)) {
+                GSessionManager.openSession(document);
                 isSessionHasBeenOpened = true;
             }
-            GConnectionManager.addCellStyle(cell, this);
+            GSessionManager.getSession(document).addCellStyle(cell, this, document);
         } finally {
             if (isSessionHasBeenOpened) {
-                GConnectionManager.closeSession();
+                GSessionManager.closeSession(document);
             }
         }
     }
