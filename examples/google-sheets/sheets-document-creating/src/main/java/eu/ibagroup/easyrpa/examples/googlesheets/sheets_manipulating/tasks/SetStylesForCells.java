@@ -6,7 +6,7 @@ import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.googlesheets.Cell;
 import eu.ibagroup.easyrpa.openframework.googlesheets.GoogleSheets;
 import eu.ibagroup.easyrpa.openframework.googlesheets.Sheet;
-import eu.ibagroup.easyrpa.openframework.googlesheets.Spreadsheet;
+import eu.ibagroup.easyrpa.openframework.googlesheets.SpreadsheetDocument;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
@@ -31,8 +31,8 @@ public class SetStylesForCells extends ApTask {
 
         log.info("Set cell styles for spreadsheet document located at '{}'", spreadsheetId);
 
-        Spreadsheet spreadsheet = service.getSpreadsheet(spreadsheetId);
-        Sheet activeSheet = spreadsheet.getActiveSheet();
+        SpreadsheetDocument spreadsheetDocument = service.getSpreadsheet(spreadsheetId);
+        Sheet activeSheet = spreadsheetDocument.getActiveSheet();
 
         log.info("Change style for cell '{}' of  sheet '{}'", cell1Ref, activeSheet.getName());
 

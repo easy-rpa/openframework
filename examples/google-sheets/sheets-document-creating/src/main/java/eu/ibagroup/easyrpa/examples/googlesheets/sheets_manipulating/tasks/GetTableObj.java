@@ -6,7 +6,7 @@ import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.examples.googlesheets.sheets_manipulating.entities.Passenger;
 import eu.ibagroup.easyrpa.openframework.googlesheets.GoogleSheets;
 import eu.ibagroup.easyrpa.openframework.googlesheets.Sheet;
-import eu.ibagroup.easyrpa.openframework.googlesheets.Spreadsheet;
+import eu.ibagroup.easyrpa.openframework.googlesheets.SpreadsheetDocument;
 import eu.ibagroup.easyrpa.openframework.googlesheets.Table;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,8 +24,8 @@ public class GetTableObj extends ApTask {
 
     @Override
     public void execute() throws Exception {
-        Spreadsheet spreadsheet = service.getSpreadsheet(spreadsheetId);
-        Sheet activeSheet = spreadsheet.getActiveSheet();
+        SpreadsheetDocument spreadsheetDocument = service.getSpreadsheet(spreadsheetId);
+        Sheet activeSheet = spreadsheetDocument.getActiveSheet();
 
         Table table = new Table(activeSheet, 14, 0, 14, 11, 905, Passenger.class);
 //        List data = table.getdata();

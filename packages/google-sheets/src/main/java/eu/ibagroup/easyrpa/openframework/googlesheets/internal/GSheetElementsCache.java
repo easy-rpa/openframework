@@ -57,7 +57,7 @@ public class GSheetElementsCache {
         return googleSheet;
     }
 
-    public static RowData getGSheetRow(String gSheetDocumentId, String rowId, int sheetIndex, int rowIndex) {
+    public static RowData getGRow(String gSheetDocumentId, String rowId, int sheetIndex, int rowIndex) {
         GSheetElementsCache cache = getInstance();
         Map<String, RowData> rowsCache = cache.rowsCache.get(gSheetDocumentId);
         RowData gSheetRow = rowsCache.get(rowId);
@@ -73,7 +73,12 @@ public class GSheetElementsCache {
         return gSheetRow;
     }
 
-    public static CellData getGSheetCell(String gSheetDocumentId, String cellId, int sheetIndex, int rowIndex, int columnIndex) {
+    public static RowData getGRow(String gSheetDocumentId, int sheetIndex, int rowIndex) {
+        String rowId = sheetIndex + "|" + rowIndex;
+        return getGRow(gSheetDocumentId, rowId, sheetIndex, rowIndex);
+    }
+
+    public static CellData getGCell(String gSheetDocumentId, String cellId, int sheetIndex, int rowIndex, int columnIndex) {
         GSheetElementsCache cache = getInstance();
         Map<String, CellData> cellsCache = cache.cellsCache.get(gSheetDocumentId);
         CellData gSheetCell = cellsCache.get(cellId);

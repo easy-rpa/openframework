@@ -4,7 +4,7 @@ import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.googlesheets.GoogleSheets;
-import eu.ibagroup.easyrpa.openframework.googlesheets.Spreadsheet;
+import eu.ibagroup.easyrpa.openframework.googlesheets.SpreadsheetDocument;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
@@ -23,12 +23,12 @@ public class DeleteSheet extends ApTask {
     @Override
     public void execute() {
         log.info("Delete the last sheet from spreadsheet document with id: {}", spreadsheetId);
-        Spreadsheet spreadsheet = service.getSpreadsheet(spreadsheetId);
-        List<String> sheetNames = spreadsheet.getSheetNames();
+        SpreadsheetDocument spreadsheetDocument = service.getSpreadsheet(spreadsheetId);
+        List<String> sheetNames = spreadsheetDocument.getSheetNames();
         String lastSheetName = sheetNames.get(sheetNames.size() - 1);
 
         log.info("Delete sheet with name '{}'.", lastSheetName);
-        spreadsheet.removeSheet(lastSheetName);
+        spreadsheetDocument.removeSheet(lastSheetName);
 
         log.info("Sheet '{}' has been deleted successfully.", lastSheetName);
     }

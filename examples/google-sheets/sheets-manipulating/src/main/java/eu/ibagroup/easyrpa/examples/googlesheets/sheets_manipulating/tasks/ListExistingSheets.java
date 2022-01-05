@@ -4,7 +4,7 @@ import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.googlesheets.GoogleSheets;
-import eu.ibagroup.easyrpa.openframework.googlesheets.Spreadsheet;
+import eu.ibagroup.easyrpa.openframework.googlesheets.SpreadsheetDocument;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
@@ -24,9 +24,9 @@ public class ListExistingSheets extends ApTask {
     public void execute() {
 
         log.info("List all sheets from spreadsheet document with id: {}", spreadsheetId);
-        Spreadsheet spreadsheet = service.getSpreadsheet(spreadsheetId);
+        SpreadsheetDocument spreadsheetDocument = service.getSpreadsheet(spreadsheetId);
 
-        List<String> sheetNames = spreadsheet.getSheetNames();
+        List<String> sheetNames = spreadsheetDocument.getSheetNames();
         log.info("Spreadsheet document has following sheets: {}", sheetNames);
     }
 }
