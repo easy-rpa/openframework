@@ -3,19 +3,18 @@ package eu.ibagroup.easyrpa.openframework.database.function;
 import eu.ibagroup.easyrpa.openframework.database.DatabaseConnection;
 
 /**
- * TODO
- * <p>
- * Represents an operation that accepts a single input argument and returns no
- * result. Unlike most other functional interfaces, {@code Consumer} is expected
- * to operate via side-effects.
+ * Represents actions that need to be performed using database connection without returning of any result.
  */
 @FunctionalInterface
 public interface DatabaseConsumer {
 
     /**
-     * Performs this operation on the given argument.
+     * Performs actions on the given database connection.
      *
-     * @param c the input argument
+     * @param c object that represents database connection and provides functionality to perform different queries
+     *          and actions.
+     * @throws Exception in case of some errors.
+     * @see DatabaseConnection
      */
     void accept(DatabaseConnection c) throws Exception;
 }
