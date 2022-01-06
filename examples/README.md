@@ -134,7 +134,7 @@
 ## Google Sheets
 
  - Downloading a spreadsheet as an XLSX or PDF file (sheets/spreadsheet-downloading)
- - Sheet manipulations (sheets/sheet-manipulation)
+ - [Sheet manipulations](google-sheets/sheets-manipulating)
     * Create sheet
     * Delete sheet
     * Rename sheet
@@ -163,16 +163,27 @@
  
 ## Database
   
-  **Implemented actions:**
-  - [Connect to DB](database/mysql-query)
-  - [Disconnect from DB](database/mysql-query)
-  - [Execute an arbitrary SQL query](database/mysql-query)
-  - Call stored procedure
-  - Transactions support (Create / Commit / Rollback)
+ - [Database tables manipulating](database/tables-manipulating)
+    * Create table to store specific entities
+    * Drop entity table 
+     
+ - [Working with database table records](database/working-with-table-records)
+    * Read table records
+    * Add new table records
+    * Update table records
+    * Delete table records 
     
- **Supported databases:**
-  - MySQL
-  - PostgreSQL
-  - Oracle
-  - DB2
-  - MS SQL Server
+ - [Working with raw SQL queries](database/working-with-raw-sql)
+    * Execute SQL query
+    * Execute update statement
+    * Execute insert statement
+    * Execute delete statement 
+    
+ - [Working with transaction](database/working-with-transaction)
+ 
+ - [Working with different database types](database/working-with-different-db)
+     * Work with MySQL
+     * Work with PostgreSQL
+     * Work with MS SQL
+     * Work with Oracle
+     * Work with DB2
