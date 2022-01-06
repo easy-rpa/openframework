@@ -10,6 +10,7 @@ import com.google.api.services.sheets.v4.model.Request;
 import com.google.api.services.sheets.v4.model.RowData;
 import com.google.api.services.sheets.v4.model.UpdateCellsRequest;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.UpdateException;
+import eu.ibagroup.easyrpa.openframework.googlesheets.style.GSheetCellStyle;
 
 import java.io.IOException;
 import java.util.ArrayList;

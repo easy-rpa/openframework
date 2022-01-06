@@ -1,4 +1,4 @@
-package eu.ibagroup.easyrpa.openframework.googlesheets;
+package eu.ibagroup.easyrpa.openframework.googlesheets.style;
 
 import com.google.api.services.sheets.v4.model.Borders;
 import com.google.api.services.sheets.v4.model.CellFormat;
@@ -7,6 +7,9 @@ import com.google.api.services.sheets.v4.model.NumberFormat;
 import com.google.api.services.sheets.v4.model.Padding;
 import com.google.api.services.sheets.v4.model.TextFormat;
 import com.google.api.services.sheets.v4.model.TextRotation;
+import eu.ibagroup.easyrpa.openframework.googlesheets.Cell;
+import eu.ibagroup.easyrpa.openframework.googlesheets.GSessionManager;
+import eu.ibagroup.easyrpa.openframework.googlesheets.SpreadsheetDocument;
 
 public class GSheetCellStyle {
 

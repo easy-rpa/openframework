@@ -4,6 +4,7 @@ import com.google.api.services.sheets.v4.model.CellData;
 import com.google.api.services.sheets.v4.model.CellFormat;
 import com.google.api.services.sheets.v4.model.ExtendedValue;
 import com.google.api.services.sheets.v4.model.NumberFormat;
+import eu.ibagroup.easyrpa.openframework.googlesheets.style.GSheetCellStyle;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

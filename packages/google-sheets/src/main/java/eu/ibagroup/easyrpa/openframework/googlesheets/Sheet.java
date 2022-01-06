@@ -5,6 +5,8 @@ import eu.ibagroup.easyrpa.openframework.googlesheets.constants.InsertMethod;
 import eu.ibagroup.easyrpa.openframework.googlesheets.constants.MatchMethod;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SheetNameAlreadyExist;
 import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSheetElementsCache;
+import eu.ibagroup.easyrpa.openframework.googlesheets.style.GSheetCellStyle;
+import org.apache.poi.ss.util.CellRangeAddress;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -134,7 +136,7 @@ public class Sheet implements Iterable<Row> {
     }
 
     public List<List<Object>> getValues() {
-        return getRange(getFirstRowIndex(), getFirstColumnIndex(), getLastRowIndex(), getLastColumnIndex());
+        return getRange(getFirstRowIndex(), getFirstColumnIndex(), getLastRowIndex(), getLastColumnIndex(), Object.class);
     }
 
     public void setValues(List<List<?>> values) {
@@ -144,11 +146,11 @@ public class Sheet implements Iterable<Row> {
     public List<List<Object>> getRange(String startRef, String endRef) {
         CellRef sRef = new CellRef(startRef);
         CellRef eRef = new CellRef(endRef);
-        return getRange(sRef.getRow(), sRef.getCol(), eRef.getRow(), eRef.getCol());
+        return getRange(sRef.getRow(), sRef.getCol(), eRef.getRow(), eRef.getCol(), Object.class);
     }
 
-    public List<List<Object>> getRange(int startRow, int startCol, int endRow, int endCol) {
-        List<List<Object>> data = new ArrayList<>();
+    public <T> List<List<T>> getRange(int startRow, int startCol, int endRow, int endCol, Class<T> valueType) {
+        List<List<T>> data = new ArrayList<>();
 
         if (startRow < 0 || startCol < 0 || endRow < 0 || endCol < 0) {
             return data;
@@ -160,9 +162,9 @@ public class Sheet implements Iterable<Row> {
         int c2 = Math.max(startCol, endCol);
 
         for (int row = r1; row <= r2; row++) {
-            List<Object> rowList = new ArrayList<>();
+            List<T> rowList = new ArrayList<>();
             for (int col = c1; col <= c2; col++) {
-                rowList.add(getValue(row, col));
+                rowList.add(getValue(row, col, valueType));
             }
             data.add(rowList);
         }
@@ -204,74 +206,33 @@ public class Sheet implements Iterable<Row> {
         }
     }
 
-    public void putFormulasRange(String startRef, List<List<String>> data) {
-        CellRef sRef = new CellRef(startRef);
-        putFormulasRange(sRef.getRow(), sRef.getCol(), data);
-    }
+    /**
+     * Merges cells range of this sheet. The range is defined by given top row, left column, bottom row
+     * and right column indexes.
+     * <p>
+     * <b>NOTICE:</b> If range intersects with an existing merged regions on this sheet all these regions will
+     * be unmerged at first.
+     *
+     * @param startRow 0-based index of top row of the range.
+     * @param startCol 0-based index of left column of the range.
+     * @param endRow   0-based index of bottom row of the range.
+     * @param endCol   0-based index of right column of the range.
+     * @return top-left cell of merged region that represents it.
+     * @throws IllegalArgumentException if range contains fewer than 2 cells
+     */
 
-    public void putFormulasRange(int startRow, int startCol, List<List<String>> data) {
-        if (data != null && data.size() > 0) {
-            boolean isSessionHasBeenOpened = false;
-            try {
-                if (!GSessionManager.isSessionOpened(getDocument())) {
-                    GSessionManager.openSession(getDocument());
-                    isSessionHasBeenOpened = true;
-                }
-                if (data.get(0) == null) {
-                    data = Collections.singletonList(new ArrayList<>());
-                }
-                int rowIndex = startRow;
-                for (List<String> rowList : data) {
-                    if (rowList != null) {
-                        Row row = getRow(rowIndex);
-                        if (row == null) {
-                            row = createRow(rowIndex);
-                        }
-                        row.putFormulasRange(startCol, rowList);
-                        rowIndex++;
-                    }
-                }
-            } finally {
-                if (isSessionHasBeenOpened) {
-                    GSessionManager.closeSession(getDocument());
-                }
-            }
-        }
-    }
-
-    public void putStylesRange(String startRef, List<List<GSheetCellStyle>> data) {
-        CellRef sRef = new CellRef(startRef);
-        putStylesRange(sRef.getRow(), sRef.getCol(), data);
-    }
-
-    public void putStylesRange(int startRow, int startCol, List<List<GSheetCellStyle>> data) {
-        if (data != null && data.size() > 0) {
-            boolean isSessionHasBeenOpened = false;
-            try {
-                if (!GSessionManager.isSessionOpened(getDocument())) {
-                    GSessionManager.openSession(getDocument());
-                    isSessionHasBeenOpened = true;
-                }
-                if (data.get(0) == null) {
-                    data = Collections.singletonList(new ArrayList<>());
-                }
-                int rowIndex = startRow;
-                for (List<GSheetCellStyle> rowList : data) {
-                    if (rowList != null) {
-                        Row row = getRow(rowIndex);
-                        if (row == null) {
-                            row = createRow(rowIndex);
-                        }
-                        row.putStylesRange(startCol, rowList);
-                        rowIndex++;
-                    }
-                }
-            } finally {
-                if (isSessionHasBeenOpened) {
-                    GSessionManager.closeSession(getDocument());
-                }
-            }
-        }
+    // TODO Is it supported in sheets api?
+    public Cell mergeCells(int startRow, int startCol, int endRow, int endCol) {
+        /* unmergeCells(startRow, startCol, endRow, endCol);
+        CellRangeAddress region = new CellRangeAddress(startRow, endRow, startCol, endCol);
+        int regionIndex = getPoiSheet().addMergedRegion(region);
+        if (regionIndex >= 0) {
+            POIElementsCache.addMergedRegion(documentId, sheetIndex, regionIndex, region);
+            Cell topLeftCell = new Cell(this, region.getFirstRow(), region.getFirstColumn());
+            topLeftCell.getStyle().apply();
+            return topLeftCell;
+        }*/
+        return null;
     }
 
     public Row getRow(String rowRef) {

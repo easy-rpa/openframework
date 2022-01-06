@@ -70,12 +70,8 @@ public class Column implements Iterable<Cell> {
     }
 
     public void setValue(String cellRef, Object value) {
-        setValue(new CellRef(cellRef), value);
-    }
-
-    public void setValue(CellRef cellRef, Object value) {
         if (cellRef != null) {
-            setValue(cellRef.getRow(), value);
+            setValue(new CellRef(cellRef).getRow(), value);
         }
     }
 
@@ -87,41 +83,6 @@ public class Column implements Iterable<Cell> {
         cell.setValue(value);
     }
 
-    public void setFormula(String cellRef, String formula) {
-        setFormula(new CellRef(cellRef), formula);
-    }
-
-    public void setFormula(CellRef cellRef, String formula) {
-        if (cellRef != null) {
-            setFormula(cellRef.getRow(), formula);
-        }
-    }
-
-    public void setFormula(int rowIndex, String formula) {
-        Cell cell = getCell(rowIndex);
-        if (cell == null) {
-            cell = createCell(rowIndex);
-        }
-        cell.setFormula(formula);
-    }
-
-    public void setStyle(String cellRef, GSheetCellStyle style) {
-        setStyle(new CellRef(cellRef), style);
-    }
-
-    public void setStyle(CellRef cellRef, GSheetCellStyle style) {
-        if (cellRef != null) {
-            setStyle(cellRef.getRow(), style);
-        }
-    }
-
-    public void setStyle(int rowIndex, GSheetCellStyle style) {
-        Cell cell = getCell(rowIndex);
-        if (cell == null) {
-            cell = createCell(rowIndex);
-        }
-        cell.setStyle(style);
-    }
 
     public List<Object> getValues() {
         return getValues(Object.class);
@@ -133,14 +94,6 @@ public class Column implements Iterable<Cell> {
 
     public void setValues(List<?> values) {
         putRange(0, values);
-    }
-
-    public void setFormulas(List<String> formulas) {
-        putFormulasRange(0, formulas);
-    }
-
-    public void setStyles(List<GSheetCellStyle> styles) {
-        putStylesRange(0, styles);
     }
 
     public List<Object> getRange(String startRef, String endRef) {
@@ -176,32 +129,8 @@ public class Column implements Iterable<Cell> {
     }
 
     public void putRange(String startRef, List<?> data) {
-        putRange(new CellRef(startRef), data);
-    }
-
-    public void putFormulasRange(String startRef, List<String> data) {
-        putFormulasRange(new CellRef(startRef), data);
-    }
-
-    public void putStylesRange(String startRef, List<GSheetCellStyle> data) {
-        putStylesRange(new CellRef(startRef), data);
-    }
-
-    public void putRange(CellRef startRef, List<?> data) {
         if (startRef != null) {
-            putRange(startRef.getRow(), data);
-        }
-    }
-
-    public void putFormulasRange(CellRef startRef, List<String> data) {
-        if (startRef != null) {
-            putFormulasRange(startRef.getRow(), data);
-        }
-    }
-
-    public void putStylesRange(CellRef startRef, List<GSheetCellStyle> data) {
-        if (startRef != null) {
-            putStylesRange(startRef.getRow(), data);
+            putRange(new CellRef(startRef).getRow(), data);
         }
     }
 
@@ -216,46 +145,6 @@ public class Column implements Iterable<Cell> {
                 int row = startRow;
                 for (Object cellValue : data) {
                     setValue(row++, cellValue);
-                }
-            } finally {
-                if (isSessionHasBeenOpened) {
-                    GSessionManager.closeSession(getDocument());
-                }
-            }
-        }
-    }
-
-    public void putFormulasRange(int startRow, List<String> data) {
-        if (data != null) {
-            boolean isSessionHasBeenOpened = false;
-            try {
-                if (!GSessionManager.isSessionOpened(getDocument())) {
-                    GSessionManager.openSession(getDocument());
-                    isSessionHasBeenOpened = true;
-                }
-                int row = startRow;
-                for (String cellFormula : data) {
-                    setFormula(row++, cellFormula);
-                }
-            } finally {
-                if (isSessionHasBeenOpened) {
-                    GSessionManager.closeSession(getDocument());
-                }
-            }
-        }
-    }
-
-    public void putStylesRange(int startRow, List<GSheetCellStyle> data) {
-        if (data != null) {
-            boolean isSessionHasBeenOpened = false;
-            try {
-                if (!GSessionManager.isSessionOpened(getDocument())) {
-                    GSessionManager.openSession(getDocument());
-                    isSessionHasBeenOpened = true;
-                }
-                int row = startRow;
-                for (GSheetCellStyle cellStyle : data) {
-                    setStyle(row++, cellStyle);
                 }
             } finally {
                 if (isSessionHasBeenOpened) {
