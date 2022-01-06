@@ -3,14 +3,13 @@
 ## Table of Contents
 * [Description](#description)
 * [Usage](#usage)
-* [Simple SELECT from a DataBase](#read-mysql-table-content)
-* [Select from a table using Java object](#select-from-a-table-using-java-object)
+* [Simple SELECT from database](#simple-select-from-database)
+* [Select records from a table as collection of Java objects](#select-records-from-a-table-as-collection-of-java-objects)
 * [Example](#example)
 
 ## Description
 
-Component which responsible for communication with external databases within RPA processes.
-This implementation provides functionality of ORMLite library with easier way of its initialization and establishing of database connection.
+The database library provides convenient and easy to use functionality for working with remote databases within RPA processes. Actually this library wraps functionality of ORMLite library and organize the process of intialization and establishing of database connection in more clear way with less amount of code. As ORMLite it supports most popular types of databases (like MySQL, Postgres etc.). But the functionality does not depends of database type which makes the process of switch between different DBs very simple and fast.
 
 
 ## Usage
@@ -26,50 +25,49 @@ To start use the library first you need to add corresponding Maven dependency to
 </dependency>
 ```
 
-## Simple SELECT from a DataBase
+## Simple SELECT from database
 
-In most often cases during interaction with Databases we need to get some data from it. In this example we will describe how to perform a simple SELECT query.
+In most often cases during interaction with databases we need to get some data from it. In this example we will describe how to perform a simple SELECT query.
 
-The first step in such case would be configuration of connection to a specific table. There is 1 parameter responsible for this:
+The first step in such case would be configuration of connection to a specific database. There is 1 parameter responsible for this:
 
-**vault.properties**
+**Secret Vault**
 
-| Parameter     | Value                                                                                                  |
-| ------------- |--------------------------------------------------------------------------------------------------------|
-| `testdb` | JSON value encoded in Base64 format which contains all the information for connection to a specific DB |
+| Secret Vault entry | Value                                                                                                             |
+|--------------------|-------------------------------------------------------------------------------------------------------------------|
+| databaseAlias           | the key of secret vault entry that keeps necessary for establishing database connection parameters in JSON format |
 
-Decoded value looks like this: { "jdbcUrl":"jdbc:postgresql://localhost:5432/postgres", "user": "postgres", "password": "root" }
+Decoded value looks like this:
+```java
+    {
+        "jdbcUrl":"jdbc:postgresql://localhost:5432/postgres",
+        "user": "postgres",
+        "password": "root"
+    }
+```
 
-As you can see there are 3 parameters in this JSON.
+As you can see there are 3 parameters in this JSON:
 
-First tells which JDBC driver to use and remote DB address: "jdbcUrl":"jdbc:postgresql://localhost:5432/postgres"
+* JDBC URL used for connection: "jdbcUrl":"jdbc:postgresql://localhost:5432/postgres"
 
-Second specifies a user which will be used for connection: "user": "postgres"
+* Database user used to perform authentication during connection: "user": "postgres"
 
-And the third - user's password: "password": "root"
-
-These necessary configuration parameters located inside **src/main/resources** folder.
+* Database user password used to perform authentication during connection: "password": "root"
 
 
 
-After that inside your class in order to use DB functionality you need simply inject it:
+Before accessing database we inject an object of `DatabaseService` class. This is recommended way of creating it. But you cal also use a usual constructor.
+
+After that we can simply get data from the table - call of our SQL query using function `withConnection` and `executeQuery`:
 
 ```java
     @Inject
     private DatabaseService dbService;
-```
 
-Also we specify our SQL query:
-```java
-    private final String SELECT_INVOICES_SQL = "SELECT * FROM invoices WHERE invoice_date < '%s';";
-```
-
-And the last step of getting data from the table - call of our SQL query using function `withConnection` and `executeQuery` after that:
-
-```java
     @Override
     public void execute() {
         String oldDate = DateTime.now().minusYears(3).toString("yyyy-MM-dd");
+        String SELECT_INVOICES_SQL = "SELECT * FROM invoices WHERE invoice_date < '%s';";
 
         log.info("Output invoices which are older than '{}'.", oldDate);
         dbService.withConnection("testdb", (c) -> {
@@ -85,7 +83,7 @@ And the last step of getting data from the table - call of our SQL query using f
     }
 ```
 
-!*Note* In this example inside `withConnection` function we used hardcoded value `testdb`. The value tells which alias from the `vault.properties` to take. But in real life it's not recommended. The better way is to pass this value through the configuration parameter:
+!*Note* In this example inside `withConnection` function we used hardcoded value `testdb`. The value tells which alias from the `Secret Vault` to take. But in real life it's not recommended. The better way is to pass this value through the configuration parameter:
 
 ```java
     @Configuration("invoices-db-alias")
@@ -97,16 +95,9 @@ And the last step of getting data from the table - call of our SQL query using f
 Such approach will allow you simply switch between Production and Test environments without a code changes.
 
 
-## Select from a table using Java object
+## Select records from a table as collection of Java objects
 
-As in previous example first we inject necessary DB object to our program (don't forget about configuration parameters related to connection):
-
-```java
-    @Inject
-    private DatabaseService dbService;
-```
-
-Next step - we prepare our Java class which describes fields of a table. This class will be used to automatically transform the data we get from the table to Java object:
+First step in this example - we prepare our Java class which describes fields of a table. This class will be used to automatically transform the data we get from the table to Java object:
 
 ```java
 @Data
@@ -137,9 +128,13 @@ public class Invoice {
 
 For more information about such classes and their configuration please refer to corresponding [article](https://ormlite.com/javadoc/ormlite-core/doc-files/ormlite.html#Starting-Class) on ORMLite site.
 
-And the final action - execution of function `withConnection` and `selectAll` with class `Invoice` specified inside as a parameter:
+As in previous example first we inject necessary DB object to our program (don't forget about configuration parameters related to connection).
+And after that - execution of function `withConnection` and `selectAll` with class `Invoice` specified inside as a parameter:
 
 ```java
+    @Inject
+    private DatabaseService dbService;
+
     @Override
     public void execute() {
         log.info("Reading existing records in the table that is used to store entity '{}'", Invoice.class.getName());
