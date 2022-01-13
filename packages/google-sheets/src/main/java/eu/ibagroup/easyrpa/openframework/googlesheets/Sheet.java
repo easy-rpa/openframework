@@ -4,7 +4,6 @@ import com.google.api.services.sheets.v4.model.*;
 import eu.ibagroup.easyrpa.openframework.googlesheets.constants.InsertMethod;
 import eu.ibagroup.easyrpa.openframework.googlesheets.constants.MatchMethod;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SheetNameAlreadyExist;
-import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSpreadsheetDocumentElementsCache;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,16 +21,21 @@ public class Sheet implements Iterable<Row> {
     private List<Request> requests = new ArrayList<>();
 
 
-    protected Sheet(SpreadsheetDocument parent, int sheetIndex) {
+    public Sheet(SpreadsheetDocument parent, int sheetIndex) {
         this.sheetIndex = sheetIndex;
         this.parent = parent;
     }
 
+    public Sheet(SpreadsheetDocument parent) {
+        this.parent = parent;
+    }
+
     public String getName() {
-        return getGSheet().getProperties().getTitle();
+        return getGSheet().getProperties().getTitle();// посмотреть в какой момент добавлять в кэш
     }
 
     public int getId() {
+        //return googleSheet.getProperties().getSheetId();
         return getGSheet().getProperties().getSheetId();
     }
 
@@ -296,13 +300,10 @@ public class Sheet implements Iterable<Row> {
 
     public Row getRow(int rowIndex) {
         if (rowIndex >= 0) {
-            List<GridData> gridData = getGSheet().getData();
-            if (gridData != null) {
-                List<RowData> rowData = getGSheet().getData().get(0).getRowData();
-                if (rowData != null && rowData.size() > rowIndex) {
-                    RowData row = rowData.get(rowIndex);
-                    return row != null ? new Row(this, rowIndex) : null;
-                }
+            List<RowData> rowData = getGSheet().getData().get(0).getRowData();
+            if (rowData != null) {
+                RowData row = rowData.get(rowIndex);
+                return row != null ? new Row(this, rowIndex) : null;
             }
         }
         return null;
@@ -339,9 +340,8 @@ public class Sheet implements Iterable<Row> {
     }
 
     public Row createRow(int rowIndex) {
-        List<RowData> rowDataList =  getGSheet().getData().get(0).getRowData();
-        createEmptyRows(rowIndex - rowDataList.size());
-        rowDataList.add(rowIndex, new RowData());
+        //TODO investigate how to create Row if getGSheet().getData().get(0).getRowData() returns null
+        getGSheet().getData().get(0).getRowData().add(rowIndex, new RowData());
         return new Row(this, rowIndex);
     }
 
@@ -356,7 +356,7 @@ public class Sheet implements Iterable<Row> {
         }
 
         int rowIndex = method == null || method == InsertMethod.BEFORE ? rowPos : rowPos + 1;
-        if (rowIndex > -1 && rowIndex <= getLastRowIndex()) {
+        if (rowIndex > -1/*TODO change getLastRowIndex()*/) {
             putRange(rowIndex, startCol, data);
 
         } else {
@@ -694,13 +694,6 @@ public class Sheet implements Iterable<Row> {
 //            }
 //            poiSheet.addValidationData(poiSheet.getDataValidationHelper().createValidation(dv.getValidationConstraint(), dv.getRegions()));
 //        }
-    }
-
-    private void createEmptyRows(int number) {
-        List<RowData> rowDataList = getGSheet().getData().get(0).getRowData();
-        for (int i = 0; i < number; i++) {
-            rowDataList.add(new RowData());
-        }
     }
 
     private class RowIterator implements Iterator<Row> {

@@ -90,4 +90,4 @@ public class MoveFile extends ApTask {
 
 ## Example
 
-For more code examples please refer to corresponding [article](https://github.com/dzyap/openframework/tree/main/examples#google-drive). 
+For more code examples please refer to corresponding [article](https://github.com/easyrpa/openframework/tree/main/examples#google-drive). 
