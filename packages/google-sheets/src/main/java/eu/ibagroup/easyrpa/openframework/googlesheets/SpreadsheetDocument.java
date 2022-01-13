@@ -1,26 +1,21 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets;
 
 import com.google.api.services.sheets.v4.Sheets;
-import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest;
-import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetResponse;
-import com.google.api.services.sheets.v4.model.CopySheetToAnotherSpreadsheetRequest;
-import com.google.api.services.sheets.v4.model.DeleteSheetRequest;
-import com.google.api.services.sheets.v4.model.DuplicateSheetRequest;
-import com.google.api.services.sheets.v4.model.Request;
-import com.google.api.services.sheets.v4.model.SheetProperties;
-import com.google.api.services.sheets.v4.model.SpreadsheetProperties;
-import com.google.api.services.sheets.v4.model.UpdateSpreadsheetPropertiesRequest;
+import com.google.api.services.sheets.v4.model.*;
+import eu.ibagroup.easyrpa.openframework.googlesheets.constants.MatchMethod;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.CopySheetException;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SheetNameAlreadyExist;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SheetNotFound;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.UpdateException;
+import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSpreadsheetDocumentElementsCache;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SpreadsheetDocument {
+public class SpreadsheetDocument implements Iterable<Sheet>, AutoCloseable {
 
     private com.google.api.services.sheets.v4.model.Spreadsheet googleSpreadsheet;
 
@@ -47,9 +42,63 @@ public class SpreadsheetDocument {
                 .map(sheet -> sheet.getProperties().getTitle())
                 .collect(Collectors.toList());
     }
+    public Sheet createSheet(String sheetName){
+       String freeSheetName = createSafeSheetName(sheetName);
+       int sheetIndex =  googleSpreadsheet.getSheets().size();
+
+       com.google.api.services.sheets.v4.model.Sheet newSheet = new com.google.api.services.sheets.v4.model.Sheet();
+       newSheet.setProperties(new SheetProperties().setIndex(sheetIndex).setTitle(freeSheetName));
+
+       googleSpreadsheet.getSheets().add(newSheet);
+
+       requests.add(new Request().setAddSheet(
+               new AddSheetRequest()
+                       .setProperties(newSheet.getProperties())
+       ));
+
+        BatchUpdateSpreadsheetResponse response = commit();
+        SheetProperties properties = response
+                .getReplies()
+                .get(response.getReplies().size() - 1)
+                .getAddSheet()
+                .getProperties();
+
+        newSheet.setProperties(properties);
+        return new Sheet(this, newSheet.getProperties().getIndex());
+
+    }
+
+    public Sheet findSheet(String... values) {
+        return findSheet(MatchMethod.EXACT, values);
+    }
+
+    public Sheet findSheet(MatchMethod matchMethod, String... values) {
+        int sheetIndex = 0;
+        for (Sheet sheet : this) {
+            Row row = sheet.findRow(matchMethod, values);
+            if (row != null) {
+                selectSheet(sheetIndex);
+                return sheet;
+            }
+            sheetIndex++;
+        }
+        return null;
+    }
+
 
     public Sheet getActiveSheet() {
         return new Sheet(this, activeSheetIndex);
+    }
+
+    public Sheet getSheet(String title){
+        com.google.api.services.sheets.v4.model.Sheet gSheet =  googleSpreadsheet.getSheets()
+                .stream()
+                .filter(sheet -> title.equalsIgnoreCase(sheet.getProperties().getTitle()))
+                .findFirst()
+                .orElseThrow(()->new SheetNotFound("Sheet with this title wasn't found"));
+
+        activeSheetIndex = gSheet.getProperties().getIndex();
+        return new Sheet(this,activeSheetIndex);
     }
 
     public Sheet selectSheet(String name) {
@@ -75,7 +124,7 @@ public class SpreadsheetDocument {
         if (index < 0 || googleSpreadsheet.getSheets().size() <= index) {
             throw new SheetNotFound("Incorrect sheet id");
         }
-        return new Sheet(this);
+        return new Sheet(this, index);
     }
 
     public com.google.api.services.sheets.v4.model.Sheet getGSheetAt(int index) {
@@ -85,7 +134,7 @@ public class SpreadsheetDocument {
         return googleSpreadsheet.getSheets().get(index);
     }
 
-    public void rename(String name) {
+    public void renameSheet(String name) {
         if (!sheetNameIsFree(name)) {
             throw new SheetNameAlreadyExist("This name is already exist in this spreadsheet");
         }
@@ -108,7 +157,7 @@ public class SpreadsheetDocument {
 
         int newSheetIndex = googleSpreadsheet.getSheets().size();
         sheet.getProperties().setIndex(newSheetIndex);
-        sheet.getProperties().setTitle(getClonedTitle(sheet.getProperties().getTitle()));
+        sheet.getProperties().setTitle(createSafeSheetName(sheet.getProperties().getTitle()));
 
         googleSpreadsheet.getSheets().add(sheet);
 
@@ -193,7 +242,7 @@ public class SpreadsheetDocument {
         }
     }
 
-    public String generateNewSessionId(){
+    public String generateNewSessionId() {
         return (int) (Math.random() * 100) + "" + (System.currentTimeMillis() % 1000000);
     }
 
@@ -207,19 +256,51 @@ public class SpreadsheetDocument {
         }
     }
 
-    private String getClonedTitle(String title) {
+    private String createSafeSheetName(String sheetName) {
         int index = 1;
         String str2Add;
         do {
             str2Add = "(" + index++ + ")";
-        } while (sheetNameIsFree(title + str2Add));
+        } while (sheetNameIsFree(sheetName + str2Add));
 
-        return title + str2Add;
+        return sheetName + str2Add;
     }
 
     private boolean sheetNameIsFree(String name) {
         return googleSpreadsheet.getSheets()
                 .stream()
-                .anyMatch(sheet -> name.equals(sheet.getProperties().getTitle()));
+                .anyMatch(sheet -> name.equalsIgnoreCase(sheet.getProperties().getTitle()));
+    }
+
+    @Override
+    public Iterator<Sheet> iterator() {
+        return new SheetIterator(googleSpreadsheet.getSheets().size());
+    }
+
+    @Override
+    public void close() {
+        if(getId()!=null){
+            GSpreadsheetDocumentElementsCache.unregister(getId());
+        }
+    }
+
+    private class SheetIterator implements Iterator<Sheet> {
+
+        private int index = 0;
+        private int sheetsCount;
+
+        public SheetIterator(int sheetsCount) {
+            this.sheetsCount = sheetsCount;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return index < sheetsCount;
+        }
+
+        @Override
+        public Sheet next() {
+            return new Sheet(SpreadsheetDocument.this, index++);
+        }
     }
 }

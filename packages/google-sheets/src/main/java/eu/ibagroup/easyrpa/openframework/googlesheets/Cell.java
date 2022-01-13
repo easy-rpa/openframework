@@ -1,14 +1,20 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets;
 
 import com.google.api.services.sheets.v4.model.*;
+import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSpreadsheetDocumentElementsCache;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 public class Cell {
+
+    private static final String DATE_TYPE = "DATE";
+
+    private static final String NUMBER_TYPE = "NUMBER";
+
+    private static final String DEFAULT_DATE_FORMAT = "dd.MM.yyyy";
 
     private String id;
 
@@ -84,24 +90,22 @@ public class Cell {
         getDocument().openSessionIfRequired(sessionId);
         CellData googleCell = getGCell();
         if (value == null) {
-            // poiCell.setBlank(); //todo check
-
+            googleCell.setUserEnteredValue(new ExtendedValue().setStringValue(""));
         } else if (value instanceof Date) {
-            SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
+            NumberFormat format = getStyle().getNumberFormat();
+            if (!format.getType().equals(DATE_TYPE)) {
+                format.setType(DATE_TYPE);
+                format.setPattern(DEFAULT_DATE_FORMAT);
+            }
+            SimpleDateFormat formatter = new SimpleDateFormat(format.getPattern());
             googleCell.setUserEnteredValue(new ExtendedValue().setStringValue(formatter.format((Date) value)));
-            googleCell.setUserEnteredFormat(
-                    new CellFormat().setNumberFormat(
-                            new NumberFormat().setType("DATE").setPattern("dd.MM.yyyy")
-                    )
-            );
 
         } else if (value instanceof Double) {
             googleCell.setUserEnteredValue(new ExtendedValue().setNumberValue((Double) value));
-            googleCell.setUserEnteredFormat(
-                    new CellFormat().setNumberFormat(
-                            new NumberFormat().setType("NUMBER")
-                    )
-            );
+            NumberFormat format = getStyle().getNumberFormat();
+            if (format.getType() == null || !format.getType().equals(NUMBER_TYPE)) {
+                format.setType(NUMBER_TYPE);
+            }
         } else if (value instanceof Boolean) {
             googleCell.setUserEnteredValue(new ExtendedValue().setBoolValue((Boolean) value));
 
@@ -129,24 +133,22 @@ public class Cell {
         getDocument().openSessionIfRequired(sessionId);
         CellData googleCell = getGCell();
         if (value == null) {
-            // poiCell.setBlank(); //todo check
-
+            googleCell.setUserEnteredValue(new ExtendedValue().setStringValue(""));
         } else if (value instanceof Date) {
-            SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
+            NumberFormat format = getStyle().getNumberFormat();
+            if (!format.getType().equals(DATE_TYPE)) {
+                format.setType(DATE_TYPE);
+                format.setPattern(DEFAULT_DATE_FORMAT);
+            }
+            SimpleDateFormat formatter = new SimpleDateFormat(format.getPattern());
             googleCell.setUserEnteredValue(new ExtendedValue().setStringValue(formatter.format((Date) value)));
-            googleCell.setUserEnteredFormat(
-                    new CellFormat().setNumberFormat(
-                            new NumberFormat().setType("DATE").setPattern("dd.MM.yyyy")
-                    )
-            );
 
         } else if (value instanceof Double) {
             googleCell.setUserEnteredValue(new ExtendedValue().setNumberValue((Double) value));
-            googleCell.setUserEnteredFormat(
-                    new CellFormat().setNumberFormat(
-                            new NumberFormat().setType("NUMBER")
-                    )
-            );
+            NumberFormat format = getStyle().getNumberFormat();
+            if (!format.getType().equals(NUMBER_TYPE)) {
+                format.setType(NUMBER_TYPE);
+            }
         } else if (value instanceof Boolean) {
             googleCell.setUserEnteredValue(new ExtendedValue().setBoolValue((Boolean) value));
 
@@ -213,9 +215,9 @@ public class Cell {
                         .setRange(new GridRange()
                                 .setSheetId(getDocument().getActiveSheet().getId())
                                 .setStartRowIndex(this.getRowIndex())
-                                .setEndRowIndex(this.getRowIndex()+1)
+                                .setEndRowIndex(this.getRowIndex() + 1)
                                 .setStartColumnIndex(this.getColumnIndex())
-                                .setEndColumnIndex(this.getColumnIndex()+1)
+                                .setEndColumnIndex(this.getColumnIndex() + 1)
                         )
                         .setCell(getGCell()
                                 .setUserEnteredValue(new ExtendedValue().setFormulaValue(newCellFormula)))
@@ -225,7 +227,7 @@ public class Cell {
     }
 
     public CellData getGCell() {
-        return parent.getData().getRowData().get(rowIndex).getValues().get(columnIndex);
+       return GSpreadsheetDocumentElementsCache.getGCell(documentId, id, sheetIndex, rowIndex, columnIndex);
     }
 
     private Object getTypedValue() {
@@ -240,31 +242,18 @@ public class Cell {
             if (extendedValue.getNumberValue() != null) {
                 value = extendedValue.getNumberValue();
             } else if (extendedValue.getFormulaValue() != null && !extendedValue.getFormulaValue().isEmpty()) {
-                value = extendedValue.getFormulaValue();
+                value = googleCell.getFormattedValue();
             } else if (extendedValue.getBoolValue() != null) {
                 value = extendedValue.getBoolValue();
             } else if (!extendedValue.getStringValue().isEmpty()) {
-                CellFormat format = googleCell.getUserEnteredFormat();
-                if (format != null) {
-                    String type = format.getNumberFormat().getType();
-                    switch (type) {
-                        case "DATE": {
-                            try {
-                                value = new SimpleDateFormat("dd.MM.yyyy").parse(extendedValue.getStringValue());
-                            } catch (ParseException e) {
-                                value = "NaN";
-                            }
-                            break;
-                        }
-                        default:
-                            value = extendedValue.getStringValue();
-                    }
-                }
+                value = extendedValue.getStringValue();
             } else if (!extendedValue.getErrorValue().isEmpty()) {
                 value = extendedValue.getErrorValue().getMessage();
             } else {
                 value = extendedValue.toString();
             }
+        } else {
+            value = "";
         }
         return value;
     }
@@ -275,7 +264,7 @@ public class Cell {
             return "";
         }
         ExtendedValue extendedValue = googleCell.getUserEnteredValue();
-        if(extendedValue == null){
+        if (extendedValue == null) {
             return "";
         }
 
@@ -286,7 +275,7 @@ public class Cell {
         } else if (extendedValue.getBoolValue() != null) {
             return extendedValue.getBoolValue().toString();
         } else if (!extendedValue.getStringValue().isEmpty()) {
-           return extendedValue.getStringValue();
+            return extendedValue.getStringValue();
         } else if (!extendedValue.getErrorValue().isEmpty()) {
             return extendedValue.getErrorValue().getMessage();
         }
@@ -299,10 +288,9 @@ public class Cell {
             return null;
         }
 
-        if(hasFormula()){
+        if (hasFormula()) {
             return googleCell.getEffectiveValue().getNumberValue();
-        }else
-        {
+        } else {
             return googleCell.getUserEnteredValue().getNumberValue();
         }
     }

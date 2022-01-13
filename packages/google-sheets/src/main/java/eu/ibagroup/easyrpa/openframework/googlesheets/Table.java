@@ -120,7 +120,7 @@ public class Table<T> implements Iterable<T> {
         if (records == null) {
             Map<String, Integer> columnsIndexMap = getColumnNameToIndexMap();
             if (columnsIndexMap != null) {
-                List<List<Object>> data = parent.getRange(hBottomRow + 1, hLeftCol + 1, getBottomRow(), hRightCol+1);
+                List<List<Object>> data = parent.getRange(hBottomRow + 1, hLeftCol + 1, getBottomRow(), hRightCol + 1);
                 records = data.stream().map(values -> typeHelper.mapToRecord(values, columnsIndexMap)).collect(Collectors.toList());
             }
         } else {
@@ -287,7 +287,7 @@ public class Table<T> implements Iterable<T> {
             setHeaderRightCol(getHeaderRightCol() - 1);
         }
     }
-/* TODO decide will we implement*/
+    /* TODO decide will we implement*/
 
 /*    public Table<T> filter(int columnIndex, String filterPattern) {
         int lastColumnIndex = hRightCol - hLeftCol;
@@ -338,8 +338,8 @@ public class Table<T> implements Iterable<T> {
 
         hTopRow = startRow;
         hLeftCol = startCol;
-        hBottomRow = startRow;
-        hRightCol = hLeftCol + columnsCount;
+        hBottomRow = startRow + records.size() - 1;
+        hRightCol = hLeftCol + columnsCount - 1;
 
         parent.insertRows(InsertMethod.BEFORE, hTopRow, hLeftCol, columnNames);
         for (int j = hLeftCol; j < hRightCol; j++) {

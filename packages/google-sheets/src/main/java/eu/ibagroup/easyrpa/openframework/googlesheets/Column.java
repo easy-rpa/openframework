@@ -3,7 +3,7 @@ package eu.ibagroup.easyrpa.openframework.googlesheets;
 import com.google.api.services.sheets.v4.model.CellData;
 import com.google.api.services.sheets.v4.model.Request;
 import com.google.api.services.sheets.v4.model.RowData;
-import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSheetElementsCache;
+import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSpreadsheetDocumentElementsCache;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -208,7 +208,7 @@ public class Column implements Iterable<Cell> {
 
     public Cell getCell(int rowIndex) {
         if (rowIndex >= 0) {
-            RowData row = GSheetElementsCache.getGRow(documentId, sheetIndex, rowIndex);
+            RowData row = GSpreadsheetDocumentElementsCache.getGRow(documentId, sheetIndex, rowIndex);
             if (row != null && row.size() > 0 && row.getValues().size()>columnIndex) {
                     CellData cell = row.getValues().get(columnIndex);
                     return cell != null ? new Cell(parent, rowIndex, columnIndex) : null;
@@ -219,10 +219,10 @@ public class Column implements Iterable<Cell> {
     }
 
     public Cell createCell(int rowIndex) {
-        RowData row =GSheetElementsCache.getGRow(documentId,sheetIndex,rowIndex);;
+        RowData row = GSpreadsheetDocumentElementsCache.getGRow(documentId,sheetIndex,rowIndex);;
         if (row == null) {
             row = new RowData();
-            GSheetElementsCache.getGSheet(documentId,sheetIndex).getData().get(0).getRowData().add(rowIndex, row);
+            GSpreadsheetDocumentElementsCache.getGSheet(documentId,sheetIndex).getData().get(0).getRowData().add(rowIndex, row);
         }
         row.getValues().add(columnIndex, new CellData());
         return new Cell(parent, rowIndex, columnIndex);
