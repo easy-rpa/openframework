@@ -2,6 +2,7 @@ package eu.ibagroup.easyrpa.openframework.googlesheets;
 
 import com.google.api.services.sheets.v4.model.*;
 import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSpreadsheetDocumentElementsCache;
+import eu.ibagroup.easyrpa.openframework.googlesheets.style.GSheetCellStyle;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
