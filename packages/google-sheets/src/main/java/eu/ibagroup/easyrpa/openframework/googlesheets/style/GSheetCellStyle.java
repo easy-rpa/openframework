@@ -50,6 +50,9 @@ public class GSheetCellStyle {
 
     public GSheetCellStyle(Cell cell) {
         CellFormat cellFormat = cell.getGCell().getUserEnteredFormat();
+        if (cellFormat == null) {
+            cellFormat = getEmptyCellFormat();
+        }
         this.cellFormat = cellFormat;
         backgroundColor = cellFormat.getBackgroundColor();
         borders = cellFormat.getBorders();
@@ -64,9 +67,6 @@ public class GSheetCellStyle {
         wrapStrategy = cellFormat.getWrapStrategy();
 
     }
-
-    //private Cell cell;
-
 
     public Color getBackgroundColor() {
         return backgroundColor;
@@ -180,5 +180,15 @@ public class GSheetCellStyle {
                 GSessionManager.closeSession(document);
             }
         }
+    }
+
+    private CellFormat getEmptyCellFormat() {
+        return new CellFormat()
+                .setNumberFormat(new NumberFormat())
+                .setTextFormat(new TextFormat())
+                .setTextRotation(new TextRotation())
+                .setBorders(new Borders())
+                .setBackgroundColor(new Color())
+                .setPadding(new Padding());
     }
 }

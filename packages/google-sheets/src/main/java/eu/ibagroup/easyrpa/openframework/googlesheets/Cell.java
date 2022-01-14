@@ -6,11 +6,16 @@ import com.google.api.services.sheets.v4.model.ExtendedValue;
 import com.google.api.services.sheets.v4.model.NumberFormat;
 import eu.ibagroup.easyrpa.openframework.googlesheets.style.GSheetCellStyle;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Cell {
+
+    private static final String DATE_TYPE = "DATE";
+
+    private static final String NUMBER_TYPE = "NUMBER";
+
+    private static final String DEFAULT_DATE_FORMAT = "dd.MM.yyyy";
 
     private String id;
 
@@ -152,11 +157,10 @@ public class Cell {
                 GSessionManager.closeSession(getDocument());
             }
         }
-
     }
 
     public CellData getGCell() {
-        return parent.getData().getRowData().get(rowIndex).getValues().get(columnIndex);
+       return GSpreadsheetDocumentElementsCache.getGCell(documentId, id, sheetIndex, rowIndex, columnIndex);
     }
 
     private Object getTypedValue() {
@@ -171,31 +175,18 @@ public class Cell {
             if (extendedValue.getNumberValue() != null) {
                 value = extendedValue.getNumberValue();
             } else if (extendedValue.getFormulaValue() != null && !extendedValue.getFormulaValue().isEmpty()) {
-                value = extendedValue.getFormulaValue();
+                value = googleCell.getFormattedValue();
             } else if (extendedValue.getBoolValue() != null) {
                 value = extendedValue.getBoolValue();
             } else if (!extendedValue.getStringValue().isEmpty()) {
-                CellFormat format = googleCell.getUserEnteredFormat();
-                if (format != null) {
-                    String type = format.getNumberFormat().getType();
-                    switch (type) {
-                        case "DATE": {
-                            try {
-                                value = new SimpleDateFormat("dd.MM.yyyy").parse(extendedValue.getStringValue());
-                            } catch (ParseException e) {
-                                value = "NaN";
-                            }
-                            break;
-                        }
-                        default:
-                            value = extendedValue.getStringValue();
-                    }
-                }
+                value = extendedValue.getStringValue();
             } else if (!extendedValue.getErrorValue().isEmpty()) {
                 value = extendedValue.getErrorValue().getMessage();
             } else {
                 value = extendedValue.toString();
             }
+        } else {
+            value = "";
         }
         return value;
     }

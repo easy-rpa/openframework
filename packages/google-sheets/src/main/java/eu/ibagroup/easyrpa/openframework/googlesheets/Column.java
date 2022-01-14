@@ -2,7 +2,7 @@ package eu.ibagroup.easyrpa.openframework.googlesheets;
 
 import com.google.api.services.sheets.v4.model.CellData;
 import com.google.api.services.sheets.v4.model.RowData;
-import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSheetElementsCache;
+import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSpreadsheetDocumentElementsCache;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -168,7 +168,6 @@ public class Column implements Iterable<Cell> {
             if (row != null && row.size() > 0 && row.getValues().size() > columnIndex) {
                 CellData cell = row.getValues().get(columnIndex);
                 return cell != null ? new Cell(parent, rowIndex, columnIndex) : null;
-
             }
         }
         return null;

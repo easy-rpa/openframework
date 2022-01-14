@@ -8,6 +8,7 @@ import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSheetElementsCac
 import eu.ibagroup.easyrpa.openframework.googlesheets.style.GSheetCellStyle;
 import org.apache.poi.ss.util.CellRangeAddress;
 
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -136,7 +137,7 @@ public class Sheet implements Iterable<Row> {
     }
 
     public List<List<Object>> getValues() {
-        return getRange(getFirstRowIndex(), getFirstColumnIndex(), getLastRowIndex(), getLastColumnIndex(), Object.class);
+        return getRange(getFirstRowIndex(), getFirstColumnIndex(), getLastRowIndex(), getLastColumnIndex());
     }
 
     public void setValues(List<List<?>> values) {
@@ -146,11 +147,11 @@ public class Sheet implements Iterable<Row> {
     public List<List<Object>> getRange(String startRef, String endRef) {
         CellRef sRef = new CellRef(startRef);
         CellRef eRef = new CellRef(endRef);
-        return getRange(sRef.getRow(), sRef.getCol(), eRef.getRow(), eRef.getCol(), Object.class);
+        return getRange(sRef.getRow(), sRef.getCol(), eRef.getRow(), eRef.getCol());
     }
 
-    public <T> List<List<T>> getRange(int startRow, int startCol, int endRow, int endCol, Class<T> valueType) {
-        List<List<T>> data = new ArrayList<>();
+    public List<List<Object>> getRange(int startRow, int startCol, int endRow, int endCol) {
+        List<List<Object>> data = new ArrayList<>();
 
         if (startRow < 0 || startCol < 0 || endRow < 0 || endCol < 0) {
             return data;
@@ -162,9 +163,9 @@ public class Sheet implements Iterable<Row> {
         int c2 = Math.max(startCol, endCol);
 
         for (int row = r1; row <= r2; row++) {
-            List<T> rowList = new ArrayList<>();
+            List<Object> rowList = new ArrayList<>();
             for (int col = c1; col <= c2; col++) {
-                rowList.add(getValue(row, col, valueType));
+                rowList.add(getValue(row, col));
             }
             data.add(rowList);
         }
@@ -204,35 +205,6 @@ public class Sheet implements Iterable<Row> {
                 }
             }
         }
-    }
-
-    /**
-     * Merges cells range of this sheet. The range is defined by given top row, left column, bottom row
-     * and right column indexes.
-     * <p>
-     * <b>NOTICE:</b> If range intersects with an existing merged regions on this sheet all these regions will
-     * be unmerged at first.
-     *
-     * @param startRow 0-based index of top row of the range.
-     * @param startCol 0-based index of left column of the range.
-     * @param endRow   0-based index of bottom row of the range.
-     * @param endCol   0-based index of right column of the range.
-     * @return top-left cell of merged region that represents it.
-     * @throws IllegalArgumentException if range contains fewer than 2 cells
-     */
-
-    // TODO Is it supported in sheets api?
-    public Cell mergeCells(int startRow, int startCol, int endRow, int endCol) {
-        /* unmergeCells(startRow, startCol, endRow, endCol);
-        CellRangeAddress region = new CellRangeAddress(startRow, endRow, startCol, endCol);
-        int regionIndex = getPoiSheet().addMergedRegion(region);
-        if (regionIndex >= 0) {
-            POIElementsCache.addMergedRegion(documentId, sheetIndex, regionIndex, region);
-            Cell topLeftCell = new Cell(this, region.getFirstRow(), region.getFirstColumn());
-            topLeftCell.getStyle().apply();
-            return topLeftCell;
-        }*/
-        return null;
     }
 
     public Row getRow(String rowRef) {
@@ -575,7 +547,15 @@ public class Sheet implements Iterable<Row> {
     }
 
     public com.google.api.services.sheets.v4.model.Sheet getGSheet() {
-        return GSheetElementsCache.getGSheet(parent.getId(), sheetIndex);
+        com.google.api.services.sheets.v4.model.Sheet sheet = GSpreadsheetDocumentElementsCache.getGSheet(parent.getId(), sheetIndex);
+        if (sheet.getData() == null) {
+            sheet.setData(new ArrayList<>());
+            sheet.getData().add(new GridData()
+                    .setStartColumn(0)
+                    .setStartRow(0)
+                    .setRowData(new ArrayList<>()));
+        }
+        return sheet;
     }
 
     private void shiftRows(int startRow, int rowsCount) {

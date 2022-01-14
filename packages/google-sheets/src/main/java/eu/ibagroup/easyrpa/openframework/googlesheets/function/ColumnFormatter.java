@@ -1,6 +1,6 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets.function;
 
-import com.google.api.services.sheets.v4.model.CellData;
+import eu.ibagroup.easyrpa.openframework.googlesheets.Cell;
 
 @FunctionalInterface
 public interface ColumnFormatter<T> {
@@ -12,5 +12,5 @@ public interface ColumnFormatter<T> {
      * @param column - name of column to which the cell belongs.
      * @param record - instance of current record. If value is null then cell is a header cell.
      */
-    void format(CellData cell, String column, T record);
+    void format(Cell cell, String column, T record);
 }

@@ -10,10 +10,19 @@ import eu.ibagroup.easyrpa.openframework.googlesheets.function.TableFormatter;
 import eu.ibagroup.easyrpa.openframework.googlesheets.style.GSheetCellStyle;
 import eu.ibagroup.easyrpa.openframework.googlesheets.utils.StyleAnnotationUtils;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
 
+/**
+ * <p>FOR INTERNAL USE ONLY</p>
+ * <br>
+ * <p>Helper class that is responsible for extraction of necessary meta information from specific class of table records
+ * and performing of necessary data conversions and actions using this information.</p>
+ *
+ * @param <T> class of related table record.
+ * @see GSheetTable
+ * @see GSheetColumn
+ */
 public class RecordTypeHelper<T> {
 
     public static final String NAME_LEVEL_DELIMITER = "&&";
@@ -28,6 +37,7 @@ public class RecordTypeHelper<T> {
     private Map<String, Integer> columnNameToOrderMap = new HashMap<>();
     private Map<Integer, String> columnOrderToFieldMap = new HashMap<>();
 
+    private ColumnNamesTree columnNamesTree = new ColumnNamesTree();
     private Map<Integer, Integer> columnWidthMap = new HashMap<>();
     private Map<Integer, GSheetCellStyle> columnHeaderCellStyleMap = new HashMap<>();
     private Map<Integer, GSheetCellStyle> columnCellStyleMap = new HashMap<>();
@@ -38,20 +48,8 @@ public class RecordTypeHelper<T> {
     private RecordTypeHelper() {
     }
 
-    public List<String> getColumnNames() {
-        int columnsCount = columnNameToOrderMap.values().stream()
-                .max(Comparator.comparingInt(v -> v)).orElse(-1) + 1;
-        String[] columnNames = new String[columnsCount];
-        for (int i = 0; i < columnsCount; i++) {
-            String fieldName = columnOrderToFieldMap.get(i);
-            if (fieldName != null) {
-                String columnName = fieldToColumnMap.get(fieldName);
-                columnNames[i] = columnName != null ? columnName : "";
-            } else {
-                columnNames[i] = "";
-            }
-        }
-        return Arrays.asList(columnNames);
+    public ColumnNamesTree getColumnNames() {
+        return columnNamesTree;
     }
 
     public T mapToRecord(List<Object> values, Map<String, Integer> columnNameToValueIndexMap) {
@@ -138,29 +136,36 @@ public class RecordTypeHelper<T> {
             }
 
             if (tableFormatter != null) {
-//                tableFormatter.format(cell, columnName, recordIndex, records);
+                tableFormatter.format(cell, columnName, recordIndex, records);
             }
             ColumnFormatter<T> formatter = columnFormatterMap.get(columnOrder);
             if (formatter != null) {
                 T record = records != null && recordIndex >= 0 && recordIndex < records.size()
                         ? records.get(recordIndex)
                         : null;
-//                formatter.format(cell, columnName, record);
+                formatter.format(cell, columnName, record);
             }
         }
     }
 
-    public void formatHeaderCell(Cell cell, String columnName) throws IOException {
+    public void formatHeaderCell(Cell cell, String columnName) {
+
         if (cell != null && columnName != null && !columnName.trim().isEmpty()) {
 
             Integer columnOrder = columnNameToOrderMap.get(columnName);
             if (columnOrder == null) {
+                if (tableHeaderCellStyle != null) {
+                    cell.setStyle(tableHeaderCellStyle);
+                }
+                if (tableFormatter != null) {
+                    tableFormatter.format(cell, columnName, -1, null);
+                }
                 return;
             }
 
             Integer width = columnWidthMap.get(columnOrder);
             if (width != null) {
-//                cell.getSheet().setColumnWidth(cell.getColumnIndex(), width);
+                cell.getSheet().setColumnWidth(cell.getColumnIndex(), width);
             }
 
             GSheetCellStyle headerCellStyle = columnHeaderCellStyleMap.get(columnOrder);
@@ -170,13 +175,13 @@ public class RecordTypeHelper<T> {
                 cell.setStyle(tableHeaderCellStyle);
             }
 
-//            if (tableFormatter != null) {
-//                tableFormatter.format(cell, columnName, -1, null);
-//            }
-//            ColumnFormatter<T> formatter = columnFormatterMap.get(columnOrder);
-//            if (formatter != null) {
-//                formatter.format(cell, columnName, null);
-//            }
+            if (tableFormatter != null) {
+                tableFormatter.format(cell, columnName, -1, null);
+            }
+            ColumnFormatter<T> formatter = columnFormatterMap.get(columnOrder);
+            if (formatter != null) {
+                formatter.format(cell, columnName, null);
+            }
         }
     }
 
@@ -222,8 +227,16 @@ public class RecordTypeHelper<T> {
 
                     String fieldName = field.getName();
                     int columnOrder = order > 0 ? order : index++;
-                    String columnName = nameHierarchy.length > 0 ? nameHierarchy[0] : null;
 
+                    String columnName = fieldName;
+                    if (nameHierarchy.length > 0) {
+                        for (int i = 0; i < nameHierarchy.length; i++) {
+                            nameHierarchy[i] = nameHierarchy[i].trim();
+                        }
+                        columnName = String.join(NAME_LEVEL_DELIMITER, nameHierarchy);
+                    }
+
+                    typeInfo.columnNamesTree.add(columnName);
                     typeInfo.fields.add(fieldName);
 
                     if (columnName != null) {
