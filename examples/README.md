@@ -134,7 +134,7 @@
 ## Google Sheets
 
  - Downloading a spreadsheet as an XLSX or PDF file (sheets/spreadsheet-downloading)
- - Sheet manipulations (sheets/sheet-manipulation)
+ - [Sheet manipulations](google-sheets/sheets-manipulating)
     * Create sheet
     * Delete sheet
     * Rename sheet

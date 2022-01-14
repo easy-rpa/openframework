@@ -44,6 +44,9 @@ public class GSheetCellStyle {
 
     public GSheetCellStyle(Cell cell) {
         CellFormat cellFormat = cell.getGCell().getUserEnteredFormat();
+        if (cellFormat == null) {
+            cellFormat = getEmptyCellFormat();
+        }
         this.cellFormat = cellFormat;
         backgroundColor = cellFormat.getBackgroundColor();
         borders = cellFormat.getBorders();
@@ -58,9 +61,6 @@ public class GSheetCellStyle {
         wrapStrategy = cellFormat.getWrapStrategy();
 
     }
-
-    //private Cell cell;
-
 
     public Color getBackgroundColor() {
         return backgroundColor;
@@ -169,9 +169,9 @@ public class GSheetCellStyle {
                         .setRange(new GridRange()
                                 .setSheetId(document.getActiveSheet().getId())
                                 .setStartRowIndex(cell.getRowIndex())
-                                .setEndRowIndex(cell.getRowIndex()+1)
+                                .setEndRowIndex(cell.getRowIndex() + 1)
                                 .setStartColumnIndex(cell.getColumnIndex())
-                                .setEndColumnIndex(cell.getColumnIndex()+1)
+                                .setEndColumnIndex(cell.getColumnIndex() + 1)
                         )
                         .setCell(cell.getGCell()
                                 .setUserEnteredFormat(this.cellFormat))
@@ -197,5 +197,15 @@ public class GSheetCellStyle {
                         .setFields("userEnteredValue")));
         document.closeSessionIfRequired(sessionId, requests);
         return requests;
+    }
+
+    private CellFormat getEmptyCellFormat() {
+        return new CellFormat()
+                .setNumberFormat(new NumberFormat())
+                .setTextFormat(new TextFormat())
+                .setTextRotation(new TextRotation())
+                .setBorders(new Borders())
+                .setBackgroundColor(new Color())
+                .setPadding(new Padding());
     }
 }

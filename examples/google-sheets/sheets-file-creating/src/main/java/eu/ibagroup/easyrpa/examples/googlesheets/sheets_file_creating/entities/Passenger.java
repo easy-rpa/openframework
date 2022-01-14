@@ -1,4 +1,4 @@
-package eu.ibagroup.easyrpa.examples.googlesheets.sheets_manipulating.entities;
+package eu.ibagroup.easyrpa.examples.googlesheets.sheets_file_creating.entities;
 
 import eu.ibagroup.easyrpa.openframework.googlesheets.annotations.GSheetCellStyle;
 import eu.ibagroup.easyrpa.openframework.googlesheets.annotations.GSheetColumn;

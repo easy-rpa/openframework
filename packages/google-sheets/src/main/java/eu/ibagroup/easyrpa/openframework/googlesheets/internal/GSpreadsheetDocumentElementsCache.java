@@ -4,50 +4,51 @@ import com.google.api.services.sheets.v4.model.CellData;
 import com.google.api.services.sheets.v4.model.RowData;
 import com.google.api.services.sheets.v4.model.Sheet;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
-import org.apache.poi.ss.usermodel.DataFormatter;
+import eu.ibagroup.easyrpa.openframework.googlesheets.GSheetCellStyle;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class GSheetElementsCache {
+public class GSpreadsheetDocumentElementsCache {
 
-    private static GSheetElementsCache INSTANCE;
+    private static GSpreadsheetDocumentElementsCache INSTANCE;
 
-    private static GSheetElementsCache getInstance() {
+    private static GSpreadsheetDocumentElementsCache getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new GSheetElementsCache();
+            INSTANCE = new GSpreadsheetDocumentElementsCache();
         }
         return INSTANCE;
     }
 
     public static void register(String gSheetDocumentId, Spreadsheet spreadsheet) {
-        GSheetElementsCache cache = getInstance();
+        GSpreadsheetDocumentElementsCache cache = getInstance();
         cache.spreadsheets.put(gSheetDocumentId, spreadsheet);
-        cache.dataFormatters.put(gSheetDocumentId, new DataFormatter());
+        cache.spreadsheetsStyles.put(gSheetDocumentId, new GSheetCellStyle(spreadsheet.getProperties().getDefaultFormat()));
         cache.sheetsCache.put(gSheetDocumentId, new HashMap<>());
         cache.rowsCache.put(gSheetDocumentId, new HashMap<>());
         cache.cellsCache.put(gSheetDocumentId, new HashMap<>());
     }
 
     public static void unregister(String gSheetDocumentId) {
-        GSheetElementsCache cache = getInstance();
-        cache.dataFormatters.remove(gSheetDocumentId);
+        GSpreadsheetDocumentElementsCache cache = getInstance();
+        cache.spreadsheetsStyles.remove(gSheetDocumentId);
         cache.sheetsCache.remove(gSheetDocumentId);
         cache.rowsCache.remove(gSheetDocumentId);
         cache.cellsCache.remove(gSheetDocumentId);
         cache.spreadsheets.remove(gSheetDocumentId);
     }
 
-    public static DataFormatter getDataFormatter(String gSheetDocumentId) {
-        return getInstance().dataFormatters.get(gSheetDocumentId);
+    public static GSheetCellStyle getSpreadsheetStyle(String gSheetDocumentId) {
+        return getInstance().spreadsheetsStyles.get(gSheetDocumentId);
     }
 
-    public static void setDataFormatter(String gSheetDocumentId, DataFormatter dataFormatter) {
-        getInstance().dataFormatters.put(gSheetDocumentId, dataFormatter);
+    public static void setSpreadsheetStyle(String gSheetDocumentId, GSheetCellStyle style) {
+        getInstance().spreadsheetsStyles.put(gSheetDocumentId, style);
     }
 
     public static com.google.api.services.sheets.v4.model.Sheet getGSheet(String gSheetDocumentId, int sheetIndex) {
-        GSheetElementsCache cache = getInstance();
+        GSpreadsheetDocumentElementsCache cache = getInstance();
         Map<Integer, com.google.api.services.sheets.v4.model.Sheet> sheetsCache = cache.sheetsCache.get(gSheetDocumentId);
         Sheet googleSheet = sheetsCache.get(sheetIndex);
         if (googleSheet == null) {
@@ -58,7 +59,7 @@ public class GSheetElementsCache {
     }
 
     public static RowData getGRow(String gSheetDocumentId, String rowId, int sheetIndex, int rowIndex) {
-        GSheetElementsCache cache = getInstance();
+        GSpreadsheetDocumentElementsCache cache = getInstance();
         Map<String, RowData> rowsCache = cache.rowsCache.get(gSheetDocumentId);
         RowData gSheetRow = rowsCache.get(rowId);
         if (gSheetRow == null) {
@@ -79,36 +80,39 @@ public class GSheetElementsCache {
     }
 
     public static CellData getGCell(String gSheetDocumentId, String cellId, int sheetIndex, int rowIndex, int columnIndex) {
-        GSheetElementsCache cache = getInstance();
+        GSpreadsheetDocumentElementsCache cache = getInstance();
         Map<String, CellData> cellsCache = cache.cellsCache.get(gSheetDocumentId);
         CellData gSheetCell = cellsCache.get(cellId);
         if (gSheetCell == null) {
-            gSheetCell = cache.spreadsheets.get(gSheetDocumentId)
+           List<CellData> rowValues =  cache.spreadsheets.get(gSheetDocumentId)
                     .getSheets().get(sheetIndex)
                     .getData().get(0)
                     .getRowData().get(rowIndex)
-                    .getValues().get(columnIndex);
-            if (gSheetCell != null) {
-                cellsCache.put(cellId, gSheetCell);
-            }
+                    .getValues();
+           if(columnIndex < rowValues.size()) {
+               gSheetCell = rowValues.get(columnIndex);
+               if (gSheetCell != null) {
+                   cellsCache.put(cellId, gSheetCell);
+               }
+           }
         }
         return gSheetCell;
     }
 
     public static void clearRowsAndCellsCache(String excelDocumentId) {
-        GSheetElementsCache cache = getInstance();
+        GSpreadsheetDocumentElementsCache cache = getInstance();
         cache.rowsCache.get(excelDocumentId).clear();
         cache.cellsCache.get(excelDocumentId).clear();
     }
 
     private Map<String, Spreadsheet> spreadsheets = new HashMap<>();
-    private Map<String, DataFormatter> dataFormatters = new HashMap<>();
+    private Map<String, GSheetCellStyle> spreadsheetsStyles = new HashMap<>();
 
     private Map<String, Map<Integer, com.google.api.services.sheets.v4.model.Sheet>> sheetsCache = new HashMap<>();
     private Map<String, Map<String, RowData>> rowsCache = new HashMap<>();
     private Map<String, Map<String, CellData>> cellsCache = new HashMap<>();
 
-    private GSheetElementsCache() {
+    private GSpreadsheetDocumentElementsCache() {
     }
 }
 
