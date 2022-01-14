@@ -4,6 +4,10 @@ import com.google.api.services.sheets.v4.model.*;
 import eu.ibagroup.easyrpa.openframework.googlesheets.constants.InsertMethod;
 import eu.ibagroup.easyrpa.openframework.googlesheets.constants.MatchMethod;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SheetNameAlreadyExist;
+import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSheetElementsCache;
+import eu.ibagroup.easyrpa.openframework.googlesheets.style.GSheetCellStyle;
+import org.apache.poi.ss.util.CellRangeAddress;
+
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -132,108 +136,6 @@ public class Sheet implements Iterable<Row> {
         }
     }
 
-    public List<Request> setValueInOneTransaction(List<List<?>> rangeData) {
-        String sessionId = parent.generateNewSessionId();
-        parent.openSessionIfRequired(sessionId);
-        if (rangeData != null && !rangeData.isEmpty()) {
-            int i = 0;
-            for (List<?> currentRowData : rangeData) {
-                if (currentRowData != null && !currentRowData.isEmpty()) {
-                    Row row = new Row(this, i);
-                    requests.addAll(row.setValuesInOneTransaction(currentRowData));
-                    i++;
-                }
-            }
-        }
-        parent.closeSessionIfRequired(sessionId, requests);
-        return requests;
-    }
-
-    public List<Request> setFormulasInOneTransaction(List<List<String>> rangeData) {
-        String sessionId = parent.generateNewSessionId();
-        parent.openSessionIfRequired(sessionId);
-        if (rangeData != null && !rangeData.isEmpty()) {
-            int i = 0;
-            for (List<String> currentRowData : rangeData) {
-                if (currentRowData != null && !currentRowData.isEmpty()) {
-                    Row row = new Row(this, i);
-                    requests.addAll(row.setFormulasInOneTransaction(currentRowData));
-                    i++;
-                }
-            }
-        }
-        parent.closeSessionIfRequired(sessionId, requests);
-        return requests;
-    }
-
-    public List<Request> setStylesInOneTransaction(List<List<GSheetCellStyle>> rangeData) {
-        String sessionId = parent.generateNewSessionId();
-        parent.openSessionIfRequired(sessionId);
-        if (rangeData != null && !rangeData.isEmpty()) {
-            int i = 0;
-            for (List<GSheetCellStyle> currentRowData : rangeData) {
-                if (currentRowData != null && !currentRowData.isEmpty()) {
-                    Row row = new Row(this, i);
-                    requests.addAll(row.setStylesInOneTransaction(currentRowData));
-                    i++;
-                }
-            }
-        }
-        parent.closeSessionIfRequired(sessionId, requests);
-        return requests;
-    }
-
-    public List<Request> setValueInOneTransactionByColumns(List<List<?>> rangeData) {
-        String sessionId = parent.generateNewSessionId();
-        parent.openSessionIfRequired(sessionId);
-        if (rangeData != null && !rangeData.isEmpty()) {
-            int i = 0;
-            for (List<?> currentColumnData : rangeData) {
-                if (currentColumnData != null && !currentColumnData.isEmpty()) {
-                    Column column = new Column(this, i);
-                    requests.addAll(column.setValuesInOneTransaction(currentColumnData));
-                    i++;
-                }
-            }
-        }
-        parent.closeSessionIfRequired(sessionId, requests);
-        return requests;
-    }
-
-    public List<Request> setFormulasInOneTransactionByColumns(List<List<String>> rangeData) {
-        String sessionId = parent.generateNewSessionId();
-        parent.openSessionIfRequired(sessionId);
-        if (rangeData != null && !rangeData.isEmpty()) {
-            int i = 0;
-            for (List<String> currentColumnData : rangeData) {
-                if (currentColumnData != null && !currentColumnData.isEmpty()) {
-                    Column column = new Column(this, i);
-                    requests.addAll(column.setFormulasInOneTransaction(currentColumnData));
-                    i++;
-                }
-            }
-        }
-        parent.closeSessionIfRequired(sessionId, requests);
-        return requests;
-    }
-
-    public List<Request> setStylesInOneTransactionByColumns(List<List<GSheetCellStyle>> rangeData) {
-        String sessionId = parent.generateNewSessionId();
-        parent.openSessionIfRequired(sessionId);
-        if (rangeData != null && !rangeData.isEmpty()) {
-            int i = 0;
-            for (List<GSheetCellStyle> currentColumnData : rangeData) {
-                if (currentColumnData != null && !currentColumnData.isEmpty()) {
-                    Column column = new Column(this, i);
-                    requests.addAll(column.setStylesInOneTransaction(currentColumnData));
-                    i++;
-                }
-            }
-        }
-        parent.closeSessionIfRequired(sessionId, requests);
-        return requests;
-    }
-
     public List<List<Object>> getValues() {
         return getRange(getFirstRowIndex(), getFirstColumnIndex(), getLastRowIndex(), getLastColumnIndex());
     }
@@ -277,18 +179,29 @@ public class Sheet implements Iterable<Row> {
 
     public void putRange(int startRow, int startCol, List<?> data) {
         if (data != null && data.size() > 0) {
-            if (!(data.get(0) instanceof List)) {
-                data = Collections.singletonList(data);
-            }
-            int rowIndex = startRow;
-            for (Object rowList : data) {
-                if (rowList instanceof List) {
-                    Row row = getRow(rowIndex);
-                    if (row == null) {
-                        row = createRow(rowIndex);
+            boolean isSessionHasBeenOpened = false;
+            try {
+                if (!GSessionManager.isSessionOpened(getDocument())) {
+                    GSessionManager.openSession(getDocument());
+                    isSessionHasBeenOpened = true;
+                }
+                if (!(data.get(0) instanceof List)) {
+                    data = Collections.singletonList(data);
+                }
+                int rowIndex = startRow;
+                for (Object rowList : data) {
+                    if (rowList instanceof List) {
+                        Row row = getRow(rowIndex);
+                        if (row == null) {
+                            row = createRow(rowIndex);
+                        }
+                        row.putRange(startCol, (List<?>) rowList);
+                        rowIndex++;
                     }
-                    row.putRange(startCol, (List<?>) rowList);
-                    rowIndex++;
+                }
+            } finally {
+                if (isSessionHasBeenOpened) {
+                    GSessionManager.closeSession(getDocument());
                 }
             }
         }
