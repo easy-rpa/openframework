@@ -29,8 +29,6 @@ public class ReadRangeOfData extends ApTask {
         String topLeftCellRef = "A15";
         String bottomRightCellRef = "K200";
 
-        log.info("Read spreadsheet document with id: {}", spreadsheetId);
-        GoogleSheets servicee = new GoogleSheets();
         SpreadsheetDocument doc = service.getSpreadsheet(spreadsheetId);
         Sheet sheet = doc.getSheet(sheetName);
 

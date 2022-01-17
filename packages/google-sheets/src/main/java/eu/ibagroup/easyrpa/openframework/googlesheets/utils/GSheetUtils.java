@@ -1,5 +1,7 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets.utils;
 
+import com.google.api.services.sheets.v4.model.GridRange;
+
 public class GSheetUtils {
     public static int[] convert(String coord) {
         int[] arr = new int[2];
@@ -14,7 +16,7 @@ public class GSheetUtils {
         }
         arr[0] -= 1;
 
-        arr[1] = Integer.valueOf(coord.substring(coordIdx-1)) - 1;
+        arr[1] = Integer.parseInt(coord.substring(coordIdx-1)) - 1;
         return arr;
     }
 
@@ -47,5 +49,16 @@ public class GSheetUtils {
 
     public static String convertNumCoordToString(int col, int row) {
         return convertNumToColString(col)+(row+1);
+    }
+
+    public static boolean isOneRangeIsPartOfAnother(GridRange range1, GridRange range2){
+        if(range1.getSheetId().equals(range2.getSheetId())){
+          return range1.getStartRowIndex() <= range2.getEndRowIndex() &&
+                  range1.getStartColumnIndex() <= range2.getEndColumnIndex() &&
+                  range2.getStartRowIndex() <= range1.getEndRowIndex() &&
+                  range2.getStartColumnIndex() <= range1.getEndColumnIndex();
+        }
+
+        return false;
     }
 }

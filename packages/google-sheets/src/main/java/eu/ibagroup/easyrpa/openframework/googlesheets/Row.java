@@ -3,6 +3,7 @@ package eu.ibagroup.easyrpa.openframework.googlesheets;
 
 import com.google.api.services.sheets.v4.model.*;
 import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSpreadsheetDocumentElementsCache;
+import eu.ibagroup.easyrpa.openframework.googlesheets.style.GSheetCellStyle;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -283,6 +284,13 @@ public class Row implements Iterable<Cell> {
         return row;
     }
 
+    private void createEmptyCell(int count){
+        List<CellData> rowData =  getGSheetRow().getValues();
+        for (int i=0; i<count;i++){
+            rowData.add(new CellData());
+        }
+    }
+
     private class CellIterator implements Iterator<Cell> {
 
         private RowData gSheetRow;
@@ -310,12 +318,5 @@ public class Row implements Iterable<Cell> {
         public Cell next() {
             return new Cell(parent, rowIndex, index++);
         }
-    }
-
-    private void createEmptyCell(int count){
-       List<CellData> rowData =  getGSheetRow().getValues();
-       for (int i=0; i<count;i++){
-           rowData.add(new CellData());
-       }
     }
 }

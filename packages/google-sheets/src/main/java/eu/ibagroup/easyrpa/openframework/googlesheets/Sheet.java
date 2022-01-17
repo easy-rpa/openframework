@@ -4,6 +4,9 @@ import com.google.api.services.sheets.v4.model.*;
 import eu.ibagroup.easyrpa.openframework.googlesheets.constants.InsertMethod;
 import eu.ibagroup.easyrpa.openframework.googlesheets.constants.MatchMethod;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SheetNameAlreadyExist;
+import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSpreadsheetDocumentElementsCache;
+import eu.ibagroup.easyrpa.openframework.googlesheets.style.GSheetCellStyle;
+import eu.ibagroup.easyrpa.openframework.googlesheets.utils.GSheetUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,22 +23,25 @@ public class Sheet implements Iterable<Row> {
 
     private List<Request> requests = new ArrayList<>();
 
+    private String documentId;
+
 
     public Sheet(SpreadsheetDocument parent, int sheetIndex) {
         this.sheetIndex = sheetIndex;
         this.parent = parent;
+        this.documentId = parent.getId();
     }
 
     public Sheet(SpreadsheetDocument parent) {
         this.parent = parent;
+        this.documentId = parent.getId();
     }
 
     public String getName() {
-        return getGSheet().getProperties().getTitle();// посмотреть в какой момент добавлять в кэш
+        return getGSheet().getProperties().getTitle();
     }
 
     public int getId() {
-        //return googleSheet.getProperties().getSheetId();
         return getGSheet().getProperties().getSheetId();
     }
 
@@ -249,7 +255,11 @@ public class Sheet implements Iterable<Row> {
     }
 
     public List<List<Object>> getRange(int startRow, int startCol, int endRow, int endCol) {
-        List<List<Object>> data = new ArrayList<>();
+        return getRange(startRow, startCol, endRow, endCol, Object.class);
+    }
+
+    public <T> List<List<T>> getRange(int startRow, int startCol, int endRow, int endCol, Class<T> valueType) {
+        List<List<T>> data = new ArrayList<>();
 
         if (startRow < 0 || startCol < 0 || endRow < 0 || endCol < 0) {
             return data;
@@ -261,9 +271,9 @@ public class Sheet implements Iterable<Row> {
         int c2 = Math.max(startCol, endCol);
 
         for (int row = r1; row <= r2; row++) {
-            List<Object> rowList = new ArrayList<>();
+            List<T> rowList = new ArrayList<>();
             for (int col = c1; col <= c2; col++) {
-                rowList.add(getValue(row, col));
+                rowList.add(getValue(row, col, valueType));
             }
             data.add(rowList);
         }
@@ -340,7 +350,6 @@ public class Sheet implements Iterable<Row> {
     }
 
     public Row createRow(int rowIndex) {
-        //TODO investigate how to create Row if getGSheet().getData().get(0).getRowData() returns null
         getGSheet().getData().get(0).getRowData().add(rowIndex, new RowData());
         return new Row(this, rowIndex);
     }
@@ -411,7 +420,6 @@ public class Sheet implements Iterable<Row> {
         return getGSheet().getData().get(0).getStartRow();
     }
 
-    //is this correct?
     public int getLastRowIndex() {
         GridData data = getGSheet().getData().get(0);
         return getFirstRowIndex() + data.getRowData().size() - 1;
@@ -640,7 +648,8 @@ public class Sheet implements Iterable<Row> {
             sheet.getData().add(new GridData()
                     .setStartColumn(0)
                     .setStartRow(0)
-                    .setRowData(new ArrayList<>()));
+                    .setRowData(new ArrayList<>())
+            );
         }
         return sheet;
     }
@@ -696,6 +705,108 @@ public class Sheet implements Iterable<Row> {
 //        }
     }
 
+    public Cell mergeCells(String regionRef) {
+        CellRange region = new CellRange(regionRef);
+        return mergeCells(region.getFirstRow(), region.getFirstCol(),
+                region.getLastRow(), region.getLastCol());
+    }
+
+    public Cell mergeCells(CellRange region) {
+        return mergeCells(region.getFirstRow(), region.getFirstCol(),
+                region.getLastRow(), region.getLastCol());
+    }
+
+    public Cell mergeCells(String startCellRef, String endCellRef) {
+        CellRef startRef = new CellRef(startCellRef);
+        CellRef endRef = new CellRef(endCellRef);
+        return mergeCells(startRef.getRow(), startRef.getCol(), endRef.getRow(), endRef.getCol());
+    }
+
+    public Cell mergeCells(int startRow, int startCol, int endRow, int endCol) {
+        unmergeCells(startRow, startCol, endRow, endCol);
+        GridRange region = new GridRange()
+                .setSheetId(getDocument().getActiveSheet().getId())
+                .setStartRowIndex(startRow)
+                .setStartColumnIndex(startCol)
+                .setEndRowIndex(endRow)
+                .setEndColumnIndex(endCol);
+
+        List<GridRange> regions = getMergeList();
+        regions.add(region);
+
+        requests.add(new Request().setMergeCells(
+                new MergeCellsRequest().setMergeType("MERGE_ALL").setRange(region)
+        ));
+
+        GSpreadsheetDocumentElementsCache.addMergedRegion(documentId, sheetIndex, regions.size() - 1, region);
+        Cell topLeftCell = new Cell(this, region.getStartRowIndex(), region.getStartColumnIndex());
+        //TODO apply() method in GSheetCellStyle.
+        topLeftCell.getStyle().applyTo(topLeftCell, parent);
+        return topLeftCell;
+    }
+
+    public void unmergeCells(String rangeRef) {
+        CellRange region = new CellRange(rangeRef);
+        unmergeCells(region.getFirstRow(), region.getFirstCol(),
+                region.getLastRow(), region.getLastCol());
+    }
+
+    public void unmergeCells(CellRange range) {
+        mergeCells(range.getFirstRow(), range.getFirstCol(),
+                range.getLastRow(), range.getLastCol());
+    }
+
+    public void unmergeCells(String startCellRef, String endCellRef) {
+        CellRef startRef = new CellRef(startCellRef);
+        CellRef endRef = new CellRef(endCellRef);
+        unmergeCells(startRef.getRow(), startRef.getCol(), endRef.getRow(), endRef.getCol());
+    }
+
+    public void unmergeCells(int startRow, int startCol, int endRow, int endCol) {
+        final List<GridRange> regions = getMergeList();
+
+        GridRange region = new GridRange()
+                .setSheetId(getDocument().getActiveSheet().getId())
+                .setStartRowIndex(startRow)
+                .setStartColumnIndex(startCol)
+                .setEndRowIndex(endRow)
+                .setEndColumnIndex(endCol);
+        List<Integer> indicesToRemove = new ArrayList<>();
+        for (int index = 0; index < regions.size(); index++) {
+            if (GSheetUtils.isOneRangeIsPartOfAnother(regions.get(index), region)) {
+                indicesToRemove.add(index);
+            }
+        }
+        for (Integer index : indicesToRemove) {
+            requests.add(new Request().setUnmergeCells(
+                    new UnmergeCellsRequest().setRange(regions.get(index))
+            ));
+            regions.remove(index);
+        }
+        GSpreadsheetDocumentElementsCache.removeMergedRegions(documentId, indicesToRemove);
+    }
+
+    public List<CellRange> getMergedRegions() {
+        return getMergeList().stream()
+                .map(r -> new CellRange(r.getStartRowIndex(), r.getStartColumnIndex(), r.getEndRowIndex(), r.getEndColumnIndex()))
+                .collect(Collectors.toList());
+    }
+
+    public <T> Table<T> insertTable(List<T> records) throws IOException {
+        return insertTable(0, 0, records);
+    }
+
+    public <T> Table<T> insertTable(String topLeftCellRef, List<T> records) throws IOException {
+        CellRef ref = new CellRef(topLeftCellRef);
+        return insertTable(ref.getRow(), ref.getCol(), records);
+    }
+
+    public <T> Table<T> insertTable(int startRow, int startCol, List<T> records) throws IOException {
+        return startRow >= 0 && startCol >= 0 && records != null && records.size() > 0
+                ? new Table<T>(this, startRow, startCol, records)
+                : null;
+    }
+
     private class RowIterator implements Iterator<Row> {
 
         private com.google.api.services.sheets.v4.model.Sheet sheet;
@@ -725,20 +836,8 @@ public class Sheet implements Iterable<Row> {
         }
     }
 
-
-    public <T> Table<T> insertTable(List<T> records) throws IOException {
-        return insertTable(0, 0, records);
+    private List<GridRange> getMergeList() {
+        List<GridRange> merges = getGSheet().getMerges();
+        return merges == null ? new ArrayList<>() : merges;
     }
-
-    public <T> Table<T> insertTable(String topLeftCellRef, List<T> records) throws IOException {
-        CellRef ref = new CellRef(topLeftCellRef);
-        return insertTable(ref.getRow(), ref.getCol(), records);
-    }
-
-    public <T> Table<T> insertTable(int startRow, int startCol, List<T> records) throws IOException {
-        return startRow >= 0 && startCol >= 0 && records != null && records.size() > 0
-                ? new Table<T>(this, startRow, startCol, records)
-                : null;
-    }
-
 }

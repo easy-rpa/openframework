@@ -3,6 +3,7 @@ package eu.ibagroup.easyrpa.openframework.googlesheets;
 import eu.ibagroup.easyrpa.openframework.googlesheets.constants.InsertMethod;
 import eu.ibagroup.easyrpa.openframework.googlesheets.internal.RecordTypeHelper;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -83,7 +84,7 @@ public class Table<T> implements Iterable<T> {
      *                That's why this list should not be empty.
      */
     @SuppressWarnings("unchecked")
-    protected Table(Sheet parent, int topRow, int leftCol, List<T> records) {
+    protected Table(Sheet parent, int topRow, int leftCol, List<T> records) throws IOException {
         this.parent = parent;
         if (records != null && records.size() > 0) {
             this.typeHelper = RecordTypeHelper.getFor((Class<T>) records.get(0).getClass());
@@ -250,7 +251,7 @@ public class Table<T> implements Iterable<T> {
         if (records == null) {
             Map<String, Integer> columnsIndexMap = getColumnNameToIndexMap();
             if (columnsIndexMap != null) {
-                List<List<Object>> data = parent.getRange(hBottomRow + 1, hLeftCol, getBottomRow(), hRightCol, Object.class);
+                List<List<Object>> data = parent.getRange(hBottomRow + 1, hLeftCol, getBottomRow(), hRightCol);
                 records = data.stream().map(values -> typeHelper.mapToRecord(values, columnsIndexMap)).collect(Collectors.toList());
             }
         } else {
@@ -607,8 +608,9 @@ public class Table<T> implements Iterable<T> {
      * @param startCol 0-based index of column that defines top-left cell of the table to build.
      * @param records  list of records to insert into the table after creation.
      */
-    private void buildTable(int startRow, int startCol, List<T> records) {
-        RecordTypeHelper.ColumnNamesTree columnNamesTree = typeHelper.getColumnNames();
+    private void buildTable(int startRow, int startCol, List<T> records) throws IOException {
+        //TODO class cast exception
+        RecordTypeHelper.ColumnNamesTree columnNamesTree =  typeHelper.getColumnNames();
 
         hTopRow = startRow;
         hLeftCol = startCol;

@@ -1,10 +1,7 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets.internal;
 
-import com.google.api.services.sheets.v4.model.CellData;
-import com.google.api.services.sheets.v4.model.RowData;
-import com.google.api.services.sheets.v4.model.Sheet;
-import com.google.api.services.sheets.v4.model.Spreadsheet;
-import eu.ibagroup.easyrpa.openframework.googlesheets.GSheetCellStyle;
+import com.google.api.services.sheets.v4.model.*;
+import eu.ibagroup.easyrpa.openframework.googlesheets.style.GSheetCellStyle;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +25,7 @@ public class GSpreadsheetDocumentElementsCache {
         cache.sheetsCache.put(gSheetDocumentId, new HashMap<>());
         cache.rowsCache.put(gSheetDocumentId, new HashMap<>());
         cache.cellsCache.put(gSheetDocumentId, new HashMap<>());
+        cache.readMergedRegions(gSheetDocumentId);
     }
 
     public static void unregister(String gSheetDocumentId) {
@@ -37,6 +35,7 @@ public class GSpreadsheetDocumentElementsCache {
         cache.rowsCache.remove(gSheetDocumentId);
         cache.cellsCache.remove(gSheetDocumentId);
         cache.spreadsheets.remove(gSheetDocumentId);
+        cache.mergedRegionsCache.remove(gSheetDocumentId);
     }
 
     public static GSheetCellStyle getSpreadsheetStyle(String gSheetDocumentId) {
@@ -75,7 +74,7 @@ public class GSpreadsheetDocumentElementsCache {
     }
 
     public static RowData getGRow(String gSheetDocumentId, int sheetIndex, int rowIndex) {
-        String rowId = sheetIndex + "|" + rowIndex;
+        String rowId = getId(sheetIndex, rowIndex);
         return getGRow(gSheetDocumentId, rowId, sheetIndex, rowIndex);
     }
 
@@ -84,19 +83,80 @@ public class GSpreadsheetDocumentElementsCache {
         Map<String, CellData> cellsCache = cache.cellsCache.get(gSheetDocumentId);
         CellData gSheetCell = cellsCache.get(cellId);
         if (gSheetCell == null) {
-           List<CellData> rowValues =  cache.spreadsheets.get(gSheetDocumentId)
+            List<CellData> rowValues = cache.spreadsheets.get(gSheetDocumentId)
                     .getSheets().get(sheetIndex)
                     .getData().get(0)
                     .getRowData().get(rowIndex)
                     .getValues();
-           if(columnIndex < rowValues.size()) {
-               gSheetCell = rowValues.get(columnIndex);
-               if (gSheetCell != null) {
-                   cellsCache.put(cellId, gSheetCell);
-               }
-           }
+            if (columnIndex < rowValues.size()) {
+                gSheetCell = rowValues.get(columnIndex);
+                if (gSheetCell != null) {
+                    cellsCache.put(cellId, gSheetCell);
+                }
+            }
         }
         return gSheetCell;
+    }
+
+    public static Integer getMergedRegionIndex(String gSheetDocumentId, String cellId) {
+        return getInstance().mergedRegionsCache.get(gSheetDocumentId).get(cellId);
+    }
+
+    public static void addMergedRegion(String gSheetDocumentId, int sheetIndex, int regionIndex, GridRange region) {
+        GSpreadsheetDocumentElementsCache cache = getInstance();
+        Map<String, Integer> mergedRegionsCache = cache.mergedRegionsCache.get(gSheetDocumentId);
+        for (int i = region.getStartRowIndex(); i <= region.getEndRowIndex(); i++) {
+            for (int j = region.getStartColumnIndex(); j <= region.getEndColumnIndex(); j++) {
+                mergedRegionsCache.put(getId(sheetIndex, i, j), regionIndex);
+            }
+        }
+    }
+
+    public static void removeMergedRegions(String gSheetDocumentId, List<Integer> regionIndexes) {
+        GSpreadsheetDocumentElementsCache cache = getInstance();
+        Map<String, Integer> mergedRegionsCache = cache.mergedRegionsCache.get(gSheetDocumentId);
+        Map<String, Integer> newMergedRegions = new HashMap<>();
+        for (String cellId : mergedRegionsCache.keySet()) {
+            Integer index = mergedRegionsCache.get(cellId);
+            if (!regionIndexes.contains(index)) {
+                int count = 0;
+                for (Integer rI : regionIndexes) {
+                    if (index > rI) count++;
+                }
+                newMergedRegions.put(cellId, index - count);
+            }
+        }
+        mergedRegionsCache.clear();
+        mergedRegionsCache.putAll(newMergedRegions);
+    }
+
+    private void readMergedRegions(String gSheetDocumentId) {
+        Spreadsheet spreadsheet = spreadsheets.get(gSheetDocumentId);
+        if (spreadsheet == null) {
+            return;
+        }
+        Map<String, Integer> docMergedRegionsCache = mergedRegionsCache.get(gSheetDocumentId);
+        if (docMergedRegionsCache == null) {
+            docMergedRegionsCache = new HashMap<>();
+            mergedRegionsCache.put(gSheetDocumentId, docMergedRegionsCache);
+        } else {
+            docMergedRegionsCache.clear();
+        }
+        for (Sheet sheet : spreadsheet.getSheets()) {
+            int sheetIndex = sheet.getProperties().getIndex();
+            List<GridRange> mergedRegions = sheet.getMerges();
+            if(mergedRegions == null){
+                return;
+            }
+            for (int regionIndex = 0; regionIndex < mergedRegions.size(); regionIndex++) {
+                GridRange mergedRegion = mergedRegions.get(regionIndex);
+                for (int i = mergedRegion.getStartRowIndex(); i <= mergedRegion.getEndRowIndex(); i++) {
+                    for (int j = mergedRegion.getStartColumnIndex(); j <= mergedRegion.getEndColumnIndex(); j++) {
+                        docMergedRegionsCache.put(getId(sheetIndex, i, j), regionIndex);
+                    }
+                }
+            }
+        }
     }
 
     public static void clearRowsAndCellsCache(String excelDocumentId) {
@@ -105,12 +165,20 @@ public class GSpreadsheetDocumentElementsCache {
         cache.cellsCache.get(excelDocumentId).clear();
     }
 
+    public static String getId(int sheetIndex, int rowIndex) {
+        return sheetIndex + "|" + rowIndex;
+    }
+
+    public static String getId(int sheetIndex, int rowIndex, int columnIndex) {
+        return sheetIndex + "|" + rowIndex + "|" + columnIndex;
+    }
+
     private Map<String, Spreadsheet> spreadsheets = new HashMap<>();
     private Map<String, GSheetCellStyle> spreadsheetsStyles = new HashMap<>();
-
     private Map<String, Map<Integer, com.google.api.services.sheets.v4.model.Sheet>> sheetsCache = new HashMap<>();
     private Map<String, Map<String, RowData>> rowsCache = new HashMap<>();
     private Map<String, Map<String, CellData>> cellsCache = new HashMap<>();
+    private Map<String, Map<String, Integer>> mergedRegionsCache = new HashMap<>();
 
     private GSpreadsheetDocumentElementsCache() {
     }
