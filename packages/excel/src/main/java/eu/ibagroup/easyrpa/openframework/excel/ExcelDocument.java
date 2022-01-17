@@ -4,7 +4,7 @@ import eu.ibagroup.easyrpa.openframework.excel.constants.MatchMethod;
 import eu.ibagroup.easyrpa.openframework.excel.exceptions.VBScriptExecutionException;
 import eu.ibagroup.easyrpa.openframework.excel.internal.poi.POIElementsCache;
 import eu.ibagroup.easyrpa.openframework.excel.internal.poi.POISaveMemoryExtension;
-import eu.ibagroup.easyrpa.openframework.excel.utils.FilePathUtils;
+import eu.ibagroup.easyrpa.openframework.core.utils.FilePathUtils;
 import eu.ibagroup.easyrpa.openframework.excel.vbscript.MacroRunner;
 import eu.ibagroup.easyrpa.openframework.excel.vbscript.VBScript;
 import eu.ibagroup.easyrpa.openframework.excel.vbscript.VBScriptProcessor;

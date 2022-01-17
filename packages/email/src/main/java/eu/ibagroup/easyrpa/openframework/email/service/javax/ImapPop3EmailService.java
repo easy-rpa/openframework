@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.mail.imap.IMAPFolder;
 import eu.ibagroup.easyrpa.openframework.core.model.RPASecretCredentials;
 import eu.ibagroup.easyrpa.openframework.email.EmailMessage;
-import eu.ibagroup.easyrpa.openframework.email.exception.BreakEmailCheckException;
+import eu.ibagroup.easyrpa.openframework.email.exception.BreakEmailFetchException;
 import eu.ibagroup.easyrpa.openframework.email.exception.EmailMessagingException;
 import eu.ibagroup.easyrpa.openframework.email.service.InboundEmailProtocol;
 import eu.ibagroup.easyrpa.openframework.email.service.InboundEmailService;
@@ -21,6 +21,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+/**
+ * Implementation of inbound email services that is working based on IMAP and POP3 protocols.
+ */
 public class ImapPop3EmailService implements InboundEmailService {
 
     private static final int DEFAULT_BATCH_SIZE = 10;
@@ -139,7 +142,7 @@ public class ImapPop3EmailService implements InboundEmailService {
     }
 
     @Override
-    public List<EmailMessage> fetchMessages(String folderName, Predicate<EmailMessage> isSatisfy) throws EmailMessagingException {
+    public List<EmailMessage> fetchMessages(String folderName, Predicate<EmailMessage> isSatisfy) {
         return openFolderAndPerform(folderName, Folder.READ_ONLY, folder -> {
             try {
                 List<EmailMessage> result = new ArrayList<>();
@@ -156,7 +159,7 @@ public class ImapPop3EmailService implements InboundEmailService {
                                     if (isSatisfy.test(message)) {
                                         result.add(message);
                                     }
-                                } catch (BreakEmailCheckException e) {
+                                } catch (BreakEmailFetchException e) {
                                     if (e.isIncludeIntoResult()) {
                                         result.add(message);
                                     }
@@ -164,7 +167,7 @@ public class ImapPop3EmailService implements InboundEmailService {
                                 }
                             }
                             readMessagesCount += batchSize;
-                        } catch (BreakEmailCheckException e) {
+                        } catch (BreakEmailFetchException e) {
                             break;
                         }
                     }
@@ -196,7 +199,7 @@ public class ImapPop3EmailService implements InboundEmailService {
                                     if (isSatisfy.test(message)) {
                                         result.add(message);
                                     }
-                                } catch (BreakEmailCheckException e) {
+                                } catch (BreakEmailFetchException e) {
                                     if (e.isIncludeIntoResult()) {
                                         result.add(message);
                                     }
@@ -204,7 +207,7 @@ public class ImapPop3EmailService implements InboundEmailService {
                                 }
                             }
                             readMessagesCount += batchSize;
-                        } catch (BreakEmailCheckException e) {
+                        } catch (BreakEmailFetchException e) {
                             break;
                         }
                     }
@@ -237,7 +240,7 @@ public class ImapPop3EmailService implements InboundEmailService {
     }
 
     @Override
-    public CompletableFuture<List<EmailMessage>> waitMessages(String folderName, Predicate<EmailMessage> isSatisfy, Duration timeout, Duration checkInterval) throws EmailMessagingException {
+    public CompletableFuture<List<EmailMessage>> waitMessages(String folderName, Predicate<EmailMessage> isSatisfy, Duration timeout, Duration checkInterval) {
         if (timeout == null) {
             throw new IllegalArgumentException("Timeout must be specified.");
         }
@@ -267,7 +270,7 @@ public class ImapPop3EmailService implements InboundEmailService {
                                                 if (isSatisfy.test(message)) {
                                                     messages.add(message);
                                                 }
-                                            } catch (BreakEmailCheckException e) {
+                                            } catch (BreakEmailFetchException e) {
                                                 if (e.isIncludeIntoResult()) {
                                                     messages.add(message);
                                                 }
@@ -353,7 +356,7 @@ public class ImapPop3EmailService implements InboundEmailService {
     }
 
     @Override
-    public void updateMessage(EmailMessage message) throws EmailMessagingException {
+    public void updateMessage(EmailMessage message) {
         findMessageAndPerform(message, Folder.READ_WRITE, msg -> {
             try {
                 msg.setFlag(Flags.Flag.SEEN, message.isRead());
@@ -365,7 +368,7 @@ public class ImapPop3EmailService implements InboundEmailService {
     }
 
     @Override
-    public void updateMessages(List<EmailMessage> messages) throws EmailMessagingException {
+    public void updateMessages(List<EmailMessage> messages) {
         findAllMessagesAndPerform(messages, (message, msg) -> {
             try {
                 msg.setFlag(Flags.Flag.SEEN, message.isRead());
@@ -377,7 +380,7 @@ public class ImapPop3EmailService implements InboundEmailService {
     }
 
     @Override
-    public void deleteMessage(EmailMessage message) throws EmailMessagingException {
+    public void deleteMessage(EmailMessage message) {
         findMessageAndPerform(message, Folder.READ_WRITE, msg -> {
             try {
                 Folder folder = msg.getFolder();
@@ -391,7 +394,7 @@ public class ImapPop3EmailService implements InboundEmailService {
     }
 
     @Override
-    public void deleteMessages(List<EmailMessage> messages) throws EmailMessagingException {
+    public void deleteMessages(List<EmailMessage> messages) {
         findAllMessagesAndPerform(messages, (message, msg) -> {
             try {
                 msg.setFlag(Flags.Flag.DELETED, true);
@@ -403,7 +406,7 @@ public class ImapPop3EmailService implements InboundEmailService {
     }
 
     @Override
-    public List<String> listFolders() throws EmailMessagingException {
+    public List<String> listFolders() {
         return connectAndPerform(store -> {
             try {
                 Folder[] folders = store.getDefaultFolder().list("*");
@@ -430,7 +433,7 @@ public class ImapPop3EmailService implements InboundEmailService {
     }
 
     @Override
-    public boolean renameFolder(String folderName, String newFolderName) throws EmailMessagingException {
+    public boolean renameFolder(String folderName, String newFolderName) {
         return connectAndPerform(store -> {
             try {
                 Folder folder = store.getFolder(folderName);
@@ -446,7 +449,7 @@ public class ImapPop3EmailService implements InboundEmailService {
     }
 
     @Override
-    public boolean deleteFolder(String folderName) throws EmailMessagingException {
+    public boolean deleteFolder(String folderName) {
         return connectAndPerform(store -> {
             try {
                 Folder folder = store.getFolder(folderName);
@@ -585,18 +588,17 @@ public class ImapPop3EmailService implements InboundEmailService {
         props.put(String.format("mail.%s.host", protocol.getProtocolName()), host);
         props.put(String.format("mail.%s.port", protocol.getProtocolName()), port);
 
-        if (protocol == InboundEmailProtocol.POP3_OVER_TSL || protocol == InboundEmailProtocol.IMAP_OVER_TSL) {
+        if (protocol == InboundEmailProtocol.POP3_OVER_TLS || protocol == InboundEmailProtocol.IMAP_OVER_TLS) {
+            props.put(String.format("mail.%s.auth", protocol.getProtocolName()), "true");
             props.put(String.format("mail.%s.starttls.enable", protocol.getProtocolName()), "true");
+            props.put(String.format("mail.%s.starttls.required", protocol.getProtocolName()), "true");
 
         } else if (protocol == InboundEmailProtocol.POP3S || protocol == InboundEmailProtocol.IMAPS) {
+            props.put(String.format("mail.%s.auth", protocol.getProtocolName()), "true");
+            props.put(String.format("mail.%s.ssl.enable", protocol.getProtocolName()), "true");
             props.put(String.format("mail.%s.socketFactory.class", protocol.getProtocolName()), "javax.net.ssl.SSLSocketFactory");
             props.put(String.format("mail.%s.socketFactory.fallback", protocol.getProtocolName()), "false");
             props.put(String.format("mail.%s.socketFactory.port", protocol.getProtocolName()), port);
-
-        }
-
-        if (protocol == InboundEmailProtocol.IMAP || protocol == InboundEmailProtocol.IMAPS) {
-            props.put(String.format("mail.%s.fetchsize", protocol.getProtocolName()), "5000000");
         }
 
         return props;

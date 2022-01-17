@@ -1,7 +1,7 @@
 package eu.ibagroup.easyrpa.openframework.database.exceptions;
 
 /**
- * Database runtime exception. Throws in case of some errors or problems during working with database.
+ * Database runtime exception. Thrown in case of some errors or problems during working with database.
  */
 public class DatabaseException extends RuntimeException {
 

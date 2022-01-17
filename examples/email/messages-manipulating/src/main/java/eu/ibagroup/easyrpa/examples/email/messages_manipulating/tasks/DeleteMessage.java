@@ -26,7 +26,7 @@ public class DeleteMessage extends ApTask {
 
         if (message != null) {
             log.info("Delete message.");
-//            emailClient.deleteMessage(message);
+            emailClient.deleteMessage(message);
 
             message = emailClient.fetchMessage(messageId);
             if (message == null) {
