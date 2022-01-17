@@ -17,6 +17,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * Implementation of {@link MessageConverter} for converting of {@link EmailMessage} to {@link MimeMessage}.
+ */
 public class MimeMessageConverter extends MessageConverter<Message> {
 
     private static final Pattern INLINE_IMAGE_NAME_RE = Pattern.compile("src=\"cid:([\\w.]+)\"");
@@ -33,6 +36,12 @@ public class MimeMessageConverter extends MessageConverter<Message> {
         this.session = session;
     }
 
+    /**
+     * Converts {@link EmailMessage} message to the {@link MimeMessage} message.
+     *
+     * @param emailMessage the source {@link EmailMessage} to convert.
+     * @return the {@link MimeMessage} message corresponding to the source {@link EmailMessage} message.
+     */
     @Override
     public Message convertToNativeMessage(EmailMessage emailMessage) {
         MimeMessage message = new MimeMessage(this.session);
@@ -103,6 +112,12 @@ public class MimeMessageConverter extends MessageConverter<Message> {
         }
     }
 
+    /**
+     * Converts the {@link MimeMessage} message to {@link EmailMessage} message.
+     *
+     * @param nativeMessage the source {@link MimeMessage} message to convert.
+     * @return the {@link EmailMessage} corresponding to the source {@link MimeMessage} message.
+     */
     @Override
     public EmailMessage convertToEmailMessage(Message nativeMessage) {
         return new MimeMessageWrapper((MimeMessage) nativeMessage);

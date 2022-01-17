@@ -18,6 +18,10 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Supplier;
 
+/**
+ * Special implementation of {@link EmailMessage} that wraps related {@link MimeMessage} and provides read-only
+ * access to its data and parameters.
+ */
 public class MimeMessageWrapper extends EmailMessage {
 
     private static final String CHARSET_KEY = "charset=";

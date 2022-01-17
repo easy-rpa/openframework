@@ -1,6 +1,4 @@
-package eu.ibagroup.easyrpa.openframework.excel.utils;
-
-import org.apache.commons.io.FilenameUtils;
+package eu.ibagroup.easyrpa.openframework.core.utils;
 
 import java.io.File;
 import java.util.regex.Matcher;
@@ -41,13 +39,33 @@ public class FilePathUtils {
      */
     public static String normalizeFilePath(String path) {
         if (path.contains("%")) {
-            path = FilenameUtils.separatorsToSystem(path);
+
+            path = separatorsToSystem(path);
             Matcher matcher = Pattern.compile("%\\w+%").matcher(path);
             while (matcher.find()) {
                 String var = matcher.group();
-                path = path.replaceAll(var, FilenameUtils.separatorsToSystem(System.getenv(var.replaceAll("%", ""))));
+                path = path.replaceAll(var, separatorsToSystem(System.getenv(var.replaceAll("%", ""))));
             }
         }
-        return FilenameUtils.separatorsToSystem(path);
+        return separatorsToSystem(path);
+    }
+
+    /**
+     * Converts all separators to the system separator.
+     *
+     * @param path the path to be changed, null ignored
+     * @return the updated path
+     */
+    private static String separatorsToSystem(String path) {
+        if (path == null) {
+            return null;
+        }
+        if (File.separatorChar == '\\' && path.indexOf('/') >= 0) {
+            return path.replace('/', File.separatorChar);
+        }
+        if (File.separatorChar == '/' && path.indexOf('\\') >= 0) {
+            return path.replace('\\', File.separatorChar);
+        }
+        return path;
     }
 }

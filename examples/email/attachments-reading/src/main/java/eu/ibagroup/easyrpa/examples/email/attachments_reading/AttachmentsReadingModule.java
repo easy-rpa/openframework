@@ -3,6 +3,7 @@ package eu.ibagroup.easyrpa.examples.email.attachments_reading;
 import eu.ibagroup.easyrpa.engine.annotation.ApModuleEntry;
 import eu.ibagroup.easyrpa.engine.apflow.ApModule;
 import eu.ibagroup.easyrpa.engine.apflow.TaskOutput;
+import eu.ibagroup.easyrpa.engine.boot.ApModuleRunner;
 import eu.ibagroup.easyrpa.examples.email.attachments_reading.tasks.ReadMessagesWithAttachments;
 import lombok.extern.slf4j.Slf4j;
 
@@ -10,8 +11,11 @@ import lombok.extern.slf4j.Slf4j;
 @ApModuleEntry(name = "Attachments Reading")
 public class AttachmentsReadingModule extends ApModule {
 
-    // change ReadEmail.class to any of the two remaining task-classes
     public TaskOutput run() throws Exception {
         return execute(getInput(), ReadMessagesWithAttachments.class).get();
+    }
+
+    public static void main(String[] args) {
+        ApModuleRunner.localLaunch(AttachmentsReadingModule.class);
     }
 }
