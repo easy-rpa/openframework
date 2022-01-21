@@ -9,8 +9,11 @@
 
 ## Description
 
-The database library provides convenient and easy to use functionality for working with remote databases within RPA processes. Actually this library wraps functionality of ORMLite library and organize the process of intialization and establishing of database connection in more clear way with less amount of code. As ORMLite it supports most popular types of databases (like MySQL, Postgres etc.). But the functionality does not depends of database type which makes the process of switch between different DBs very simple and fast.
-
+The database library provides convenient and easy to use functionality for working with remote databases within RPA
+processes. Actually this library wraps functionality of ORMLite library and organize the process of initialization 
+and establishing of database connection in more clear way with less amount of code. As ORMLite it supports most popular
+types of databases (like MySQL, Postgres etc.). But the functionality does not depends of database type which makes 
+the process of switching between different databases very simple and fast.
 
 ## Usage
 To start use the library first you need to add corresponding Maven dependency to your project:

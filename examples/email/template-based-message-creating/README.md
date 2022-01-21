@@ -31,7 +31,7 @@ public class BooksInStockEmail extends EmailMessage {
 
     private static final String TYPE_NAME = "books.in.stock.email";
 
-    private static final String TEMPLATE_FILE_PATH = "/email_templates/books_in_stock.ftl";
+    private static final String TEMPLATE_FILE_PATH = "/email_templates/books_proposition.ftl";
 
     private static final String SUBJECT = "Books In Stock";
 
