@@ -6,7 +6,7 @@ import eu.ibagroup.easyrpa.openframework.excel.constants.MatchMethod;
 import eu.ibagroup.easyrpa.openframework.excel.exceptions.VBScriptExecutionException;
 import eu.ibagroup.easyrpa.openframework.excel.internal.poi.POIElementsCache;
 import eu.ibagroup.easyrpa.openframework.excel.internal.poi.XSSFSheetExt;
-import eu.ibagroup.easyrpa.openframework.excel.utils.FilePathUtils;
+import eu.ibagroup.easyrpa.openframework.core.utils.FilePathUtils;
 import eu.ibagroup.easyrpa.openframework.excel.vbscript.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;

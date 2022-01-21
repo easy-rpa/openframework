@@ -1,7 +1,6 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets;
 
 import com.google.api.services.sheets.v4.model.CellData;
-import com.google.api.services.sheets.v4.model.Request;
 import com.google.api.services.sheets.v4.model.RowData;
 import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSpreadsheetDocumentElementsCache;
 
@@ -20,8 +19,6 @@ public class Column implements Iterable<Cell> {
     private int columnIndex;
 
     private String documentId;
-
-    private List<Request> requests = new ArrayList<>();
 
     protected Column(Sheet parent, int columnIndex) {
         this.parent = parent;
@@ -73,12 +70,8 @@ public class Column implements Iterable<Cell> {
     }
 
     public void setValue(String cellRef, Object value) {
-        setValue(new CellRef(cellRef), value);
-    }
-
-    public void setValue(CellRef cellRef, Object value) {
         if (cellRef != null) {
-            setValue(cellRef.getRow(), value);
+            setValue(new CellRef(cellRef).getRow(), value);
         }
     }
 
@@ -90,50 +83,6 @@ public class Column implements Iterable<Cell> {
         cell.setValue(value);
     }
 
-    public List<Request> setValuesInOneTransaction(List<?> columnDataList) {
-        String sessionId = getDocument().generateNewSessionId();
-        getDocument().openSessionIfRequired(sessionId);
-        if (columnDataList != null && !columnDataList.isEmpty()) {
-            int i = 0;
-            for (Object currentCellValue : columnDataList) {
-                Cell cell = new Cell(parent, this.getFirstRowIndex() + i, columnIndex);
-                requests.addAll(cell.setValue(currentCellValue));
-                i++;
-            }
-        }
-        getDocument().closeSessionIfRequired(sessionId, requests);
-        return requests;
-    }
-
-    public List<Request> setFormulasInOneTransaction(List<String> columnDataList) {
-        String sessionId = getDocument().generateNewSessionId();
-        getDocument().openSessionIfRequired(sessionId);
-        if (columnDataList != null && !columnDataList.isEmpty()) {
-            int i = 0;
-            for (String currentCellValue : columnDataList) {
-                Cell cell = new Cell(parent, this.getFirstRowIndex() + i, columnIndex);
-                requests.addAll(cell.setFormula(currentCellValue));
-                i++;
-            }
-        }
-        getDocument().closeSessionIfRequired(sessionId, requests);
-        return requests;
-    }
-
-    public List<Request> setStylesInOneTransaction(List<GSheetCellStyle> columnDataList) {
-        String sessionId = getDocument().generateNewSessionId();
-        getDocument().openSessionIfRequired(sessionId);
-        if (columnDataList != null && !columnDataList.isEmpty()) {
-            int i = 0;
-            for (GSheetCellStyle currentCellValue : columnDataList) {
-                Cell cell = new Cell(parent, this.getFirstRowIndex() + i, columnIndex);
-                requests.addAll(cell.setStyle(currentCellValue));
-                i++;
-            }
-        }
-        getDocument().closeSessionIfRequired(sessionId, requests);
-        return requests;
-    }
 
     public List<Object> getValues() {
         return getValues(Object.class);
@@ -180,20 +129,27 @@ public class Column implements Iterable<Cell> {
     }
 
     public void putRange(String startRef, List<?> data) {
-        putRange(new CellRef(startRef), data);
-    }
-
-    public void putRange(CellRef startRef, List<?> data) {
         if (startRef != null) {
-            putRange(startRef.getRow(), data);
+            putRange(new CellRef(startRef).getRow(), data);
         }
     }
 
     public void putRange(int startRow, List<?> data) {
         if (data != null) {
-            int row = startRow;
-            for (Object cellValue : data) {
-                setValue(row++, cellValue);
+            boolean isSessionHasBeenOpened = false;
+            try {
+                if (!GSessionManager.isSessionOpened(getDocument())) {
+                    GSessionManager.openSession(getDocument());
+                    isSessionHasBeenOpened = true;
+                }
+                int row = startRow;
+                for (Object cellValue : data) {
+                    setValue(row++, cellValue);
+                }
+            } finally {
+                if (isSessionHasBeenOpened) {
+                    GSessionManager.closeSession(getDocument());
+                }
             }
         }
     }
@@ -208,21 +164,21 @@ public class Column implements Iterable<Cell> {
 
     public Cell getCell(int rowIndex) {
         if (rowIndex >= 0) {
-            RowData row = GSpreadsheetDocumentElementsCache.getGRow(documentId, sheetIndex, rowIndex);
-            if (row != null && row.size() > 0 && row.getValues().size()>columnIndex) {
-                    CellData cell = row.getValues().get(columnIndex);
-                    return cell != null ? new Cell(parent, rowIndex, columnIndex) : null;
-
+            RowData row = GSheetElementsCache.getGRow(documentId, sheetIndex, rowIndex);
+            if (row != null && row.size() > 0 && row.getValues().size() > columnIndex) {
+                CellData cell = row.getValues().get(columnIndex);
+                return cell != null ? new Cell(parent, rowIndex, columnIndex) : null;
             }
         }
         return null;
     }
 
     public Cell createCell(int rowIndex) {
-        RowData row = GSpreadsheetDocumentElementsCache.getGRow(documentId,sheetIndex,rowIndex);;
+        RowData row = GSheetElementsCache.getGRow(documentId, sheetIndex, rowIndex);
+        ;
         if (row == null) {
             row = new RowData();
-            GSpreadsheetDocumentElementsCache.getGSheet(documentId,sheetIndex).getData().get(0).getRowData().add(rowIndex, row);
+            GSheetElementsCache.getGSheet(documentId, sheetIndex).getData().get(0).getRowData().add(rowIndex, row);
         }
         row.getValues().add(columnIndex, new CellData());
         return new Cell(parent, rowIndex, columnIndex);

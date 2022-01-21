@@ -1,7 +1,7 @@
 package eu.ibagroup.easyrpa.openframework.excel.vbscript;
 
 import eu.ibagroup.easyrpa.openframework.excel.exceptions.VBScriptExecutionException;
-import eu.ibagroup.easyrpa.openframework.excel.utils.FilePathUtils;
+import eu.ibagroup.easyrpa.openframework.core.utils.FilePathUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 

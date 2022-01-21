@@ -12,6 +12,9 @@ import eu.ibagroup.easyrpa.openframework.email.service.OutboundEmailService;
 import javax.mail.*;
 import java.util.Properties;
 
+/**
+ * Implementation of outbound email services that is working based on SMTP protocol.
+ */
 public class SmtpEmailService implements OutboundEmailService {
 
     private final String host;
@@ -80,7 +83,9 @@ public class SmtpEmailService implements OutboundEmailService {
     @Override
     public void send(EmailMessage message) throws EmailMessagingException {
         if (message.getSender() == null) {
-            message.sender(this.user).excludeFromRecipients(this.user).excludeFromCcRecipients(this.user);
+            message.setSender(this.user);
+            message.excludeFromRecipients(this.user);
+            message.excludeFromCcRecipients(this.user);
         }
 
         Message nativeMessage = this.messageConverter.convertToNativeMessage(message);
@@ -100,16 +105,20 @@ public class SmtpEmailService implements OutboundEmailService {
     private Properties getConfigurationFor(OutboundEmailProtocol protocol) {
         Properties props = new Properties();
         props.put("mail.transport.protocol", protocol.getProtocolName());
-        props.put(String.format("mail.%s.auth", protocol.getProtocolName()), "true");
         props.put(String.format("mail.%s.host", protocol.getProtocolName()), host);
         props.put(String.format("mail.%s.port", protocol.getProtocolName()), port);
 
-        if (protocol == OutboundEmailProtocol.SMTP_OVER_TSL) {
+        if (protocol == OutboundEmailProtocol.SMTP_OVER_TLS) {
+            props.put(String.format("mail.%s.auth", protocol.getProtocolName()), "true");
             props.put(String.format("mail.%s.starttls.enable", protocol.getProtocolName()), "true");
+            props.put(String.format("mail.%s.starttls.required", protocol.getProtocolName()), "true");
 
         } else if (protocol == OutboundEmailProtocol.SMTPS) {
+            props.put(String.format("mail.%s.auth", protocol.getProtocolName()), "true");
+            props.put(String.format("mail.%s.ssl.enable", protocol.getProtocolName()), "true");
             props.put(String.format("mail.%s.socketFactory.class", protocol.getProtocolName()), "javax.net.ssl.SSLSocketFactory");
             props.put(String.format("mail.%s.socketFactory.port", protocol.getProtocolName()), port);
+            props.put(String.format("mail.%s.socketFactory.fallback", protocol.getProtocolName()), "false");
         }
         return props;
     }

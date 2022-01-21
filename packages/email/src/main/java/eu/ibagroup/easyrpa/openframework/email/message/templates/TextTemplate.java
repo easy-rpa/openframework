@@ -1,40 +1,59 @@
 package eu.ibagroup.easyrpa.openframework.email.message.templates;
 
-import freemarker.template.TemplateException;
-
-import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Base class for any textual template.
+ * <p>
+ * It keeps all parameters necessary for compilation of the template.
+ *
+ * @see FreeMarkerTemplate
+ */
 public abstract class TextTemplate {
 
-    protected String templateName = "";
+    /**
+     * Map with properties that is intended to use for substitution of variables within this template.
+     */
+    protected Map<String, Object> properties;
 
-    protected Map<String, Object> scopes;
-
-    public TextTemplate(Map<String, Object> map) {
-        if (map != null) {
-            this.scopes = map;
+    /**
+     * Constructs a new TextTemplate.
+     *
+     * @param props the map with properties that is intended to use for substitution of variables within this template.
+     */
+    public TextTemplate(Map<String, Object> props) {
+        if (props != null) {
+            this.properties = props;
         } else {
-            this.scopes = new HashMap<>();
+            this.properties = new HashMap<>();
         }
     }
 
-    public void setTemplateName(String templateName) {
-        this.templateName = templateName;
-    }
-
-    public TextTemplate put(Map<String, Object> data) {
-        data.forEach(this::put);
+    /**
+     * Puts all properties of given map into properties of this template.
+     *
+     * @param props the map with properties to put.
+     * @return this object to allow joining of methods calls into chain.
+     */
+    public TextTemplate put(Map<String, Object> props) {
+        props.forEach(this::put);
         return this;
     }
 
+    /**
+     * Puts a new property into properties of this template.
+     *
+     * @param varName the template variable name for which this property defines a value.
+     * @param value   the actual value that should be used instead of variable during compilation of this template.
+     * @return this object to allow joining of methods calls into chain.
+     */
     @SuppressWarnings("unchecked")
-    public TextTemplate put(String scope, Object data) {
-        Object currentData = scopes.get(scope);
+    public TextTemplate put(String varName, Object value) {
+        Object currentData = properties.get(varName);
         if (currentData != null) {
             List<Object> list;
             if (currentData instanceof List) {
@@ -42,16 +61,26 @@ public abstract class TextTemplate {
             } else {
                 list = new ArrayList<>();
                 list.add(currentData);
-                scopes.put(scope, list);
+                properties.put(varName, list);
             }
-            list.add(data);
+            list.add(value);
         } else {
-            scopes.put(scope, data);
+            properties.put(varName, value);
         }
         return this;
     }
 
-    public abstract String compile() throws IOException, TemplateException;
+    /**
+     * Compiles this template.
+     *
+     * @return the string with result of this template compilation using specified properties.
+     */
+    public abstract String compile();
 
-    public abstract void compileAndWrite(Writer writer) throws IOException, TemplateException;
+    /**
+     * Compiles this template and writes result using given writer.
+     *
+     * @param writer the {@link Writer} used for writing the result of compilation.
+     */
+    public abstract void compileAndWrite(Writer writer);
 }

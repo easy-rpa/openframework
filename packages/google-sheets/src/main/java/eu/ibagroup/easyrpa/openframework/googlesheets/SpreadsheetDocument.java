@@ -32,6 +32,8 @@ public class SpreadsheetDocument implements Iterable<Sheet>, AutoCloseable {
         requests = new ArrayList<>();
     }
 
+    public Sheets getService() { return service; }
+
     public String getId() {
         return googleSpreadsheet.getSpreadsheetId();
     }
@@ -227,22 +229,7 @@ public class SpreadsheetDocument implements Iterable<Sheet>, AutoCloseable {
         return null;
     }
 
-    public void openSessionIfRequired(String sessionOwnerId) {
-        if (!isSessionOpened) {
-            this.sessionOwnerId = sessionOwnerId;
-            isSessionOpened = true;
-        }
-    }
-
-    public void closeSessionIfRequired(String sessionOwnerId, List<Request> requests) {
-        if (sessionOwnerId.equals(this.sessionOwnerId)) {
-            this.requests = requests;
-            commit();
-            isSessionOpened = false;
-        }
-    }
-
-    public String generateNewSessionId() {
+    public String generateNewSessionId(){
         return (int) (Math.random() * 100) + "" + (System.currentTimeMillis() % 1000000);
     }
 

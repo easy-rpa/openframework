@@ -53,7 +53,7 @@ public class DatabaseService {
      *  }
      * </pre>
      *
-     * @param rpaServices instance of accessor that allows to use embedded into RPA platform services
+     * @param rpaServices instance of accessor that allows to use use provided by RPA platform services
      *                    like configuration, secret vault etc.
      * @see Inject
      * @see RPAServicesAccessor

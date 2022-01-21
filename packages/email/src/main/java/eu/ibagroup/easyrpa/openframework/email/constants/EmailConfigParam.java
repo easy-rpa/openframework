@@ -1,5 +1,9 @@
-package eu.ibagroup.easyrpa.openframework.email.service;
+package eu.ibagroup.easyrpa.openframework.email.constants;
 
+/**
+ * The list of configuration parameter names which can be specified within RPA platform to provide necessary
+ * for working with mailbox and email messages information.
+ */
 public class EmailConfigParam {
 
     public static final String OUTBOUND_EMAIL_SERVER = "outbound.email.server";
@@ -15,8 +19,6 @@ public class EmailConfigParam {
     public static final String INBOUND_EMAIL_SECRET = "inbound.email.secret";
 
     public static final String MAILBOX_DEFAULT_FOLDER = "mailbox.default.folder";
-
-    public static final String SENDER_TPL = "%s.sender";
 
     public static final String SENDER_NAME_TPL = "%s.sender.name";
 

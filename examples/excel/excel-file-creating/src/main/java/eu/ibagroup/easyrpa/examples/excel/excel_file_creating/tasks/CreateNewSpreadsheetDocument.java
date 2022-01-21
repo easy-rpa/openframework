@@ -10,7 +10,7 @@ import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.examples.excel.excel_file_creating.entities.Passenger;
 import eu.ibagroup.easyrpa.openframework.excel.ExcelDocument;
 import eu.ibagroup.easyrpa.openframework.excel.Sheet;
-import eu.ibagroup.easyrpa.openframework.excel.utils.FilePathUtils;
+import eu.ibagroup.easyrpa.openframework.core.utils.FilePathUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 

@@ -6,7 +6,7 @@ import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.engine.model.SecretCredentials;
 import eu.ibagroup.easyrpa.openframework.email.EmailClient;
 import eu.ibagroup.easyrpa.openframework.email.EmailMessage;
-import eu.ibagroup.easyrpa.openframework.email.exception.BreakEmailCheckException;
+import eu.ibagroup.easyrpa.openframework.email.exception.BreakEmailFetchException;
 import eu.ibagroup.easyrpa.openframework.email.message.EmailAttachment;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -37,7 +37,7 @@ public class ReadMessagesWithAttachments extends ApTask {
             log.info("Check message '{}'", msg.getSubject());
             if (msg.hasAttachments()) {
                 //By throwing this exception it stops further checking of emails and return this message as single result
-                throw new BreakEmailCheckException(true);
+                throw new BreakEmailFetchException(true);
             }
             return false;
         });
