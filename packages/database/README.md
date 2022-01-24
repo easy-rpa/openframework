@@ -168,4 +168,4 @@ And after that - execution of function `withConnection` and `selectAll` with cla
 
 ### Other Examples
 
-Please refer to [Excel Examples](../../examples#database) to see more examples of using this library.
+Please refer to [Database Examples](../../examples#database) to see more examples of using this library.
