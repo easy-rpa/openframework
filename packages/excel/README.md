@@ -15,15 +15,26 @@ using Java program language.
 
 ### Usage
 
-To start use the library first you need to add corresponding Maven dependency to your project:
+To start use the library first you need to add corresponding Maven dependency to your project.
 
-![mavenVersion](https://img.shields.io/maven-central/v/eu.ibagroup/easy-rpa-openframework-excel)
-
-```java
+![mavenVersion](https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-excel)
+```xml
 <dependency>
-    <groupId>eu.ibagroup</groupId>
+    <groupId>eu.easyrpa</groupId>
     <artifactId>easy-rpa-openframework-excel</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0</version>
+</dependency>
+```
+
+Additionally, to let the library collaborate with RPA platform make sure that Maven dependency to corresponding adapter 
+is added also. 
+
+![mavenVersion](https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-adapter-for-openframework)
+```xml
+<dependency>
+    <groupId>eu.easyrpa</groupId>
+    <artifactId>easy-rpa-adapter-for-openframework</artifactId>
+    <version>1.0</version>
 </dependency>
 ```
 

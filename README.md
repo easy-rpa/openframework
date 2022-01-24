@@ -22,7 +22,7 @@ are not familiar with these libraries it takes much time to find them and invest
 functionality will be poorly adapted for usage in the code of robot scenarios. As result the using of functional 
 libraries and APIs can become a nightmare. 
 
-EasyRPA Open Framework is a collection of open-source Java-libraries for Robotic Process Automation designed to be 
+**EasyRPA Open Framework** is a collection of open-source Java-libraries for Robotic Process Automation designed to be 
 used with EasyRPA platform. It keeps in one place libraries to work with most popular document formats and services. 
 The functionality is clear and easy to use with minimal amount of preparation or configuration steps in the code that 
 significantly simplifies development of RPA processes.
@@ -75,7 +75,7 @@ EasyRPA platform is implemented and supported.
 The EasyRPA Open Framework includes following libraries:
 
 <table>
-    <tr><th>Name</th><th>Description</th></tr>
+    <tr><th align="left">Name</th><th align="left">Description</th></tr>
     <tr><td valign="top"><a href="/packages/database">Database</a></td><td>
         Functionality to work with remote databases (MySQL, PostgreSQL, Oracle, DB2, MS SQL Server). 
     </td></tr>
@@ -92,14 +92,6 @@ The EasyRPA Open Framework includes following libraries:
         Functionality to work with Google Sheets. 
     </td></tr>
 </table> 
-
-| Name                                    | Description |
-|:----------------------------------------|:---------------------------------------------------------------------------|
-| [Database](packages/database)           | Interact with databases (MySQL, PostgreSQL, Oracle, DB2, MS SQL Server) |
-| [Email](packages/email)                 | E-Mail operations |
-| [Excel](packages/excel)                 | Includes functionality related to Excel and CSV files. For optimal performance, all of the following functions can be used through the backend services without communicating with physical application |
-| [Google Drive](packages/google-drive)   | Operations with files and folders |
-| [Google Sheets](packages/google-sheets) | Manipulate Google Sheets files directly |
 
 ## Links
 

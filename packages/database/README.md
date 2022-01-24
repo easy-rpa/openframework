@@ -1,13 +1,13 @@
 # Database
 
-## Table of Contents
+### Table of Contents
 * [Description](#description)
 * [Usage](#usage)
 * [Simple SELECT from database](#simple-select-from-database)
 * [Select records from a table as collection of Java objects](#select-records-from-a-table-as-collection-of-java-objects)
-* [Example](#example)
+* [Other Example](#other-examples)
 
-## Description
+### Description
 
 The database library provides convenient and easy to use functionality for working with remote databases within RPA
 processes. Actually this library wraps functionality of ORMLite library and organize the process of initialization 
@@ -15,22 +15,36 @@ and establishing of database connection in more clear way with less amount of co
 types of databases (like MySQL, Postgres etc.). But the functionality does not depends of database type which makes 
 the process of switching between different databases very simple and fast.
 
-## Usage
-To start use the library first you need to add corresponding Maven dependency to your project:
+### Usage
 
-![mavenVersion](https://img.shields.io/maven-central/v/eu.ibagroup/database)
+To start use the library first you need to add corresponding Maven dependency to your project.
 
-```java
+![mavenVersion](https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-database)
+```xml
 <dependency>
-    <groupId>eu.ibagroup</groupId>
-    <artifactId>database</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <groupId>eu.easyrpa</groupId>
+    <artifactId>easy-rpa-openframework-database</artifactId>
+    <version>1.0</version>
 </dependency>
 ```
 
-## Simple SELECT from database
+Additionally, to let the library collaborate with RPA platform make sure that Maven dependency to corresponding adapter 
+is added also. 
 
-In most often cases during interaction with databases we need to get some data from it. In this example we will describe how to perform a simple SELECT query.
+![mavenVersion](https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-adapter-for-openframework)
+```xml
+<dependency>
+    <groupId>eu.easyrpa</groupId>
+    <artifactId>easy-rpa-adapter-for-openframework</artifactId>
+    <version>1.0</version>
+</dependency>
+```
+
+
+### Simple SELECT from database
+
+In most often cases during interaction with databases we need to get some data from it. In this example we will 
+describe how to perform a simple SELECT query.
 
 The first step in such case would be configuration of connection to a specific database. There is 1 parameter responsible for this:
 
@@ -41,7 +55,7 @@ The first step in such case would be configuration of connection to a specific d
 | databaseAlias           | the key of secret vault entry that keeps necessary for establishing database connection parameters in JSON format |
 
 Decoded value looks like this:
-```java
+```json
     {
         "jdbcUrl":"jdbc:postgresql://localhost:5432/postgres",
         "user": "postgres",
@@ -98,7 +112,7 @@ After that we can simply get data from the table - call of our SQL query using f
 Such approach will allow you simply switch between Production and Test environments without a code changes.
 
 
-## Select records from a table as collection of Java objects
+### Select records from a table as collection of Java objects
 
 First step in this example - we prepare our Java class which describes fields of a table. This class will be used to automatically transform the data we get from the table to Java object:
 
@@ -152,6 +166,6 @@ And after that - execution of function `withConnection` and `selectAll` with cla
     }
 ```
 
-## Example
+### Other Examples
 
-For more code examples please refer to corresponding [article](https://github.com/easyrpa/openframework/tree/main/examples#database). 
+Please refer to [Excel Examples](../../examples#database) to see more examples of using this library.
