@@ -7,6 +7,7 @@
 * [Introduction](#introduction)
 * [Usage](#usage)
 * [Libraries](#libraries)
+* [Examples](#examples)
 * [Links](#links)
 * [Contributing](#contributing)
 * [License](#license)
@@ -92,6 +93,11 @@ The EasyRPA Open Framework includes following libraries:
         Functionality to work with Google Sheets. 
     </td></tr>
 </table> 
+
+## Examples
+
+Please refer to [Examples page](../../examples) to see the full list of examples of using EasyRPA Open Framework 
+libraries.
 
 ## Links
 
