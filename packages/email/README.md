@@ -6,7 +6,7 @@
 * [Sending of simple message](#sending-of-simple-message)
 * [Creating of complex messages using FreeMarker templates](#creating-of-complex-messages-using-freemarker-templates)
 * [Searching and reading of inbound messages](#searching-and-reading-of-inbound-messages)
-* [Other Examples](#other-examples)
+* [Other examples](#other-examples)
 * [Configuration parameters](#configuration-parameters)
 * [Supported protocols](#supported-protocols)
 
@@ -319,7 +319,7 @@ List<EmailMessage> messages = emailClient.fetchMessages();
 ...
 ```
 
-### Other Examples
+### Other examples
 
 Please refer to [Email Examples](../../examples#email) to see more examples of using this library.
 

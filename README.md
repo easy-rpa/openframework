@@ -23,9 +23,9 @@ functionality will be poorly adapted for usage in the code of robot scenarios. A
 libraries and APIs can become a nightmare. 
 
 **EasyRPA Open Framework** is a collection of open-source Java-libraries for Robotic Process Automation designed to be 
-used with EasyRPA platform. It keeps in one place libraries to work with most popular document formats and services. 
-The functionality is clear and easy to use with minimal amount of preparation or configuration steps in the code that 
-significantly simplifies development of RPA processes.
+used with [EasyRPA](http://easyrpa.eu) platform. It keeps in one place libraries to work with most popular document 
+formats and services. The functionality is clear and easy to use with minimal amount of preparation or configuration 
+steps in the code that ``significantly simplifies development of RPA processes.
 
 The project is:
 - 100% Open Source

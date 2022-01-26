@@ -1,27 +1,28 @@
 # Waiting of message based on specified condition
 
-Example of process that periodically looks up email messages with specific keywords in subject or body. Process ends 
-when email message with corresponding keywords is present or appears in mailbox.
+This example periodically looks up email messages with specific keywords in subject or body. This process ends when 
+email message with corresponding keywords is present or appears in mailbox.
 
 ```Java
-    public void execute() throws ExecutionException, InterruptedException {
-        EmailClient emailClient = new EmailClient();
+@Inject
+private EmailClient emailClient;
 
-        List<String> LOOKUP_KEYWORDS = Arrays.asList("database", "storage");
+public void execute() throws ExecutionException, InterruptedException {
+    List<String> LOOKUP_KEYWORDS = Arrays.asList("database", "storage");
     
-        List<EmailMessage> messages = emailClient.waitMessages(msg -> {
+    List<EmailMessage> messages = emailClient.waitMessages(msg -> {
         log.info("Check message '{}'", msg.getSubject());
         msg.markRead();
         boolean subjectContainsKeywords = LOOKUP_KEYWORDS.stream().anyMatch(msg.getSubject()::contains);
         boolean bodyContainsKeywords = LOOKUP_KEYWORDS.stream().anyMatch(msg.getText()::contains);
         return subjectContainsKeywords || bodyContainsKeywords;
-        }, Duration.ofMinutes(30), Duration.ofSeconds(5)).get();
-
-        log.info("Retrieved messages:");
-        messages.forEach(msg -> {
+    }, Duration.ofMinutes(30), Duration.ofSeconds(5)).get();
+    
+    log.info("Retrieved messages:");
+    messages.forEach(msg -> {
         log.info("'{}' from '{}'", msg.getSubject(), msg.getSender().getPersonal());
-        });
-    }
+    });
+}
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -58,19 +59,26 @@ Its a fully workable process. To play around with it and run do the following:
 
 [down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/email/message-waiting
 
-## Configuration
+### Configuration
+
 All necessary configuration files can be found in `src/main/resources` directory.
 
 **apm_run.properties**
 
-| Parameter     | Value         |
-| ------------- |---------------|
-| `inbound.email.server` | Host name and port of inbound email server |
-| `inbound.email.protocol` | Protocol which is used by inbound email server |
-| `inbound.email.secret` | Vault alias that contains credentials for authentication on the inbound email server |
-
-**vault.properties**
-
-| Alias     | Value         |
-| ------------- |---------------|
-| `mailbox` | Json with credentials in encoded with Base64. Example of json:<br>`{ "user": "sender@gmail.com", "password": "passphrase" }` |
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td valign="top"><code>inbound.email.server</code></td><td>
+        The host name or IP-address of inbound email server. 
+    </td></tr>
+    <tr><td valign="top"><code>inbound.email.protocol</code></td><td>
+        The name of protocol which should be used for interaction with inbound email server. 
+    </td></tr>
+    <tr><td valign="top"><code>inbound.email.secret</code></td><td>
+        The alias of secret vault entry with credentials for authentication on the inbound email server. In case of 
+        running of this example without EasyRPA Control Server, secret vault entries can be specified in the 
+        <code>vault.properties</code> file. The value of secret vault entry in this case should be a JSON string with 
+        following structure encoded with Base64:<br>
+        <br>
+        <code>{ "user": "user@example.com", "password": "passphrase" }</code>    
+    </td></tr>
+</table> 

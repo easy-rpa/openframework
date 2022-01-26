@@ -5,7 +5,7 @@
 * [Usage](#usage)
 * [Reading of Excel files](#reading-of-excel-files)
 * [Creating of Excel files](#creating-of-excel-files)
-* [Other Examples](#other-examples)
+* [Other examples](#other-examples)
 
 ### Description
 
@@ -145,6 +145,6 @@ The following result should be gotten after calling of `insertTable()`:
   <img src="https://i.postimg.cc/y8SWvT5H/excel-file-creating.png">
 </p>
 
-### Other Examples
+### Other examples
 
 Please refer to [Excel Examples](../../examples#excel) to see more examples of using this library.

@@ -1,59 +1,94 @@
 # Creating of message based on FreeMarker template
 
 This example shows how properly to create complex email message with large body that depends on many inputs. 
-
- ![Image](message_screenshot.png 'Complex message example')
+<p align="center">
+  <img src="https://i.postimg.cc/cCkNj11j/message-screenshot.png">
+</p>
 
 In such cases much more convenient to keep and edit text of the body in separate file. This can be achieved using 
-FreeMarker templates that are supported by Email component.
+FreeMarker templates that are supported by Email library.
+
+*books_proposition.ftl*
+```html
+<html>
+    <head>
+        <#include "/email_templates/books_proposition.css">
+    </head>
+    <body>
+        <div class="message-body">
+            <p>
+              Dear customer,
+            <p/>
+            <p>
+              Today our bookshop can propose you to buy following books
+            </p>
+            <table>
+                <tr><th class="first">Name</th><th>Author</th></tr>
+                <#list books as book>
+                    <tr class="row${book_index % 2}"><td>${book.getName()}</td><td>${book.getAuthor()}</td></tr>
+                </#list>
+            </table>
+        </div>
+    </body>
+</html>
+```
 
 For more details about possibilities of FreeMarker templates see
  [FreeMarker Manual](https://freemarker.apache.org/docs/index.html)
-
-```Java
-    public void execute() {
-        List<Book> books = new ArrayList<>();
-        books.add(new Book("Thinking in Java", "Bruce Eckel"));
-        books.add(new Book("Le avventure di Cipollino", "Giovanni Francesco Rodari"));
-        books.add(new Book("War and Peace", "Lev Tolstoy"));
-
-        EmailSender emailSender = new EmailSender();
-
-        log.info("Create message using Email Sender and send it.");
-        new BooksInStockEmail(emailSender).setBooksInfo(books).send();
-    }
-```
-
-Custom class `BooksInStockEmail` :
-
+ 
+It's recommended to define custom classes that extends `EmailMessage` class and represents specific email messages. 
+The custom email class can be used for collecting and preparation of all inputs necessary to generate it's content.
 ```java
-public class BooksInStockEmail extends EmailMessage {
+public class BooksPropositionEmail extends EmailMessage {
 
-    private static final String TYPE_NAME = "books.in.stock.email";
-
+    private static final String TYPE_NAME = "books.proposition.email";
     private static final String TEMPLATE_FILE_PATH = "/email_templates/books_proposition.ftl";
-
     private static final String SUBJECT = "Books In Stock";
 
     private List<Book> books;
-    public BooksInStockEmail() {
-        super(TYPE_NAME);
-    }
-    public BooksInStockEmail(EmailSender sender) {
+    
+    // Using of @Inject annotation here allows injecting of this message directly 
+    // into place of using it without necessity of separate injecting of EmailSender. 
+    // When EmailSender is provided in constructor of EmailMessage, the message can be send using its method send().  
+    @Inject
+    public BooksPropositionEmail(EmailSender sender) {
         super(TYPE_NAME, sender);
     }
-    public BooksInStockEmail setBooksInfo(List<Book> books) {
+
+    public BooksPropositionEmail setBooksInfo(List<Book> books) {
         this.books = books;
         return this;
     }
 
     @Override
     protected void beforeSend() {
+        // Specifying the email subject.
+        // Here can be any logic based on which the subject can be changed.
         subject(SUBJECT);
-        charset("UTF-8");
+
+        // Path to corresponding FTL file as body.
         html(TEMPLATE_FILE_PATH);
+
+        // Specifying of properties that are used as inputs for FTL file.
         property("books", books);
     }
+}
+```
+
+Finally, the creating and sending of email can be done in several lines of code:
+```java
+@Inject
+private BooksPropositionEmail booksPropositionEmail;
+
+public void execute() {
+    ...    
+    List<Book> books = new Ar<>();
+    books.add(new Book("Thinking in Java", "Bruce Eckel"));
+    books.add(new Book("Le avventure di Cipollino", "Giovanni Francesco Rodari"));
+    books.add(new Book("War and Peace", "Lev Tolstoy"));
+    
+    booksPropositionEmail.setBooksInfo(books).send();
+    ...
 }
 ```
 
@@ -91,22 +126,35 @@ Its a fully workable process. To play around with it and run do the following:
 
 [down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/email/template-based-message-creating
  
-## Configuration
+### Configuration
 
-All necessary configuration files can be found in <code>src/main/resources</code> directory.
+All necessary configuration files can be found in `src/main/resources` directory.
 
 **apm_run.properties**
 
-| Parameter     | Value         |
-| ------------- |---------------|
-| `outbound.email.server` | Host name and port of email server for outbound emails |
-| `outbound.email.protocol` | Protocol which is used by email server for outbound emails |
-| `outbound.email.secret` | Vault alias that contains credentials for authentication on the email server for outbound emails |
-| `email.sender.name` | Name of email sender that will be display as "from" for email recipients |
-| `email.recipients` | Email address where email message will be sent |
-
-**vault.properties**
-
-| Alias     | Value         |
-| ------------- |---------------|
-| `email.user` | Json with credentials in encoded with Base64. Example of json:<br>`{ "user": "sender@gmail.com", "password": "passphrase" }` |
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td valign="top"><code>outbound.email.server</code></td><td>
+        The host name or IP-address of outbound email server. 
+    </td></tr>
+    <tr><td valign="top"><code>outbound.email.protocol</code></td><td>
+        The name of protocol which should be used for interaction with outbound email server. 
+    </td></tr>
+    <tr><td valign="top"><code>outbound.email.secret</code></td><td>
+        The alias of secret vault entry with credentials for authentication on the outbound email server. In case of 
+        running of this example without EasyRPA Control Server, secret vault entries can be specified in the 
+        <code>vault.properties</code> file. The value of secret vault entry in this case should be a JSON string with 
+        following structure encoded with Base64:<br>
+        <br>
+        <code>{ "user": "sender@example.com", "password": "passphrase" }</code>    
+    </td></tr>
+    <tr><td valign="top"><code>email.sender.name</code></td><td>
+        The name of sender that will be displayed in the field "From:" of email message.
+    </td></tr>
+    <tr><td valign="top"><code>books.proposition.email.recipients</code></td><td>
+        The list of email addresses delimited with <code>;</code> who are recipients of email message. These email 
+        addresses displayed in the field <code>To:</code> of the message.<br>
+        <br>
+        Exp: <code>user1@example.com</code> or <code>user1@example.com;user2@example.com;user3@example.com</code>     
+    </td></tr>
+</table>

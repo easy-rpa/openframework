@@ -1,60 +1,73 @@
 # Mailbox messages manipulating
 
-This process example show how it's possible to perform different actions with email messages using Email package 
-functionality.
+This example demonstrates using of Email library functionality to perform different actions with email messages.
 
 * #### Forward message
 ```java
-    public void execute() {
-        EmailClient emailClient = new EmailClient();
-        String messageId = "testEmail";
-        
-        EmailMessage message = emailClient.fetchMessage(messageId);
-        
-        EmailSender emailSender = new EmailSender();
-        String FORWARDED_MESSAGE_TEXT = "This email has been forwarded by EasyRPA robot.";
-        String forwardedEmailRecipients = "test@gmail.com";
-        emailSender.send(message.forwardMessage(true).recipients(forwardedEmailRecipients).html(FORWARDED_MESSAGE_TEXT));
-    }
+@Inject
+private EmailClient emailClient;
+
+@Inject
+private EmailSender emailSender;
+
+public void execute() {
+    String sourceMessageId = "123";
+    String forwardMessageRecipients = "user@example.com";
+    String forwardMessageText = "This email has been forwarded by robot.";
+
+    log.info("Forwarding of message with id '{}'.", sourceMessageId);
+    EmailMessage message = emailClient.fetchMessage(sourceMessageId);
+    
+    log.info("Forward the message to '{}'.", forwardedEmailRecipients);
+    emailSender.send(message.forwardMessage(true).recipients(forwardMessageRecipients).text(forwardMessageText));
+}
 ```
 
 * #### Reply on message
 ```java
-    public void execute() {
-        EmailClient emailClient = new EmailClient();
-        String messageId = "testEmail";
-        EmailMessage message = emailClient.fetchMessage(messageId);
+@Inject
+private EmailClient emailClient;
 
-        EmailSender emailSender = new EmailSender();
-        String REPLY_MESSAGE_TEXT = "EasyRPA robot replied to this email.";
+@Inject
+private EmailSender emailSender;
 
-        emailSender.send(message.replyMessage(true).html(REPLY_MESSAGE_TEXT));
-    }
+public void execute() {
+    String sourceMessageId = "123";
+    String replyMessageText = "Robot replied to this email.";
+
+    log.info("Replying on message with id '{}'.", sourceMessageId);
+    EmailMessage message = emailClient.fetchMessage(sourceMessageId);
+
+    emailSender.send(message.replyMessage(true).html(replyMessageText));
+}
 ```
 
-* #### Mark messages as Read/Unread
+* #### Mark message as Read/Unread
 ```java
-    public void execute() {
-        EmailClient emailClient = new EmailClient();
-        
-        String messageId = "testEmail";
-        EmailMessage message = emailClient.fetchMessage(messageId);
-        
-        message.markRead();
-        message.markUnRead();
-    }
+@Inject
+private EmailClient emailClient;
+
+public void execute() {
+    String sourceMessageId = "123";
+
+    EmailMessage message = emailClient.fetchMessage(messageId);
+    message.markRead();
+    
+    emailClient.updateMessage(message);
+}
 ```
 
 * #### Delete message
 ```java
-    public void execute() {
-        EmailClient emailClient=new EmailClient();
+@Inject
+private EmailClient emailClient;
 
-        String messageId="testEmail";
-        EmailMessage message=emailClient.fetchMessage(messageId);
-        
-        emailClient.deleteMessage(message);
-    }
+public void execute() {
+    String sourceMessageId = "123";
+    EmailMessage message = emailClient.fetchMessage(messageId);
+    
+    emailClient.deleteMessage(message);
+}
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -91,24 +104,48 @@ Its a fully workable process. To play around with it and run do the following:
 
 [down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/email/messages-manipulating
 
-## Configuration
+### Configuration
+
 All necessary configuration files can be found in `src/main/resources` directory.
 
 **apm_run.properties**
 
-| Parameter     | Value         |
-| ------------- |---------------|
-| `outbound.email.server` | Host name and port of email server for outbound emails |
-| `outbound.email.protocol` | Protocol which is used by email server for outbound emails |
-| `outbound.email.secret` | Vault alias that contains credentials for authentication on the email server for outbound emails |
-| `inbound.email.server` | Host name and port of inbound email server |
-| `inbound.email.protocol` | Protocol which is used by inbound email server |
-| `inbound.email.secret` | Vault alias that contains credentials for authentication on the inbound email server |
-| `email.sender.name` | Name of email sender that will be display as "from" for email recipients |
-| `forwarded.email.recipients` | Email address where email message will be forwarded |
-
-**vault.properties**
-
-| Alias     | Value         |
-| ------------- |---------------|
-| `email.user` | Json with credentials in encoded with Base64. Example of json:<br>`{ "user": "sender@gmail.com", "password": "passphrase" }` |
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td valign="top"><code>outbound.email.server</code></td><td>
+        The host name or IP-address of outbound email server. 
+    </td></tr>
+    <tr><td valign="top"><code>outbound.email.protocol</code></td><td>
+        The name of protocol which should be used for interaction with outbound email server. 
+    </td></tr>
+    <tr><td valign="top"><code>outbound.email.secret</code></td><td>
+        The alias of secret vault entry with credentials for authentication on the outbound email server. In case of 
+        running of this example without EasyRPA Control Server, secret vault entries can be specified in the 
+        <code>vault.properties</code> file. The value of secret vault entry in this case should be a JSON string with 
+        following structure encoded with Base64:<br>
+        <br>
+        <code>{ "user": "sender@example.com", "password": "passphrase" }</code>    
+    </td></tr>
+    <tr><td valign="top"><code>inbound.email.server</code></td><td>
+        The host name or IP-address of inbound email server. 
+    </td></tr>
+    <tr><td valign="top"><code>inbound.email.protocol</code></td><td>
+        The name of protocol which should be used for interaction with inbound email server. 
+    </td></tr>
+    <tr><td valign="top"><code>inbound.email.secret</code></td><td>
+        The alias of secret vault entry with credentials for authentication on the inbound email server. In case of 
+        running of this example without EasyRPA Control Server, secret vault entries can be specified in the 
+        <code>vault.properties</code> file. The value of secret vault entry in this case should be a JSON string with 
+        following structure encoded with Base64:<br>
+        <br>
+        <code>{ "user": "user@example.com", "password": "passphrase" }</code>    
+    </td></tr>
+    <tr><td valign="top"><code>email.sender.name</code></td><td>
+        The name of sender that will be displayed in the field "From:" of email message.
+    </td></tr>
+    <tr><td valign="top"><code>forwarded.email.recipients</code></td><td>
+        The list of email addresses delimited with <code>;</code> whom the email message will be forwarded.<br> 
+        <br>
+        Exp: <code>user1@example.com</code> or <code>user1@example.com;user2@example.com;user3@example.com</code>     
+    </td></tr>
+</table> 
