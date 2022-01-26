@@ -165,10 +165,10 @@
     * Delete table records 
     
  - [Working with raw SQL queries](database/working-with-raw-sql)
-    * Execute SQL query
-    * Execute update statement
-    * Execute insert statement
-    * Execute delete statement 
+    * Execute SELECT query
+    * Execute UPDATE statement
+    * Execute INSERT statement
+    * Execute DELETE statement 
     
  - [Working with transaction](database/working-with-transaction)
  
