@@ -96,7 +96,7 @@ The EasyRPA Open Framework includes following libraries:
 
 ## Examples
 
-Please refer to [Examples page](../../examples) to see the full list of examples of using EasyRPA Open Framework 
+Please refer to [Examples page](examples) to see the full list of examples of using EasyRPA Open Framework 
 libraries.
 
 ## Links
