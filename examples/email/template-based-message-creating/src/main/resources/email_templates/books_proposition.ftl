@@ -1,6 +1,6 @@
 <html>
     <head>
-        <#include "/email_templates/books_in_stock.css">
+        <#include "/email_templates/books_proposition.css">
     </head>
     <body>
         <div class="message-body">

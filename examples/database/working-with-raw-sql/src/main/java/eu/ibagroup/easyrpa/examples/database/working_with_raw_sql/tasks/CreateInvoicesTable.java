@@ -1,6 +1,7 @@
 package eu.ibagroup.easyrpa.examples.database.working_with_raw_sql.tasks;
 
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
+import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.database.DatabaseService;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +20,9 @@ public class CreateInvoicesTable extends ApTask {
             "amount double precision, " +
             "outdated boolean default FALSE" +
             ");";
-//            ") TABLESPACE pg_default;\n" +
-//            "ALTER TABLE rpa.invoices OWNER to postgres;";
+
+    @Configuration(value = "invoices.db.params")
+    private String invoicesDbParams;
 
     @Inject
     private DatabaseService dbService;
@@ -28,8 +30,8 @@ public class CreateInvoicesTable extends ApTask {
     @Override
     public void execute() {
 
-        log.info("Creating of new table using SQL statement.");
-        dbService.withConnection("testdb", (c) -> {
+        log.info("Creating of new table using SQL.");
+        dbService.withConnection(invoicesDbParams, (c) -> {
             c.executeUpdate(CREATE_TABLE);
         });
 

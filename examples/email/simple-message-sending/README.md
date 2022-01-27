@@ -1,16 +1,18 @@
 # Sending of simple email message
 
-Example of process that sends simple email message.
+This example sends simple email message.
 
 ```Java
-    public void execute() {
-        EmailSender emailSender = new EmailSender();
-        String subject = "Test mail";
-        String body = "hello";
+@Inject
+private EmailSender emailSender;
 
-        log.info("Create message with Email Sender and then send it.");
-        new EmailMessage(emailSender).subject(subject).text(body).send();
-    }
+public void execute() {       
+    String subject = "Test message";
+    String body = "Hello World!"; 
+
+    log.info("Create message with EmailSender and then send it.");
+    new EmailMessage(emailSender).subject(subject).text(body).send();
+}
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -47,21 +49,35 @@ Its a fully workable process. To play around with it and run do the following:
 
 [down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/email/simple-message-sending
 
-##Configuration
-All necessary configuration files can be found in <code>src/main/resources</code> directory.
+### Configuration
+
+All necessary configuration files can be found in `src/main/resources` directory.
 
 **apm_run.properties**
 
-| Parameter     | Value         |
-| ------------- |---------------|
-| `outbound.email.server` | Host name and port of email server for outbound emails |
-| `outbound.email.protocol` | Protocol which is used by email server for outbound emails |
-| `outbound.email.secret` | Vault alias that contains credentials for authentication on the email server for outbound emails |
-| `email.sender.name` | Name of email sender that will be display as "from" for email recipients |
-| `email.recipients` | Email address where email message will be sent |
-
-**vault.properties**
-
-| Alias     | Value         |
-| ------------- |---------------|
-| `email.user` | Json with credentials in encoded with Base64. Example of json:<br>`{ "user": "sender@gmail.com", "password": "passphrase" }` |
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td valign="top"><code>outbound.email.server</code></td><td>
+        The host name or IP-address of outbound email server. 
+    </td></tr>
+    <tr><td valign="top"><code>outbound.email.protocol</code></td><td>
+        The name of protocol which should be used for interaction with outbound email server. 
+    </td></tr>
+    <tr><td valign="top"><code>outbound.email.secret</code></td><td>
+        The alias of secret vault entry with credentials for authentication on the outbound email server. In case of 
+        running of this example without EasyRPA Control Server, secret vault entries can be specified in the 
+        <code>vault.properties</code> file. The value of secret vault entry in this case should be a JSON string with 
+        following structure encoded with Base64:<br>
+        <br>
+        <code>{ "user": "sender@example.com", "password": "passphrase" }</code>    
+    </td></tr>
+    <tr><td valign="top"><code>email.sender.name</code></td><td>
+        The name of sender that will be displayed in the field "From:" of email message.
+    </td></tr>
+    <tr><td valign="top"><code>email.recipients</code></td><td>
+        The list of email addresses delimited with <code>;</code> who are recipients of email message. These email 
+        addresses displayed in the field <code>To:</code> of the message.<br>
+        <br>
+        Exp: <code>user1@example.com</code> or <code>user1@example.com;user2@example.com;user3@example.com</code>     
+    </td></tr>
+</table>

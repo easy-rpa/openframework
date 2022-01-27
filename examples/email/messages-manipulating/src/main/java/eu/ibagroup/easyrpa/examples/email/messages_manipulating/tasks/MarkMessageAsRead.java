@@ -27,7 +27,7 @@ public class MarkMessageAsRead extends ApTask {
         if (message != null) {
             log.info("Mark input message as read.");
             message.markRead();
-
+            emailClient.updateMessage(message);
         } else {
             log.error("Message with id '{}' is not found.", messageId);
         }

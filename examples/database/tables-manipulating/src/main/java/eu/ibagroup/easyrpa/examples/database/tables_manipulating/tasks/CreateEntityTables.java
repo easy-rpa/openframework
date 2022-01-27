@@ -1,6 +1,7 @@
 package eu.ibagroup.easyrpa.examples.database.tables_manipulating.tasks;
 
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
+import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.examples.database.tables_manipulating.entity.Invoice;
 import eu.ibagroup.easyrpa.examples.database.tables_manipulating.entity.Product;
@@ -13,13 +14,16 @@ import javax.inject.Inject;
 @Slf4j
 public class CreateEntityTables extends ApTask {
 
+    @Configuration(value = "invoices.db.params")
+    private String invoicesDbParams;
+
     @Inject
     private DatabaseService dbService;
 
     @Override
     public void execute() {
         log.info("Creating of tables for entities '{}' and '{}'", Invoice.class.getName(), Product.class.getName());
-        dbService.withConnection("testdb", (c) -> {
+        dbService.withConnection(invoicesDbParams, (c) -> {
             c.createTableIfNotExists(Invoice.class);
             c.createTableIfNotExists(Product.class);
         });

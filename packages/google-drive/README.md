@@ -1,32 +1,42 @@
 # Google Drive
 
-## Table of Contents
+### Table of Contents
 * [Description](#description)
 * [Usage](#usage)
 * [Creating of file](#creating-of-file)
 * [Moving file to a specific location](#creating-of-file)
-* [Example](#example)
+* [Other Example](#other-examples)
 
-## Description
+### Description
 
 Component which provides functionality related to Google Drive.
 
-## Usage
+### Usage
 
-To start use the library first you need to add corresponding Maven dependency to your project:
+To start use the library first you need to add corresponding Maven dependency to your project.
 
-![mavenVersion](https://img.shields.io/maven-central/v/eu.ibagroup/easy-rpa-openframework-google-drive)
-
-```java
+![mavenVersion](https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-google-drive)
+```xml
 <dependency>
-    <groupId>eu.ibagroup</groupId>
+    <groupId>eu.easyrpa</groupId>
     <artifactId>easy-rpa-openframework-google-drive</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0</version>
 </dependency>
 ```
 
+Additionally, to let the library collaborate with RPA platform make sure that Maven dependency to corresponding adapter 
+is added also. 
 
-## Creating of file
+![mavenVersion](https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-adapter-for-openframework)
+```xml
+<dependency>
+    <groupId>eu.easyrpa</groupId>
+    <artifactId>easy-rpa-adapter-for-openframework</artifactId>
+    <version>1.0</version>
+</dependency>
+```
+
+### Creating of file
 
 In this example we will create a file in Google Drive, and after we'll move it to a specific location.
 
@@ -55,7 +65,7 @@ Optional<GoogleFile> file = drive.createFile("test");
 
 Now new file is available on Google Drive.
 
-## Moving file to a specific location
+### Moving file to a specific location
 
 In this section we will continue previous case and move previously created file to a specific folder.
 To achieve this we simply use a command called 'moveFile':
@@ -88,6 +98,6 @@ public class MoveFile extends ApTask {
 }
 ```
 
-## Example
+### Other Examples
 
-For more code examples please refer to corresponding [article](https://github.com/easyrpa/openframework/tree/main/examples#google-drive). 
+Please refer to [Google Drive Examples](../../examples#google-drive) to see more examples of using this library.

@@ -1,24 +1,25 @@
 # Searching of messages based on specified condition
 
-Example of process that looks up email messages with specific keywords in subject or body.
+This example looks up email messages with specific keywords in subject or body.
 
 ```Java
-    public void execute() {
-        List<String> LOOKUP_KEYWORDS = Arrays.asList("database", "storage");
+@Inject
+private EmailClient emailClient;
 
-        EmailClient emailClient = new EmailClient();
-    
-        List<EmailMessage> messages = emailClient.fetchMessages(msg -> {
+public void execute() {
+    List<String> LOOKUP_KEYWORDS = Arrays.asList("database", "storage");
+
+    List<EmailMessage> messages = emailClient.fetchMessages(msg -> {
         boolean subjectContainsKeywords = LOOKUP_KEYWORDS.stream().anyMatch(msg.getSubject()::contains);
         boolean bodyContainsKeywords = LOOKUP_KEYWORDS.stream().anyMatch(msg.getText()::contains);
         return subjectContainsKeywords || bodyContainsKeywords;
-        });
+    });
 
-        log.info("List fetched messages:");
-        messages.forEach(msg -> {
+    log.info("List fetched messages:");
+    messages.forEach(msg -> {
         log.info("'{}' from '{}'", msg.getSubject(), msg.getSender().getPersonal());
-        });
-    }
+    });
+}
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -55,19 +56,26 @@ Its a fully workable process. To play around with it and run do the following:
 
 [down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/email/messages-searching
 
-## Configuration
+### Configuration
+
 All necessary configuration files can be found in `src/main/resources` directory.
 
 **apm_run.properties**
 
-| Parameter     | Value         |
-| ------------- |---------------|
-| `inbound.email.server` | Host name and port of inbound email server |
-| `inbound.email.protocol` | Protocol which is used by inbound email server |
-| `inbound.email.secret` | Vault alias that contains credentials for authentication on the inbound email server |
-
-**vault.properties**
-
-| Alias     | Value         |
-| ------------- |---------------|
-| `mailbox` | Json with credentials in encoded with Base64. Example of json:<br>`{ "user": "sender@gmail.com", "password": "passphrase" }` |
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td valign="top"><code>inbound.email.server</code></td><td>
+        The host name or IP-address of inbound email server. 
+    </td></tr>
+    <tr><td valign="top"><code>inbound.email.protocol</code></td><td>
+        The name of protocol which should be used for interaction with inbound email server. 
+    </td></tr>
+    <tr><td valign="top"><code>inbound.email.secret</code></td><td>
+        The alias of secret vault entry with credentials for authentication on the inbound email server. In case of 
+        running of this example without EasyRPA Control Server, secret vault entries can be specified in the 
+        <code>vault.properties</code> file. The value of secret vault entry in this case should be a JSON string with 
+        following structure encoded with Base64:<br>
+        <br>
+        <code>{ "user": "user@example.com", "password": "passphrase" }</code>    
+    </td></tr>
+</table> 

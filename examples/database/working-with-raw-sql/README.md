@@ -1,88 +1,98 @@
 # Working with raw SQL queries
 
-* ### Execute SQL query
+This example demonstrates using of Database library functionality to perform different SQLs.
+
+* #### Execute SELECT query
 
 ```Java
-    @Inject
-    private DatabaseService dbService;
+@Configuration(value = "invoices.db.params")
+private String invoicesDbParams;
 
-    @Override
-    public void execute() {
-        String oldDate = DateTime.now().minusYears(3).toString("yyyy-MM-dd");
-        String SELECT_INVOICES_SQL = "SELECT * FROM invoices WHERE invoice_date < '%s';";
+@Inject
+private DatabaseService dbService;
 
-        log.info("Output invoices which are older than '{}'.", oldDate);
-        dbService.withConnection("testdb", (c) -> {
-            ResultSet rs = c.executeQuery(String.format(SELECT_INVOICES_SQL, oldDate));
-            while (rs.next()) {
-            int id = rs.getInt("invoice_number");
-            }
-        });
-    }
+public void execute() {
+    String oldDate = DateTime.now().minusYears(3).toString("yyyy-MM-dd");
+    String SELECT_INVOICES_SQL = "SELECT * FROM invoices WHERE invoice_date < '%s';";
+
+    log.info("Output invoices which are older than '{}'.", oldDate);
+    dbService.withConnection(invoicesDbParams, (c) -> {
+        ResultSet rs = c.executeQuery(String.format(SELECT_INVOICES_SQL, oldDate));
+        while (rs.next()) {
+            log.info("invoice_number = {}", rs.getInt("invoice_number"));
+        }
+    });
+}
 ```
 
-* ### Execute update statement
+* #### Execute UPDATE statement
 
 ```Java
-    @Inject
-    private DatabaseService dbService;
+@Configuration(value = "invoices.db.params")
+private String invoicesDbParams;
 
-    @Override
-    public void execute() {
-        String oldDate = DateTime.now().minusYears(3).toString("yyyy-MM-dd");
-        String UPDATE_INVOICES_SQL = "UPDATE invoices SET outdated='TRUE' WHERE invoice_date < '%s';";
+@Inject
+private DatabaseService dbService;
 
-        log.info("Mark outdated invoices using SQL statement.");
-        int res = dbService.withConnection("testdb", (c) -> {
-            return c.executeUpdate(String.format(UPDATE_INVOICES_SQL, oldDate));
-        });
+public void execute() {
+    String oldDate = DateTime.now().minusYears(3).toString("yyyy-MM-dd");
+    String UPDATE_INVOICES_SQL = "UPDATE invoices SET outdated='TRUE' WHERE invoice_date < '%s';";
 
-        log.info("'{}' records have been updated.", res);
-    }
+    log.info("Mark outdated invoices using SQL.");
+    int res = dbService.withConnection(invoicesDbParams, (c) -> {
+        return c.executeUpdate(String.format(UPDATE_INVOICES_SQL, oldDate));
+    });
+
+    log.info("'{}' records have been updated.", res);
+}
 ```
 
-* ### Execute insert statement
+* #### Execute INSERT statement
 
 ```Java
-    @Inject
-    private DatabaseService dbService;
+@Configuration(value = "invoices.db.params")
+private String invoicesDbParams;
 
-    @Override
-    public void execute() {
-        String INSERT_INVOICES_SQL = "INSERT INTO invoices (invoice_number, invoice_date, customer_name, amount) " +
-                                     "VALUES " +
-                                     "('000001', '2019-07-04', 'At&T', '5000.76'), " +
-                                     "('000002', '2012-02-15', 'Apple', '12320.99'), " +
-                                     "('000003', '2014-11-23', 'IBM', '600.00'), " +
-                                     "('000004', '2011-01-04', 'Verizon', '138.50'), " +
-                                     "('000005', '2021-09-01', 'HP', '25600.00');";
+@Inject
+private DatabaseService dbService;
 
-        log.info("Adding of new invoice records using SQL statement.");
-        int res = dbService.withConnection("testdb", (c) -> {
-            return c.executeInsert(INSERT_INVOICES_SQL);
-        });
+public void execute() {
+    String INSERT_INVOICES_SQL = "INSERT INTO invoices (invoice_number, invoice_date, customer_name, amount) " +
+                                 "VALUES " +
+                                 "('000001', '2019-07-04', 'At&T', '5000.76'), " +
+                                 "('000002', '2012-02-15', 'Apple', '12320.99'), " +
+                                 "('000003', '2014-11-23', 'IBM', '600.00'), " +
+                                 "('000004', '2011-01-04', 'Verizon', '138.50'), " +
+                                 "('000005', '2021-09-01', 'HP', '25600.00');";
 
-        log.info("'{}' records have been added successfully.", res);
-    }
+    log.info("Adding of new invoice records using SQL.");
+    int res = dbService.withConnection(invoicesDbParams, (c) -> {
+        return c.executeInsert(INSERT_INVOICES_SQL);
+    });
+
+    log.info("'{}' records have been added successfully.", res);
+}
 ```
 
-* ### Execute delete statement
+* ### Execute DELETE statement
 
 ```Java
-    @Inject
-    private DatabaseService dbService;
+@Configuration(value = "invoices.db.params")
+private String invoicesDbParams;
 
-    @Override
-    public void execute() {
-        String DELETE_INVOICES_SQL = "DELETE FROM invoices WHERE outdated='TRUE';";
+@Inject
+private DatabaseService dbService;
 
-        log.info("Delete invoices marked as outdated using SQL statement.");
-        int res = dbService.withConnection("testdb", (c) -> {
-            return c.executeDelete(DELETE_INVOICES_SQL);
-        });
+public void execute() {
+    String DELETE_INVOICES_SQL = "DELETE FROM invoices WHERE outdated='TRUE';";
 
-        log.info("'{}' records have been deleted.", res);
-    }
+    log.info("Delete invoices marked as outdated using SQL.");
+    int res = dbService.withConnection(invoicesDbParams, (c) -> {
+        return c.executeDelete(DELETE_INVOICES_SQL);
+    });
+
+    log.info("'{}' records have been deleted.", res);
+}
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -118,3 +128,21 @@ Its a fully workable process. To play around with it and run do the following:
 6. Run `main()` method of `WorkingWithRawSqlModule` class.
 
 [down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/database/working-with-raw-sql
+
+### Configuration
+
+All necessary configuration files can be found in `src/main/resources` directory.
+
+**apm_run.properties**
+
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>    
+    <tr><td valign="top"><code>invoices.db.params</code></td><td>
+        The alias of secret vault entry with parameters necessary for establishing connection with database. In case of 
+        running of this example without EasyRPA Control Server, secret vault entries can be specified in the 
+        <code>vault.properties</code> file. The value of secret vault entry in this case should be a JSON string with 
+        following structure encoded with Base64:<br>
+        <br>
+        <code>{"jdbcUrl":"jdbc:postgresql://localhost:5432/postgres", "user": "postgres", "password": "root"}</code>    
+    </td></tr>
+</table> 
