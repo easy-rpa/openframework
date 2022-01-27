@@ -1,58 +1,62 @@
 # Reading data from given sheet
 
-This process example demonstrates different ways how it's possible to read data from Excel file 
-using Excel library.  
+This example demonstrates different ways of reading data from Excel file using Excel library.  
 
 * #### Read values of specific cells    
 ```Java
-public void execute() {
-    String sourceFile = "input.xlsx";
-
-    log.info("Read Excel document located at: {}", sourceFile);
-    ExcelDocument doc = new ExcelDocument(sourceFile);
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
     Sheet sheet = doc.getActiveSheet();
     
-    Object value = sheet.getValue("D8");
-
-    log.info("Value of cell 'D8': {}", value);
-}
+    Object d8Value = sheet.getValue("D8");
+    
+    ...
 ```
      
 * #### Read values of cell range    
 ```Java
-public void execute() {
-    String sourceFile = "input.xlsx";
-    String topLeftCellRef = "C4";
-    String bottomRightCellRef = "M200";
-
-    log.info("Read Excel document located at: {}", sourceFile);
-    ExcelDocument doc = new ExcelDocument(sourceFile);
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
     Sheet sheet = doc.getActiveSheet();
 
-    log.info("Get data range [ {} : {} ] of sheet '{}'.", topLeftCellRef, bottomRightCellRef, sheet.getName());
-    List<List<Object>> data = sheet.getRange(topLeftCellRef, bottomRightCellRef);
-
-    log.info("Fetched data:");
-    data.forEach(rec -> log.info("{}", rec));
-}
+    List<List<Object>> data = sheet.getRange("C4", "M200");
+    
+    ...
 ```
 
-* #### Read the list of sheet table records     
-```Java
-public void execute() {
-    String sourceFile = "input.xlsx";    
-    String topLeftCellOfTableRef = "C3";
+* #### Read the list of sheet table records
 
-    log.info("Read Excel document located at: {}", sourceFile);
-    ExcelDocument doc = new ExcelDocument(sourceFile);
+Using `@ExcelColumn` annotation it's possible to tie Java class fields with values in specific columns of table 
+from Excel file.             
+ ```Java
+@Data
+public class Passenger {
+
+    @ExcelColumn(name = "Passenger Id")
+    private Integer passengerId;
+
+    @ExcelColumn(name = "Name")
+    private String name;
+
+    @ExcelColumn(name = "Sex")
+    private String sex;
+
+    @ExcelColumn(name = "Age")
+    private Integer age;
+
+    ...
+}     
+```
+
+After annotating of necessary fields the reading of data from Excel file looks as follows:    
+```Java
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
     Sheet sheet = doc.getActiveSheet();
 
-    log.info("List records that contains in the table on sheet '{}'.", sheet.getName());
-    Table<Passenger> passengersTable = sheet.getTable(topLeftCellOfTableRef, Passenger.class);
+    String topLeftCellOfTable = "C3";
+    Table<Passenger> passengersTable = sheet.getTable(topLeftCellOfTable, Passenger.class);
+
     for (Passenger p : passengersTable) {
-        log.info("{}", p);
+        ...
     }
-}
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -91,10 +95,14 @@ EasyRPA Control Server:
 
 ### Configuration
 
-All necessary configuration files can be found in <code>src/main/resources</code> directory.
+All necessary configuration files can be found in `src/main/resources` directory.
 
 **apm_run.properties**
 
-| Parameter     | Value         |
-| ------------- |---------------|
-| `source.spreadsheet.file` | Path to spreadsheet file that has to be read. It can be path on local file system or within resources of this project. |
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td valign="top"><code>source.spreadsheet.file</code></td><td>
+        Path to spreadsheet file that has to be read. It can be path on local file system or within resources of this 
+        module.
+    </td></tr>        
+</table>

@@ -1,24 +1,13 @@
 # Running of macros
 
-This process example demonstrates how to run embedded to spreadsheet document macros using Excel package functionality.
+This example demonstrates using of Excel library functionality to run embedded to spreadsheet document macros.
 
 ```java
-    @Override
-    public void execute() {
-        String sourceSpreadsheetFile = "test.xlsx";
-        String macroFunctionName = "test_macro";
-        String outputSpreadsheetFile = "output.xlsx";
-        
-        log.info("Run macro function '{}' of Excel Document located at '{}'", macroFunctionName, sourceSpreadsheetFile);
-        ExcelDocument doc = new ExcelDocument(sourceSpreadsheetFile);
-        doc.runMacro(macroFunctionName);
-        log.info("Running of macro finished successfully.");
+    ExcelDocument doc = new ExcelDocument("source.xlsm");
 
-        log.info("Save changes to '{}'.", outputSpreadsheetFile);
-        doc.saveAs(outputSpreadsheetFile);
+    doc.runMacro("test_macro");
 
-        log.info("Excel document is saved successfully.");
-    }
+    doc.save();
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -55,13 +44,22 @@ Its a fully workable process. To play around with it and run do the following:
 
 [down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/excel/macros-running
 
-## Configuration
-All necessary configuration files can be found in <code>src/main/resources</code> directory.
+### Configuration
+
+All necessary configuration files can be found in `src/main/resources` directory.
 
 **apm_run.properties**
 
-| Parameter     | Value         |
-| ------------- |---------------|
-| `source.spreadsheet.file` | Path to source macro-enabled spreadsheet file. It can be path on local file system or within resources of this project. |
-| `macro.function.name` | Name of macro function that is going to be run. |
-| `output.spreadsheet.file` | Path on local file system where robot will save modified by macro spreadsheet file. |
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td valign="top"><code>source.spreadsheet.file</code></td><td>
+        Path to source macro-enabled spreadsheet file. It can be path on local file system or within resources of 
+        this module.
+    </td></tr>
+    <tr><td valign="top"><code>macro.function.name</code></td><td>
+         Name of macro function that is need to run.
+    </td></tr>
+    <tr><td valign="top"><code>output.spreadsheet.file</code></td><td>
+        Path on local file system where robot will save modified by macro spreadsheet file.
+    </td></tr>    
+</table>

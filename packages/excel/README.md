@@ -41,7 +41,7 @@ is added also.
 ### Reading of Excel files
 
 Alongside direct reading values of cells or cells range this library supports a way to work with Excel file data via 
-plain java objects. 
+plain Java objects. 
 
 Often, the data on Excel sheet is presented using tables. Its a specific range of cells where each cell belongs to some
 column that is titled with value of its top row or rows. Lets take a following example that contains table with list of 

@@ -1,41 +1,14 @@
 # Changing cells style
 
-This process example demonstrates how to specify fonts, colors and borders for cells using Excel package functionality.
+This example demonstrates using of Excel library functionality to specify fonts, colors and borders for cells.
 
 ```java
-    @Override
-    public void execute() {
-        String outputFilesDir = "target/output";
-        
-        String cell1Ref = "C3";
-        String cell2Ref = "C4";
-        String cell3Ref = "C5";
-        
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
+    ExcelDocument doc = new ExcelDocument("test.xlsx");
+    Cell cell = doc.getActiveSheet().getCell("C3");
+    
+    cell.getStyle().italic(true).color(ExcelColors.BLUE.get()).apply();
 
-        //change document file path to avoid overwriting of original file after calling of save() method.
-        doc.setFilePath(outputFilesDir + File.separator + FilenameUtils.getName(doc.getFilePath()));
-
-        Sheet activeSheet = doc.getActiveSheet();
-
-        log.info("Change style for cell '{}' of  sheet '{}'", cell1Ref, activeSheet.getName());
-        Cell cell = activeSheet.getCell(cell1Ref);
-        ExcelCellStyle boldRedStyle = cell.getStyle().bold(true).color(ExcelColors.RED.get());
-        cell.setStyle(boldRedStyle);
-
-        log.info("Change style for cell '{}' of  sheet '{}'", cell2Ref, activeSheet.getName());
-        activeSheet.getCell(cell2Ref).getStyle().italic(true).color(ExcelColors.BLUE.get()).apply();
-
-        log.info("Set new style for cell '{}' of  sheet '{}'", cell3Ref, activeSheet.getName());
-        ExcelCellStyle newStyle = new ExcelCellStyle().fontSize(14)
-        .fill(FillPatternType.SOLID_FOREGROUND).background(ExcelColors.LIGHT_GREEN.get());
-        activeSheet.getCell(cell3Ref).setStyle(newStyle);
-
-        log.info("Save changes for the document.");
-        doc.save();
-
-        log.info("Style for cell '{}' has been specified successfully.", cell1Ref);
-    }
+    doc.save();
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -72,12 +45,19 @@ Its a fully workable process. To play around with it and run do the following:
 
 [down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/excel/cell-style-changing
 
-## Configuration
-All necessary configuration files can be found in <code>src/main/resources</code> directory.
+### Configuration
+
+All necessary configuration files can be found in `src/main/resources` directory.
 
 **apm_run.properties**
 
-| Parameter     | Value         |
-| ------------- |---------------|
-| `source.spreadsheet.file` | Path to source spreadsheet file. It can be path on local file system or within resources of this project. |
-| `output.files.dir` | Path to directory on local file system where robot will put all edited within this process spreadsheet files. |
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td valign="top"><code>source.spreadsheet.file</code></td><td>
+        Path to source spreadsheet file. It can be path on local file system or within resources of this module.
+    </td></tr>
+    <tr><td valign="top"><code>output.files.dir</code></td><td>
+        Path to directory on local file system where robot will put all edited within this process example spreadsheet 
+        files. 
+    </td></tr>    
+</table>
