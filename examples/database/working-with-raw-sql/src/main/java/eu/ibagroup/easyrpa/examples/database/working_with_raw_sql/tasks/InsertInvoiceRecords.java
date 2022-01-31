@@ -1,6 +1,7 @@
 package eu.ibagroup.easyrpa.examples.database.working_with_raw_sql.tasks;
 
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
+import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.database.DatabaseService;
 import lombok.extern.slf4j.Slf4j;
@@ -19,14 +20,17 @@ public class InsertInvoiceRecords extends ApTask {
             "('000004', '2011-01-04', 'Verizon', '138.50'), " +
             "('000005', '2021-09-01', 'HP', '25600.00');";
 
+    @Configuration(value = "invoices.db.params")
+    private String invoicesDbParams;
+
     @Inject
     private DatabaseService dbService;
 
     @Override
     public void execute() {
 
-        log.info("Adding of new invoice records using SQL statement.");
-        int res = dbService.withConnection("testdb", (c) -> {
+        log.info("Adding of new invoice records using SQL.");
+        int res = dbService.withConnection(invoicesDbParams, (c) -> {
             return c.executeInsert(INSERT_INVOICES_SQL);
         });
 

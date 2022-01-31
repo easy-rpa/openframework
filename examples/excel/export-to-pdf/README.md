@@ -1,25 +1,15 @@
 # Exporting Excel file to PDF
 
-This process example demonstrates how to export spreadsheet document to PDF file using Excel package functionality.
+This example demonstrates using of Excel library functionality to export sheet of Excel file to PDF file.
 
-**IMPORTANT:** Excel package uses MS Excel functionality to perform exporting to PDF. To run this process without 
-errors it's required the MS Excel to be installed on machine where the process is running. 
+**IMPORTANT:** Excel library uses MS Excel functionality to perform exporting to PDF. To run this example without 
+errors, MS Excel application MUST be installed on machine where this example is going to be run. 
 
 ```java
-    @Override
-    public void execute() {
-        String sourceSpreadsheetFile = "test.xlsx";
-        String outputPdfFile = "test.pdf";
-    
-        log.info("Export active sheet of spreadsheet document located at '{}'", sourceSpreadsheetFile);
-        ExcelDocument doc = new ExcelDocument(sourceSpreadsheetFile);
-        Sheet activeSheet = doc.getActiveSheet();
-        
-        log.info("Export sheet '{}' to PDF file located at '{}'", activeSheet.getName(), outputPdfFile);
-        activeSheet.exportToPDF(outputPdfFile);
+    ExcelDocument doc = new ExcelDocument("test.xlsx");
+    Sheet activeSheet = doc.getActiveSheet();    
 
-        log.info("Sheet has been exported successfully.");
-    }
+    activeSheet.exportToPDF("test.pdf");
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -56,12 +46,18 @@ Its a fully workable process. To play around with it and run do the following:
 
 [down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/excel/export-to-pdf
 
-## Configuration
-All necessary configuration files can be found in <code>src/main/resources</code> directory.
+### Configuration
+
+All necessary configuration files can be found in `src/main/resources` directory.
 
 **apm_run.properties**
 
-| Parameter     | Value         |
-| ------------- |---------------|
-| `source.spreadsheet.file` | Path to source spreadsheet file. It can be path on local file system or within resources of this project. |
-| `output.pdf.file` | Path on local file system where spreadsheet document is going to be exported. |
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td valign="top"><code>source.spreadsheet.file</code></td><td>
+        Path to source spreadsheet file. It can be path on local file system or within resources of this module.
+    </td></tr>
+    <tr><td valign="top"><code>output.pdf.file</code></td><td>
+        Path on local file system where the sheet of spreadsheet document is going to be exported. 
+    </td></tr>    
+</table>

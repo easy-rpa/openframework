@@ -1,6 +1,7 @@
 package eu.ibagroup.easyrpa.examples.database.working_with_table_records.tasks;
 
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
+import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.examples.database.working_with_table_records.entity.Invoice;
 import eu.ibagroup.easyrpa.openframework.database.DatabaseService;
@@ -13,13 +14,16 @@ import java.util.List;
 @Slf4j
 public class ReadTableRecords extends ApTask {
 
+    @Configuration(value = "invoices.db.params")
+    private String invoicesDbParams;
+
     @Inject
     private DatabaseService dbService;
 
     @Override
     public void execute() {
         log.info("Reading existing records in the table that is used to store entity '{}'", Invoice.class.getName());
-        List<Invoice> invoices = dbService.withConnection("testdb", (c) -> {
+        List<Invoice> invoices = dbService.withConnection(invoicesDbParams, (c) -> {
             return c.selectAll(Invoice.class);
         });
 

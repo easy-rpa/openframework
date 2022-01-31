@@ -1,91 +1,131 @@
 # Working with database table records
 
-* ### Read table records
+This example demonstrates using of Database library functionality for working with database table records via  related 
+Java objects.
 
-```Java
-    @Inject
-    private DatabaseService dbService;
+Using ORMLite annotations `@DatabaseTable` and `@DatabaseField` it's possible to tie the Java class and its fields 
+with specific database table and its columns. It allows to work with table records as collection of Java objects that 
+significantly simplifies the code.
+```java
+@Data
+@DatabaseTable(tableName = "invoices")
+public class Invoice {
 
-    @Override
-    public void execute() {
-        log.info("Reading existing records in the table that is used to store entity '{}'", Invoice.class.getName());
-        List<Invoice> invoices = dbService.withConnection("testdb", (c) -> {
-            return c.selectAll(Invoice.class);
-        });
-    }
+    public static final String DB_DATE_FORMAT = "yyyy-MM-dd";
+
+    @DatabaseField(generatedId = true, allowGeneratedIdInsert = true)
+    private int id;
+
+    @DatabaseField(columnName = "invoice_number", canBeNull = false)
+    private int invoiceNumber;
+
+    @DatabaseField(columnName = "invoice_date", dataType = DataType.DATE, format = DB_DATE_FORMAT)
+    public Date invoiceDate;
+
+    @DatabaseField(columnName = "customer_name", canBeNull = false)
+    private String customerName;
+
+    @DatabaseField(canBeNull = false)
+    private double amount;
+
+    @DatabaseField(canBeNull = false)
+    private boolean outdated;
+}
 ```
 
-* ### Add new table records
+For detail information about `@DatabaseTable` and `@DatabaseField` annotations and using of them please refer to 
+corresponding [ORMLite documentation](https://ormlite.com/javadoc/ormlite-core/doc-files/ormlite.html#Class-Setup).
+
+* #### Read table records
 
 ```Java
-    @Inject
-    private DatabaseService dbService;
+@Configuration(value = "invoices.db.params")
+private String invoicesDbParams;
 
-    @Override
-    public void execute() {
-        List<Invoice> invoicesToAdd = new ArrayList<>();
-        SimpleDateFormat dateFormat = new SimpleDateFormat(Invoice.DB_DATE_FORMAT);
-        invoicesToAdd.add(new Invoice(10001, dateFormat.parse("2021-01-22"), "Sony", 4500));
-        invoicesToAdd.add(new Invoice(10002, dateFormat.parse("2014-04-03"), "Lenovo", 5400.87));
+@Inject
+private DatabaseService dbService;
 
-        log.info("Adding of new records to the table that is used to store entity '{}'", Invoice.class.getName());
-        dbService.withConnection("testdb", (c) -> {
-            c.create(invoicesToAdd);
-        });
-    }
+public void execute() {
+    List<Invoice> invoices = dbService.withConnection(invoicesDbParams, (c) -> {
+        return c.selectAll(Invoice.class);
+    });
+}
 ```
 
-* ### Update table records
+* #### Add new table records
 
 ```Java
-    @Inject
-    private DatabaseService dbService;
+@Configuration(value = "invoices.db.params")
+private String invoicesDbParams;
 
-    @Override
-    public void execute() {
-        Date oldDate = DateTime.now().minusYears(3).toDate();
+@Inject
+private DatabaseService dbService;
 
+public void execute() {
+    List<Invoice> invoicesToAdd = new ArrayList<>();
+    SimpleDateFormat dateFormat = new SimpleDateFormat(Invoice.DB_DATE_FORMAT);
+    invoicesToAdd.add(new Invoice(10001, dateFormat.parse("2021-01-22"), "Sony", 4500));
+    invoicesToAdd.add(new Invoice(10002, dateFormat.parse("2014-04-03"), "Lenovo", 5400.87));
+
+    dbService.withConnection(invoicesDbParams, (c) -> {
+        c.create(invoicesToAdd);
+    });
+}
+```
+
+* #### Update table records
+
+```Java
+@Configuration(value = "invoices.db.params")
+private String invoicesDbParams;
+
+@Inject
+private DatabaseService dbService;
+
+public void execute() {
+    Date oldDate = DateTime.now().minusYears(3).toDate();
+
+    dbService.withConnection(invoicesDbParams, (c) -> {
+        
         log.info("Check and find outdated invoices in the table");
-        dbService.withConnection("testdb", (c) -> {
         List<Invoice> outdatedInvoices = c.queryBuilder(Invoice.class)
             .where().le("invoice_date", oldDate).query();
-
+    
         log.info("Amount of found invoices: {}", outdatedInvoices.size());
-
+    
         log.info("Change outdated flag for found invoices");
         for (Invoice outdatedInvoice : outdatedInvoices) {
             outdatedInvoice.setOutdated(true);
         }
-
+    
         log.info("Update changed invoices in the table");
-            c.update(outdatedInvoices);
-        });
-
-        log.info("Records in the table updated successfully.");
-    }
+        c.update(outdatedInvoices);
+    });
+}
 ```
 
-* ### Delete table records
+* #### Delete table records
 
 ```Java
-    @Inject
-    private DatabaseService dbService;
+@Configuration(value = "invoices.db.params")
+private String invoicesDbParams;
 
-    @Override
-    public void execute() {
+@Inject
+private DatabaseService dbService;
+
+public void execute() {
+    
+    dbService.withConnection(invoicesDbParams, (c) -> {
         log.info("Find invoices marked as outdated in the table");
-        dbService.withConnection("testdb", (c) -> {
-            List<Invoice> outdatedInvoices = c.queryBuilder(Invoice.class)
-                .where().eq("outdated", true).query();
+        List<Invoice> outdatedInvoices = c.queryBuilder(Invoice.class)
+            .where().eq("outdated", true).query();
 
         log.info("Amount of found invoices: {}", outdatedInvoices.size());
-
+    
         log.info("Delete outdated invoices from the table");
-            c.delete(outdatedInvoices);
-        });
-
-        log.info("Records deleted from the table successfully.");
-    }
+        c.delete(outdatedInvoices);
+    });
+}
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -121,3 +161,21 @@ Its a fully workable process. To play around with it and run do the following:
 6. Run `main()` method of `WorkingWithTableRecordsModule` class.
 
 [down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/database/working-with-table-records
+
+### Configuration
+
+All necessary configuration files can be found in `src/main/resources` directory.
+
+**apm_run.properties**
+
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>    
+    <tr><td valign="top"><code>invoices.db.params</code></td><td>
+        The alias of secret vault entry with parameters necessary for establishing connection with database. In case of 
+        running of this example without EasyRPA Control Server, secret vault entries can be specified in the 
+        <code>vault.properties</code> file. The value of secret vault entry in this case should be a JSON string with 
+        following structure encoded with Base64:<br>
+        <br>
+        <code>{"jdbcUrl":"jdbc:postgresql://localhost:5432/postgres", "user": "postgres", "password": "root"}</code>    
+    </td></tr>
+</table> 

@@ -1,66 +1,38 @@
 # Working with merged cells
 
-This process example demonstrates Excel package functionality to merge/unmerge cell groups and read/edit its values.
+This example demonstrates using of Excel library functionality to merge/unmerge cell groups in Excel file and 
+read/edit its values.
 
 * #### Read value from merged cells
 
 ```java
-    @Override
-    public void execute() {
-        String outputFilesDir = "target/output";
-        String OUTPUT_FILE_NAME = "edit_merged_cells_result.xlsx";
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
+    Sheet activeSheet = doc.getActiveSheet();
 
-        String cellRef = "L7";
-        String newValue = "Value of merged cell is changed.";
-        
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
-        Sheet activeSheet = doc.getActiveSheet();
+    Cell cell = activeSheet.getCell("L7");
 
-        Cell cell = activeSheet.getCell(cellRef);
+    CellRange mergedRegion = cell.getMergedRegion();
+    ...
+    
+    Object valueOfMergedRegion = cell.getValue()
+    ...
 
-        CellRange mergedRegion = cell.getMergedRegion();
-        log.info("Cell '{}' is a part of merged region: {}", cellRef, mergedRegion.formatAsString());
+    cell.setValue("Value of merged cell is changed.");
 
-        log.info("Value of merged cell '{}': {}", cellRef, cell.getValue());
-
-        log.info("Change value of merged cell '{}' to '{}'.", cellRef, newValue);
-        cell.setValue(newValue);
-
-        String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);
-        log.info("Save changes to '{}'.", outputFilePath);
-        doc.saveAs(outputFilePath);
-
-        log.info("Spreadsheet document is saved successfully.");
-    }
+    doc.save();
 ```
 
 * #### Merge/unmerge cells
 
 ```java
-    @Override
-    public void execute() {
-        String outputFilesDir = "target/output";
-        String OUTPUT_FILE_NAME = "merged_cells_result.xlsx";
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
+    Sheet activeSheet = doc.getActiveSheet();
 
-        String cellRegionToMerge = "B2:D2";
-        String cellRegionToUnMerge = "I6:L11";
-        
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
-        Sheet activeSheet = doc.getActiveSheet();
+    Cell topLeftCellOfMergedRegion = activeSheet.mergeCells("B2:D2");
 
-        log.info("Merge cells '{}' on sheet '{}'.", cellRegionToMerge, activeSheet.getName());
-        Cell topLeftCellOfMergedRegion = activeSheet.mergeCells(cellRegionToMerge);
-        topLeftCellOfMergedRegion.getStyle().hAlign(HorizontalAlignment.CENTER).vAlign(VerticalAlignment.CENTER).apply();
+    activeSheet.unmergeCells("I6:L11");
 
-        log.info("Unmerge cells '{}'.", cellRegionToUnMerge);
-        activeSheet.unmergeCells(cellRegionToUnMerge);
-
-        String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);
-        log.info("Save changes to '{}'.", outputFilePath);
-        doc.saveAs(outputFilePath);
-
-        log.info("Spreadsheet document is saved successfully.");
-    }
+    doc.save();
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -97,13 +69,19 @@ Its a fully workable process. To play around with it and run do the following:
 
 [down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/excel/working-with-merged-cells
 
+### Configuration
 
-## Configuration
-All necessary configuration files can be found in <code>src/main/resources</code> directory.
+All necessary configuration files can be found in `src/main/resources` directory.
 
 **apm_run.properties**
 
-| Parameter     | Value         |
-| ------------- |---------------|
-| `source.spreadsheet.file` | Path to the source spreadsheet file. It can be path on local file system or within resources of this project. |
-| `output.files.dir` | Path to directory on local file system where robot will put all modified within this process spreadsheet files. |
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td valign="top"><code>source.spreadsheet.file</code></td><td>
+        Path to the source spreadsheet file. It can be path on local file system or within resources of this module.
+    </td></tr>
+    <tr><td valign="top"><code>output.files.dir</code></td><td>
+        Path to directory on local file system where robot will put all modified within this process example spreadsheet 
+        files. 
+    </td></tr>    
+</table>

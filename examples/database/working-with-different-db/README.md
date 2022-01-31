@@ -1,45 +1,75 @@
 # Working with different database types
 
-* ### Work with MySQL
+This example demonstrates the work with different database types. 
 
+The functionality of Database library doesn't depend on specific database type and the code of using it look the same 
+in all cases. But to be able to connect to specific database type it's necessary to add corresponding database driver 
+as Maven dependency. For convenience the Database library has already have some drivers as Maven dependencies. 
+These are drivers for:
+* MySQL
+* PostgreSQL
+* MS SQL Server
+* Oracle
+* DB2
+  
+Corresponding database driver is loaded based on the value of `jdbcUrl` parameter when the method `withConnection()` or 
+`withTransaction()` is called.   
+
+The information regarding different JDBC URL formats for different type of databases can be found 
+[here](https://www.baeldung.com/java-jdbc-url-format).
+
+* #### Work with MySQL
+
+Example of connection parameters to connect to MySQL database:
+```json
+{
+    "jdbcUrl":"jdbc:mysql://localhost:33060/dbname",
+    "user": "root",
+    "password": "root"
+}
+```
+
+Below an example of using these parameters that are specified as value of secret vault entry with alias `"mysql.db"`:
 ```Java
-    @Inject
-    private DatabaseService dbService;
+@Inject
+private DatabaseService dbService;
 
-    @Override
-    public void execute() {
-        String SELECT_ALL_INVOICES_SQL = "SELECT * FROM invoices";
-        
-        log.info("Execute query to MySQL database");
-        dbService.withConnection("mysql.db", (c) -> {
-            ResultSet results = c.executeQuery(SELECT_ALL_INVOICES_SQL);
-            log.info("Fetched results:");
-            while (results.next()) {
-                log.info("Invoice Number: {}", results.getString("invoice_number"));
-            }
-        });
-    }
+public void execute() {
+    dbService.withConnection("mysql.db", (c) -> {
+        ResultSet results = c.executeQuery("SELECT * FROM invoices");
+
+        while (results.next()) {
+            log.info("Invoice Number: {}", results.getString("invoice_number"));
+        }
+    });
+}
 ```
 
 * ### Work with PostgreSQL
 
+Example of connection parameters to connect to MySQL database:
+```json
+{ 
+    "jdbcUrl":"jdbc:postgresql://localhost:5432/postgres", 
+    "user": "postgres", 
+    "password": "root" 
+}
+```
+
+Below an example of using these parameters that are specified as value of secret vault entry with alias `"postgres.db"`:
 ```Java
-    @Inject
-    private DatabaseService dbService;
+@Inject
+private DatabaseService dbService;
 
-    @Override
-    public void execute() {
-        String SELECT_ALL_INVOICES_SQL = "SELECT * FROM invoices";
+public void execute() {
+    dbService.withConnection("postgres.db", (c) -> {
+        ResultSet results = c.executeQuery("SELECT * FROM invoices");
 
-        log.info("Execute query to PostgreSQL database");
-        dbService.withConnection("postgres.db", (c) -> {
-            ResultSet results = c.executeQuery(SELECT_ALL_INVOICES_SQL);
-            log.info("Fetched results:");
-            while (results.next()) {
-                log.info("Invoice Number: {}", results.getString("invoice_number"));
-            }
-        });
-    }
+        while (results.next()) {
+            log.info("Invoice Number: {}", results.getString("invoice_number"));
+        }
+    });
+}
 ```
 
 See the full source of this example for more details or check following instructions to run it.

@@ -4,6 +4,7 @@ import eu.ibagroup.easyrpa.examples.email.template_based_message_creating.entiti
 import eu.ibagroup.easyrpa.openframework.email.EmailMessage;
 import eu.ibagroup.easyrpa.openframework.email.EmailSender;
 
+import javax.inject.Inject;
 import java.util.List;
 
 /**
@@ -11,11 +12,11 @@ import java.util.List;
  *
  * @see EmailMessage
  */
-public class BooksInStockEmail extends EmailMessage {
+public class BooksPropositionEmail extends EmailMessage {
 
-    private static final String TYPE_NAME = "books.in.stock.email";
+    private static final String TYPE_NAME = "books.proposition.email";
 
-    private static final String TEMPLATE_FILE_PATH = "/email_templates/books_in_stock.ftl";
+    private static final String TEMPLATE_FILE_PATH = "/email_templates/books_proposition.ftl";
 
     private static final String SUBJECT = "Books In Stock";
 
@@ -28,7 +29,7 @@ public class BooksInStockEmail extends EmailMessage {
      * configuration parameters related to different emails. Type name is used as prefix for all process
      * configuration parameters that are related only to this email.
      */
-    public BooksInStockEmail() {
+    public BooksPropositionEmail() {
         super(TYPE_NAME);
     }
 
@@ -37,7 +38,8 @@ public class BooksInStockEmail extends EmailMessage {
      *
      * @param sender - email sender that used to provide some configuration parameters and send this email.
      */
-    public BooksInStockEmail(EmailSender sender) {
+    @Inject
+    public BooksPropositionEmail(EmailSender sender) {
         super(TYPE_NAME, sender);
     }
 
@@ -47,7 +49,7 @@ public class BooksInStockEmail extends EmailMessage {
      * @param books - information about available books.
      * @return this instance of the class to combine methods calls into chain.
      */
-    public BooksInStockEmail setBooksInfo(List<Book> books) {
+    public BooksPropositionEmail setBooksInfo(List<Book> books) {
         this.books = books;
         return this;
     }

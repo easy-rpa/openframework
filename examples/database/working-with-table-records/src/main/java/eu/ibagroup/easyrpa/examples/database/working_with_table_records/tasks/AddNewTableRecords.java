@@ -1,6 +1,7 @@
 package eu.ibagroup.easyrpa.examples.database.working_with_table_records.tasks;
 
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
+import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.examples.database.working_with_table_records.entity.Invoice;
 import eu.ibagroup.easyrpa.examples.database.working_with_table_records.service.InvoicesSupplier;
@@ -14,6 +15,9 @@ import java.util.List;
 @Slf4j
 public class AddNewTableRecords extends ApTask {
 
+    @Configuration(value = "invoices.db.params")
+    private String invoicesDbParams;
+
     @Inject
     private DatabaseService dbService;
 
@@ -22,7 +26,7 @@ public class AddNewTableRecords extends ApTask {
         List<Invoice> invoicesToAdd = InvoicesSupplier.provideSampleRecords();
 
         log.info("Adding of new records to the table that is used to store entity '{}'", Invoice.class.getName());
-        dbService.withConnection("testdb", (c) -> {
+        dbService.withConnection(invoicesDbParams, (c) -> {
             c.create(invoicesToAdd);
         });
 
