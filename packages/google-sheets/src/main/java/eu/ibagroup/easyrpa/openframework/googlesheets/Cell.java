@@ -3,6 +3,8 @@ package eu.ibagroup.easyrpa.openframework.googlesheets;
 import com.google.api.services.sheets.v4.model.CellData;
 import com.google.api.services.sheets.v4.model.ExtendedValue;
 import com.google.api.services.sheets.v4.model.NumberFormat;
+import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSessionManager;
+import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSpreadsheetDocumentElementsCache;
 import eu.ibagroup.easyrpa.openframework.googlesheets.style.GSheetCellStyle;
 
 import java.text.SimpleDateFormat;
@@ -114,7 +116,7 @@ public class Cell {
             } else {
                 googleCell.setUserEnteredValue(new ExtendedValue().setStringValue(value.toString()));
             }
-            GSessionManager.getSession(getDocument()).addCellValueRequest(this, googleCell, getDocument());
+            GSessionManager.getSession(getDocument()).addCellValueRequest(this, getDocument());
         } finally {
             if (isSessionHasBeenOpened) {
                 GSessionManager.closeSession(getDocument());
@@ -143,14 +145,13 @@ public class Cell {
 
     public void setFormula(String newCellFormula) {
         boolean isSessionHasBeenOpened = false;
+        getGCell().setUserEnteredValue(new ExtendedValue().setFormulaValue(newCellFormula));
         try {
             if (!GSessionManager.isSessionOpened(getDocument())) {
                 GSessionManager.openSession(getDocument());
                 isSessionHasBeenOpened = true;
             }
-            getGCell()
-                    .setUserEnteredValue(new ExtendedValue().setFormulaValue(newCellFormula)));
-            GSessionManager.getSession(getDocument()).addCellFormulaRequest(this, getGCell(), newCellFormula, getDocument());
+            GSessionManager.getSession(getDocument()).addCellFormulaRequest(this, getDocument());
         } finally {
             if (isSessionHasBeenOpened) {
                 GSessionManager.closeSession(getDocument());
@@ -167,7 +168,7 @@ public class Cell {
         if (googleCell == null || googleCell.size() == 0) {
             return null;
         }
-        Object value = null;
+        Object value;
         ExtendedValue extendedValue = googleCell.getUserEnteredValue();
 
         if (extendedValue != null) {

@@ -4,13 +4,13 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.*;
 import eu.ibagroup.easyrpa.openframework.googlesheets.constants.MatchMethod;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.CopySheetException;
-import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SheetNameAlreadyExist;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SheetNotFound;
 import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.UpdateException;
+import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSessionManager;
 import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSpreadsheetDocumentElementsCache;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,18 +21,16 @@ public class SpreadsheetDocument implements Iterable<Sheet>, AutoCloseable {
 
     private int activeSheetIndex;
     private Sheets service;
-    private List<Request> requests;
-    private boolean isSessionOpened;
-    private String sessionOwnerId;
 
     public SpreadsheetDocument(com.google.api.services.sheets.v4.model.Spreadsheet spreadsheet, Sheets service) {
         this.googleSpreadsheet = spreadsheet;
         this.service = service;
         activeSheetIndex = 0;
-        requests = new ArrayList<>();
     }
 
-    public Sheets getService() { return service; }
+    public Sheets getService() {
+        return service;
+    }
 
     public String getId() {
         return googleSpreadsheet.getSpreadsheetId();
@@ -44,21 +42,22 @@ public class SpreadsheetDocument implements Iterable<Sheet>, AutoCloseable {
                 .map(sheet -> sheet.getProperties().getTitle())
                 .collect(Collectors.toList());
     }
-    public Sheet createSheet(String sheetName){
-       String freeSheetName = createSafeSheetName(sheetName);
-       int sheetIndex =  googleSpreadsheet.getSheets().size();
 
-       com.google.api.services.sheets.v4.model.Sheet newSheet = new com.google.api.services.sheets.v4.model.Sheet();
-       newSheet.setProperties(new SheetProperties().setIndex(sheetIndex).setTitle(freeSheetName));
+    public Sheet createSheet(String sheetName) {
+        String freeSheetName = createSafeSheetName(sheetName);
+        int sheetIndex = googleSpreadsheet.getSheets().size();
 
-       googleSpreadsheet.getSheets().add(newSheet);
+        com.google.api.services.sheets.v4.model.Sheet newSheet = new com.google.api.services.sheets.v4.model.Sheet();
+        newSheet.setProperties(new SheetProperties().setIndex(sheetIndex).setTitle(freeSheetName));
 
-       requests.add(new Request().setAddSheet(
-               new AddSheetRequest()
-                       .setProperties(newSheet.getProperties())
-       ));
+        googleSpreadsheet.getSheets().add(newSheet);
 
-        BatchUpdateSpreadsheetResponse response = commit();
+        Request request = new Request().setAddSheet(
+                new AddSheetRequest()
+                        .setProperties(newSheet.getProperties())
+        );
+
+        BatchUpdateSpreadsheetResponse response = commit(request);
         SheetProperties properties = response
                 .getReplies()
                 .get(response.getReplies().size() - 1)
@@ -66,7 +65,8 @@ public class SpreadsheetDocument implements Iterable<Sheet>, AutoCloseable {
                 .getProperties();
 
         newSheet.setProperties(properties);
-        return new Sheet(this, newSheet.getProperties().getIndex());
+        activeSheetIndex = newSheet.getProperties().getIndex();
+        return new Sheet(this, activeSheetIndex);
 
     }
 
@@ -92,15 +92,15 @@ public class SpreadsheetDocument implements Iterable<Sheet>, AutoCloseable {
         return new Sheet(this, activeSheetIndex);
     }
 
-    public Sheet getSheet(String title){
-        com.google.api.services.sheets.v4.model.Sheet gSheet =  googleSpreadsheet.getSheets()
+    public Sheet getSheet(String title) {
+        com.google.api.services.sheets.v4.model.Sheet gSheet = googleSpreadsheet.getSheets()
                 .stream()
                 .filter(sheet -> title.equalsIgnoreCase(sheet.getProperties().getTitle()))
                 .findFirst()
-                .orElseThrow(()->new SheetNotFound("Sheet with this title wasn't found"));
+                .orElseThrow(() -> new SheetNotFound("Sheet with this title wasn't found"));
 
         activeSheetIndex = gSheet.getProperties().getIndex();
-        return new Sheet(this,activeSheetIndex);
+        return new Sheet(this, activeSheetIndex);
     }
 
     public Sheet selectSheet(String name) {
@@ -136,18 +136,20 @@ public class SpreadsheetDocument implements Iterable<Sheet>, AutoCloseable {
         return googleSpreadsheet.getSheets().get(index);
     }
 
-    public void renameSheet(String name) {
-        if (!sheetNameIsFree(name)) {
-            throw new SheetNameAlreadyExist("This name is already exist in this spreadsheet");
-        }
+    public void renameSpreadsheet(String name) {
         googleSpreadsheet.getProperties().setTitle(name);
-
-        requests.add(new Request().setUpdateSpreadsheetProperties(
-                new UpdateSpreadsheetPropertiesRequest()
-                        .setProperties(googleSpreadsheet.getProperties())
-                        .setFields("*")
-        ));
-        commit();
+        boolean isSessionHasBeenOpened = false;
+        try {
+            if (!GSessionManager.isSessionOpened(this)) {
+                GSessionManager.openSession(this);
+                isSessionHasBeenOpened = true;
+            }
+            GSessionManager.getSession(this).addUpdateSpreadsheetDocumentNameRequest(this);
+        } finally {
+            if (isSessionHasBeenOpened) {
+                GSessionManager.closeSession(this);
+            }
+        }
     }
 
     public String getName() {
@@ -163,14 +165,14 @@ public class SpreadsheetDocument implements Iterable<Sheet>, AutoCloseable {
 
         googleSpreadsheet.getSheets().add(sheet);
 
-        requests.add(new Request().setDuplicateSheet(
+        Request request = new Request().setDuplicateSheet(
                 new DuplicateSheetRequest()
                         .setNewSheetName(sheet.getProperties().getTitle())
                         .setInsertSheetIndex(newSheetIndex)
                         .setSourceSheetId(sheet.getProperties().getSheetId())
-        ));
+        );
 
-        BatchUpdateSpreadsheetResponse response = commit();
+        BatchUpdateSpreadsheetResponse response = commit(request);
         SheetProperties properties = response
                 .getReplies()
                 .get(response.getReplies().size() - 1)
@@ -184,16 +186,18 @@ public class SpreadsheetDocument implements Iterable<Sheet>, AutoCloseable {
     public void removeSheet(String sheetName) {
         com.google.api.services.sheets.v4.model.Sheet sheet = getGSheet(sheetName);
         googleSpreadsheet.getSheets().remove(sheet);
-
-        requests.add(new Request().setDeleteSheet(
-                new DeleteSheetRequest()
-                        .setSheetId(sheet.getProperties().getSheetId())
-        ));
-        commit();
-    }
-
-    public List<Request> getRequests() {
-        return this.requests;
+        boolean isSessionHasBeenOpened = false;
+        try {
+            if (!GSessionManager.isSessionOpened(this)) {
+                GSessionManager.openSession(this);
+                isSessionHasBeenOpened = true;
+            }
+            GSessionManager.getSession(this).addDeleteSheetRequest(sheetName, this);
+        } finally {
+            if (isSessionHasBeenOpened) {
+                GSessionManager.closeSession(this);
+            }
+        }
     }
 
     public void setProperties(SpreadsheetProperties properties) {
@@ -212,27 +216,6 @@ public class SpreadsheetDocument implements Iterable<Sheet>, AutoCloseable {
                 .orElseThrow(() -> new SheetNotFound("Sheet with this name not found"));
     }
 
-    public BatchUpdateSpreadsheetResponse commit() {
-        if (requests.size() > 0) {
-            BatchUpdateSpreadsheetRequest body =
-                    new BatchUpdateSpreadsheetRequest().setRequests(requests);
-
-            try {
-                BatchUpdateSpreadsheetResponse response = service.spreadsheets().batchUpdate(googleSpreadsheet.getSpreadsheetId(), body).execute();
-                requests.clear();
-                return response;
-            } catch (IOException e) {
-                throw new UpdateException(e.getMessage());
-            }
-        }
-        //return null if there were no updates
-        return null;
-    }
-
-    public String generateNewSessionId(){
-        return (int) (Math.random() * 100) + "" + (System.currentTimeMillis() % 1000000);
-    }
-
     public void copySheet(Sheet sheet) {
         CopySheetToAnotherSpreadsheetRequest requestBody = new CopySheetToAnotherSpreadsheetRequest();
         requestBody.setDestinationSpreadsheetId(googleSpreadsheet.getSpreadsheetId());
@@ -241,6 +224,18 @@ public class SpreadsheetDocument implements Iterable<Sheet>, AutoCloseable {
         } catch (IOException e) {
             throw new CopySheetException(e.getMessage());
         }
+    }
+
+    private BatchUpdateSpreadsheetResponse commit(Request request) {
+        if (request != null) {
+            BatchUpdateSpreadsheetRequest body = new BatchUpdateSpreadsheetRequest().setRequests(Collections.singletonList(request));
+            try {
+                return service.spreadsheets().batchUpdate(googleSpreadsheet.getSpreadsheetId(), body).execute();
+            } catch (IOException e) {
+                throw new UpdateException(e.getMessage());
+            }
+        }
+        return null;
     }
 
     private String createSafeSheetName(String sheetName) {
@@ -266,7 +261,7 @@ public class SpreadsheetDocument implements Iterable<Sheet>, AutoCloseable {
 
     @Override
     public void close() {
-        if(getId()!=null){
+        if (getId() != null) {
             GSpreadsheetDocumentElementsCache.unregister(getId());
         }
     }

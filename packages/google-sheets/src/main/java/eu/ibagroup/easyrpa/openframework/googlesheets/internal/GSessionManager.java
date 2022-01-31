@@ -1,4 +1,7 @@
-package eu.ibagroup.easyrpa.openframework.googlesheets;
+package eu.ibagroup.easyrpa.openframework.googlesheets.internal;
+
+import eu.ibagroup.easyrpa.openframework.googlesheets.SpreadsheetDocument;
+import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSession;
 
 import java.util.HashMap;
 import java.util.Map;

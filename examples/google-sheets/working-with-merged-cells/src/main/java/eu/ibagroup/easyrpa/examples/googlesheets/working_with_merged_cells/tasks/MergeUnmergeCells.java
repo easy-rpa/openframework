@@ -7,6 +7,8 @@ import eu.ibagroup.easyrpa.openframework.googlesheets.Cell;
 import eu.ibagroup.easyrpa.openframework.googlesheets.GoogleSheets;
 import eu.ibagroup.easyrpa.openframework.googlesheets.Sheet;
 import eu.ibagroup.easyrpa.openframework.googlesheets.SpreadsheetDocument;
+import eu.ibagroup.easyrpa.openframework.googlesheets.constants.HorizontalAlignment;
+import eu.ibagroup.easyrpa.openframework.googlesheets.constants.VerticalAlignment;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
@@ -26,8 +28,8 @@ public class MergeUnmergeCells extends ApTask {
 
     @Override
     public void execute() {
-        String cellRegionToMerge = "A1:B2";
-        String cellRegionToUnMerge = "E1:F2";
+        String cellRegionToMerge = "A1:D4";
+        String cellRegionToUnMerge = "E2:G4";
 
         log.info("Open sheet with the name '{}' in the document with id '{}'.", sheetName, spreadsheetId);
         SpreadsheetDocument doc = service.getSpreadsheet(spreadsheetId);
@@ -36,12 +38,11 @@ public class MergeUnmergeCells extends ApTask {
         log.info("Merge cells '{}' on sheet '{}'.", cellRegionToMerge, activeSheet.getName());
         Cell topLeftCellOfMergedRegion = activeSheet.mergeCells(cellRegionToMerge);
 
-        topLeftCellOfMergedRegion.getStyle().setHorizontalAlignment("CENTER").setVerticalAlignment("CENTER");
+        topLeftCellOfMergedRegion.getStyle().horizontalAlignment(HorizontalAlignment.CENTER).verticalAlignment(VerticalAlignment.MIDDLE);
 
         log.info("Unmerge cells '{}'.", cellRegionToUnMerge);
         activeSheet.unmergeCells(cellRegionToUnMerge);
 
-        doc.commit();
         log.info("Spreadsheet document is saved successfully.");
     }
 }

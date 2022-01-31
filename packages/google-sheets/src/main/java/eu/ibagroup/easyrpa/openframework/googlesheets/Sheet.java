@@ -3,7 +3,8 @@ package eu.ibagroup.easyrpa.openframework.googlesheets;
 import com.google.api.services.sheets.v4.model.*;
 import eu.ibagroup.easyrpa.openframework.googlesheets.constants.InsertMethod;
 import eu.ibagroup.easyrpa.openframework.googlesheets.constants.MatchMethod;
-import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.SheetNameAlreadyExist;
+import eu.ibagroup.easyrpa.openframework.googlesheets.exceptions.NameAlreadyExist;
+import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSessionManager;
 import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSpreadsheetDocumentElementsCache;
 import eu.ibagroup.easyrpa.openframework.googlesheets.utils.GSheetUtils;
 
@@ -20,10 +21,8 @@ public class Sheet implements Iterable<Row> {
 
     private int sheetIndex;
 
-    private List<Request> requests = new ArrayList<>();
-
     private String documentId;
-    
+
     public Sheet(SpreadsheetDocument parent, int sheetIndex) {
         this.sheetIndex = sheetIndex;
         this.parent = parent;
@@ -53,18 +52,22 @@ public class Sheet implements Iterable<Row> {
 
     public void rename(String name) {
         if (parent.getSheetNames().stream().anyMatch(name::equalsIgnoreCase)) {
-            throw new SheetNameAlreadyExist("Name already defined in this scope");
+            throw new NameAlreadyExist("Name already defined in this scope");
         }
-
-        //googleSheet.getProperties().setTitle(name);
         getGSheet().getProperties().setTitle(name);
 
-        parent.getRequests().add(new Request().setUpdateSheetProperties(
-                new UpdateSheetPropertiesRequest()
-                        .setProperties(getGSheet().getProperties()) //опять же getGsheet не работает
-                        //.setProperties(googleSheet.getProperties())
-                        .setFields("*")
-        ));
+        boolean isSessionHasBeenOpened = false;
+        try {
+            if (!GSessionManager.isSessionOpened(getDocument())) {
+                GSessionManager.openSession(getDocument());
+                isSessionHasBeenOpened = true;
+            }
+            GSessionManager.getSession(getDocument()).addUpdateSheetNameRequest(this);
+        } finally {
+            if (isSessionHasBeenOpened) {
+                GSessionManager.closeSession(getDocument());
+            }
+        }
     }
 
     public GridData getData() {
@@ -213,7 +216,7 @@ public class Sheet implements Iterable<Row> {
     public Row getRow(int rowIndex) {
         if (rowIndex >= 0) {
             List<RowData> rowData = getGSheet().getData().get(0).getRowData();
-            if (rowData != null) {
+            if (rowData != null && rowIndex <= getLastRowIndex()) {
                 RowData row = rowData.get(rowIndex);
                 return row != null ? new Row(this, rowIndex) : null;
             }
@@ -252,7 +255,8 @@ public class Sheet implements Iterable<Row> {
     }
 
     public Row createRow(int rowIndex) {
-        getGSheet().getData().get(0).getRowData().add(rowIndex, new RowData());
+        int numOfRowsToCreate = rowIndex - getLastRowIndex() + 1;
+        createEmptyRows(numOfRowsToCreate);
         return new Row(this, rowIndex);
     }
 
@@ -319,7 +323,7 @@ public class Sheet implements Iterable<Row> {
     }
 
     public int getFirstRowIndex() {
-        return getGSheet().getData().get(0).getStartRow();
+        return getGSheet().getData().get(0).getStartRow() == null ? 0 : getGSheet().getData().get(0).getStartRow();
     }
 
     public int getLastRowIndex() {
@@ -440,10 +444,12 @@ public class Sheet implements Iterable<Row> {
         if (width > 255) {
             throw new IllegalArgumentException("Column width cannot be more than 255.");
         }
+        int numOfColToCreate = columnIndex - getLastColumnIndex() + 1;
+        createEmptyColumnsMetadata(numOfColToCreate);
         getGSheet().getData().get(0).getColumnMetadata().get(columnIndex).setPixelSize(width);
-        // why *256 getGSheet().setColumnWidth(columnIndex, width * 256);
     }
 
+    //incorrect
     public int getFirstColumnIndex() {
         com.google.api.services.sheets.v4.model.Sheet sheet = getGSheet();
         int firstColIndex = -1;
@@ -550,7 +556,8 @@ public class Sheet implements Iterable<Row> {
             sheet.getData().add(new GridData()
                     .setStartColumn(0)
                     .setStartRow(0)
-                    .setRowData(new ArrayList<>()));
+                    .setRowData(new ArrayList<>())
+                    .setColumnMetadata(new ArrayList<>()));
         }
         return sheet;
     }
@@ -623,26 +630,39 @@ public class Sheet implements Iterable<Row> {
         return mergeCells(startRef.getRow(), startRef.getCol(), endRef.getRow(), endRef.getCol());
     }
 
+    //it's not correct working. In contrast to unmerge, end need to be +1
     public Cell mergeCells(int startRow, int startCol, int endRow, int endCol) {
         unmergeCells(startRow, startCol, endRow, endCol);
-        GridRange region = new GridRange()
+        boolean isSessionHasBeenOpened = false;
+        try {
+            if (!GSessionManager.isSessionOpened(getDocument())) {
+                GSessionManager.openSession(getDocument());
+                isSessionHasBeenOpened = true;
+            }
+            GridRange regionForRequest = new GridRange()
+                    .setSheetId(getDocument().getActiveSheet().getId())
+                    .setStartRowIndex(startRow)
+                    .setStartColumnIndex(startCol)
+                    .setEndRowIndex(endRow + 1)
+                    .setEndColumnIndex(endCol + 1);
+            GSessionManager.getSession(getDocument()).addMergeCellsRequest(regionForRequest);
+        } finally {
+            if (isSessionHasBeenOpened) {
+                GSessionManager.closeSession(getDocument());
+            }
+        }
+        GridRange regionForCache = new GridRange()
                 .setSheetId(getDocument().getActiveSheet().getId())
                 .setStartRowIndex(startRow)
                 .setStartColumnIndex(startCol)
                 .setEndRowIndex(endRow)
                 .setEndColumnIndex(endCol);
-
         List<GridRange> regions = getMergeList();
-        regions.add(region);
+        regions.add(regionForCache);
 
-        requests.add(new Request().setMergeCells(
-                new MergeCellsRequest().setMergeType("MERGE_ALL").setRange(region)
-        ));
-
-        GSpreadsheetDocumentElementsCache.addMergedRegion(documentId, sheetIndex, regions.size() - 1, region);
-        Cell topLeftCell = new Cell(this, region.getStartRowIndex(), region.getStartColumnIndex());
-        //TODO apply() method in GSheetCellStyle.
-        topLeftCell.getStyle().applyTo(topLeftCell, parent);
+        GSpreadsheetDocumentElementsCache.addMergedRegion(documentId, sheetIndex, regions.size() - 1, regionForCache);
+        Cell topLeftCell = new Cell(this, regionForCache.getStartRowIndex(), regionForCache.getStartColumnIndex());
+        topLeftCell.getStyle().apply();
         return topLeftCell;
     }
 
@@ -664,8 +684,8 @@ public class Sheet implements Iterable<Row> {
     }
 
     public void unmergeCells(int startRow, int startCol, int endRow, int endCol) {
+        boolean isSessionHasBeenOpened = false;
         final List<GridRange> regions = getMergeList();
-
         GridRange region = new GridRange()
                 .setSheetId(getDocument().getActiveSheet().getId())
                 .setStartRowIndex(startRow)
@@ -678,13 +698,22 @@ public class Sheet implements Iterable<Row> {
                 indicesToRemove.add(index);
             }
         }
-        for (Integer index : indicesToRemove) {
-            requests.add(new Request().setUnmergeCells(
-                    new UnmergeCellsRequest().setRange(regions.get(index))
-            ));
-            regions.remove(index);
+        try {
+            if (!GSessionManager.isSessionOpened(getDocument())) {
+                GSessionManager.openSession(getDocument());
+                isSessionHasBeenOpened = true;
+            }
+            for (int index : indicesToRemove) {
+                GSessionManager.getSession(getDocument()).addUnmergeCellsRequest(regions.get(index));
+                regions.remove(index);
+            }
+            GSpreadsheetDocumentElementsCache.removeMergedRegions(documentId, indicesToRemove);
+
+        } finally {
+            if (isSessionHasBeenOpened) {
+                GSessionManager.closeSession(getDocument());
+            }
         }
-        GSpreadsheetDocumentElementsCache.removeMergedRegions(documentId, indicesToRemove);
     }
 
     public List<CellRange> getMergedRegions() {
@@ -706,6 +735,25 @@ public class Sheet implements Iterable<Row> {
         return startRow >= 0 && startCol >= 0 && records != null && records.size() > 0
                 ? new Table<T>(this, startRow, startCol, records)
                 : null;
+    }
+
+    private void createEmptyRows(int numOfRows) {
+        List<RowData> rowDataList = getGSheet().getData().get(0).getRowData();
+        for (int i = 0; i < numOfRows; i++) {
+            rowDataList.add(new RowData());
+        }
+    }
+
+    private void createEmptyColumnsMetadata(int numOfCol) {
+        List<DimensionProperties> rowDataList = getGSheet().getData().get(0).getColumnMetadata();
+        for (int i = 0; i < numOfCol; i++) {
+            rowDataList.add(new DimensionProperties());
+        }
+    }
+
+    private List<GridRange> getMergeList() {
+        List<GridRange> merges = getGSheet().getMerges();
+        return merges == null ? new ArrayList<>() : merges;
     }
 
     private class RowIterator implements Iterator<Row> {
@@ -735,16 +783,5 @@ public class Sheet implements Iterable<Row> {
         public Row next() {
             return new Row(Sheet.this, index++);
         }
-    }
-
-    public <T> Table<T> insertTable(int startRow, int startCol, List<T> records) throws IOException {
-        return startRow >= 0 && startCol >= 0 && records != null && records.size() > 0
-                ? new Table<T>(this, startRow, startCol, records)
-                : null;
-    }
-
-    private List<GridRange> getMergeList() {
-        List<GridRange> merges = getGSheet().getMerges();
-        return merges == null ? new ArrayList<>() : merges;
     }
 }

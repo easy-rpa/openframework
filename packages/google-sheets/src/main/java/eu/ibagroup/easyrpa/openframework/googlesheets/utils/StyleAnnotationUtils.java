@@ -2,6 +2,8 @@ package eu.ibagroup.easyrpa.openframework.googlesheets.utils;
 
 import com.google.api.services.sheets.v4.model.*;
 import eu.ibagroup.easyrpa.openframework.googlesheets.annotations.GSheetCellStyle;
+import eu.ibagroup.easyrpa.openframework.googlesheets.constants.HorizontalAlignment;
+import eu.ibagroup.easyrpa.openframework.googlesheets.constants.VerticalAlignment;
 
 public class StyleAnnotationUtils {
     public static TextRotation getRotation(GSheetCellStyle styleAnnotation){
@@ -62,12 +64,12 @@ public class StyleAnnotationUtils {
         return borders;
     }
 
-    public static String getHorizontalAlignment(GSheetCellStyle styleAnnotation) {
-        return styleAnnotation.hAlign().name();
+    public static HorizontalAlignment getHorizontalAlignment(GSheetCellStyle styleAnnotation) {
+        return styleAnnotation.hAlign();
     }
 
-    public static String getVerticalAlignment(GSheetCellStyle styleAnnotation) {
-        return styleAnnotation.vAlign().name();
+    public static VerticalAlignment getVerticalAlignment(GSheetCellStyle styleAnnotation) {
+        return styleAnnotation.vAlign();
     }
 
     public static String getWrapStrategy(GSheetCellStyle styleAnnotation) {

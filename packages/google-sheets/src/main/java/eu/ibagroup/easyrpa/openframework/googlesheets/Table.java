@@ -1,6 +1,7 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets;
 
 import eu.ibagroup.easyrpa.openframework.googlesheets.constants.InsertMethod;
+import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSessionManager;
 import eu.ibagroup.easyrpa.openframework.googlesheets.internal.RecordTypeHelper;
 
 import java.io.IOException;
@@ -432,28 +433,40 @@ public class Table<T> implements Iterable<T> {
         if (recordIndex < 0 || records == null || records.isEmpty()) {
             return;
         }
-        Map<String, Integer> columnsIndexMap = getColumnNameToIndexMap();
-        Map<Integer, String> columnNamesMap = columnsIndexMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
 
-        List<List<Object>> data = records.stream().map(r -> typeHelper.mapToValues(r, columnsIndexMap)).collect(Collectors.toList());
-        parent.insertRows(method, recordIndex + hBottomRow + 1, hLeftCol, data);
+        boolean isSessionHasBeenOpened = false;
+        try {
+            if (!GSessionManager.isSessionOpened(parent.getDocument())) {
+                GSessionManager.openSession(parent.getDocument());
+                isSessionHasBeenOpened = true;
+            }
+            Map<String, Integer> columnsIndexMap = getColumnNameToIndexMap();
+            Map<Integer, String> columnNamesMap = columnsIndexMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
 
-        int insertPos = method == null || method == InsertMethod.BEFORE ? recordIndex : recordIndex + 1;
-        if (this.records == null) {
-            this.records = new ArrayList<>(Collections.nCopies(getRecordsCount(), null));
-        }
-        for (int i = insertPos, j = 0; j < records.size(); i++, j++) {
-            this.records.set(i, records.get(j));
-        }
-        if (bottomRow >= 0) {
-            bottomRow += records.size();
-        }
+            List<List<Object>> data = records.stream().map(r -> typeHelper.mapToValues(r, columnsIndexMap)).collect(Collectors.toList());
+            parent.insertRows(method, recordIndex + hBottomRow + 1, hLeftCol, data);
 
-        int rowsCount = data.size();
-        int startRow = insertPos + hBottomRow + 1;
-        for (int i = startRow; i < rowsCount + startRow; i++) {
-            for (int j = hLeftCol; j <= hRightCol; j++) {
-                typeHelper.formatCell(parent.getCell(i, j), columnNamesMap.get(j - hLeftCol), i - hBottomRow - 1, this.records);
+            int insertPos = method == null || method == InsertMethod.BEFORE ? recordIndex : recordIndex + 1;
+            if (this.records == null) {
+                this.records = new ArrayList<>(Collections.nCopies(getRecordsCount(), null));
+            }
+            for (int i = insertPos, j = 0; j < records.size(); i++, j++) {
+                this.records.set(i, records.get(j));
+            }
+            if (bottomRow >= 0) {
+                bottomRow += records.size();
+            }
+
+            int rowsCount = data.size();
+            int startRow = insertPos + hBottomRow + 1;
+            for (int i = startRow; i < rowsCount + startRow; i++) {
+                for (int j = hLeftCol; j <= hRightCol; j++) {
+                    typeHelper.formatCell(parent.getCell(i, j), columnNamesMap.get(j - hLeftCol), i - hBottomRow - 1, this.records);
+                }
+            }
+        } finally {
+            if (isSessionHasBeenOpened) {
+                GSessionManager.closeSession(parent.getDocument());
             }
         }
     }
@@ -478,17 +491,27 @@ public class Table<T> implements Iterable<T> {
         }
         Map<String, Integer> columnsIndexMap = getColumnNameToIndexMap();
         Map<Integer, String> columnNamesMap = columnsIndexMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
-
-        for (T record : records) {
-            int index = indexOf(record);
-            if (index >= 0) {
-                int rowNum = index + hBottomRow + 1;
-                List<Object> values = typeHelper.mapToValues(record, columnsIndexMap);
-                parent.putRange(rowNum, hLeftCol, values);
-                for (int j = hLeftCol; j <= hRightCol; j++) {
-                    typeHelper.formatCell(parent.getCell(rowNum, j), columnNamesMap.get(j - hLeftCol), index, this.records);
+        boolean isSessionHasBeenOpened = false;
+        try {
+            if (!GSessionManager.isSessionOpened(parent.getDocument())) {
+                GSessionManager.openSession(parent.getDocument());
+                isSessionHasBeenOpened = true;
+            }
+            for (T record : records) {
+                int index = indexOf(record);
+                if (index >= 0) {
+                    int rowNum = index + hBottomRow + 1;
+                    List<Object> values = typeHelper.mapToValues(record, columnsIndexMap);
+                    parent.putRange(rowNum, hLeftCol, values);
+                    for (int j = hLeftCol; j <= hRightCol; j++) {
+                        typeHelper.formatCell(parent.getCell(rowNum, j), columnNamesMap.get(j - hLeftCol), index, this.records);
+                    }
+                    this.records.set(index, record);
                 }
-                this.records.set(index, record);
+            }
+        } finally {
+            if (isSessionHasBeenOpened) {
+                GSessionManager.closeSession(parent.getDocument());
             }
         }
     }
@@ -575,18 +598,18 @@ public class Table<T> implements Iterable<T> {
      */
     private Map<String, Integer> getColumnNameToIndexMap(int headerTopRow, int headerLeftCol, int headerBottomRow, int headerRightCol) {
         Map<String, Integer> columnsIndex = new HashMap<>();
-        List<List<String>> headerValues = parent.getRange(headerTopRow, headerLeftCol, headerBottomRow, headerRightCol, String.class);
+        List<List<Object>> headerValues = parent.getRange(headerTopRow, headerLeftCol, headerBottomRow, headerRightCol);
         List<String> nameHierarchy = new ArrayList<>();
         for (int j = 0; j <= headerRightCol - headerLeftCol; j++) {
             for (int i = 0; i <= headerBottomRow - headerTopRow; i++) {
                 if (i >= headerValues.size()) {
                     continue;
                 }
-                List<String> rowValues = headerValues.get(i);
+                List<Object> rowValues = headerValues.get(i);
                 if (rowValues == null || j >= rowValues.size()) {
                     continue;
                 }
-                String name = rowValues.get(j);
+                String name = (String) rowValues.get(j);
                 if (name != null && (nameHierarchy.isEmpty() || !name.equals(nameHierarchy.get(nameHierarchy.size() - 1)))) {
                     nameHierarchy.add(name);
                 }
@@ -609,34 +632,44 @@ public class Table<T> implements Iterable<T> {
      * @param records  list of records to insert into the table after creation.
      */
     private void buildTable(int startRow, int startCol, List<T> records) throws IOException {
-        //TODO class cast exception
-        RecordTypeHelper.ColumnNamesTree columnNamesTree =  typeHelper.getColumnNames();
+        boolean isSessionHasBeenOpened = false;
+        try {
+            if (!GSessionManager.isSessionOpened(parent.getDocument())) {
+                GSessionManager.openSession(parent.getDocument());
+                isSessionHasBeenOpened = true;
+            }
+            RecordTypeHelper.ColumnNamesTree columnNamesTree = typeHelper.getColumnNames();
 
-        hTopRow = startRow;
-        hLeftCol = startCol;
-        hBottomRow = startRow + columnNamesTree.getHeight() - 1;
-        hRightCol = startCol + columnNamesTree.getWidth() - 1;
+            hTopRow = startRow;
+            hLeftCol = startCol;
+            hBottomRow = startRow + columnNamesTree.getHeight() - 1;
+            hRightCol = startCol + columnNamesTree.getWidth() - 1;
 
-        List<List<String>> stub = Collections.nCopies(columnNamesTree.getHeight(),
-                Collections.nCopies(columnNamesTree.getWidth(), ""));
-        parent.insertRows(InsertMethod.BEFORE, hTopRow, hLeftCol, stub);
+            List<List<String>> stub = Collections.nCopies(columnNamesTree.getHeight(),
+                    Collections.nCopies(columnNamesTree.getWidth(), ""));
+            parent.insertRows(InsertMethod.BEFORE, hTopRow, hLeftCol, stub);
 
-        for (int i = 0; i < columnNamesTree.getHeight(); i++) {
-            List<RecordTypeHelper.ColumnNameNode> columnNodes = columnNamesTree.getForLevel(i);
-            Row row = parent.getRow(startRow + i);
-            for (RecordTypeHelper.ColumnNameNode columnNode : columnNodes) {
-                Cell cell = row.getCell(startCol + columnNode.getColumnIndex());
-                cell.setValue(columnNode.getName());
-                if (columnNode.getWidth() > 1 || columnNode.getHeight() > 1) {
-                    parent.mergeCells(cell.getRowIndex(), cell.getColumnIndex(),
-                            cell.getRowIndex() + columnNode.getHeight() - 1,
-                            cell.getColumnIndex() + columnNode.getWidth() - 1);
+            for (int i = 0; i < columnNamesTree.getHeight(); i++) {
+                List<RecordTypeHelper.ColumnNameNode> columnNodes = columnNamesTree.getForLevel(i);
+                Row row = parent.getRow(startRow + i);
+                for (RecordTypeHelper.ColumnNameNode columnNode : columnNodes) {
+                    Cell cell = row.getCell(startCol + columnNode.getColumnIndex());
+                    cell.setValue(columnNode.getName());
+                    if (columnNode.getWidth() > 1 || columnNode.getHeight() > 1) {
+                        parent.mergeCells(cell.getRowIndex(), cell.getColumnIndex(),
+                                cell.getRowIndex() + columnNode.getHeight() - 1,
+                                cell.getColumnIndex() + columnNode.getWidth() - 1);
+                    }
+                    typeHelper.formatHeaderCell(cell, columnNode.getFullName());
                 }
-                typeHelper.formatHeaderCell(cell, columnNode.getFullName());
+            }
+
+            insertRecords(InsertMethod.BEFORE, 0, records);
+        } finally {
+            if (isSessionHasBeenOpened) {
+                GSessionManager.closeSession(parent.getDocument());
             }
         }
-
-        insertRecords(InsertMethod.BEFORE, 0, records);
     }
 
     /**

@@ -1,7 +1,9 @@
 package eu.ibagroup.easyrpa.openframework.googlesheets;
 
 
-import com.google.api.services.sheets.v4.model.*;
+import com.google.api.services.sheets.v4.model.CellData;
+import com.google.api.services.sheets.v4.model.RowData;
+import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSessionManager;
 import eu.ibagroup.easyrpa.openframework.googlesheets.internal.GSpreadsheetDocumentElementsCache;
 
 import java.util.ArrayList;
@@ -19,7 +21,7 @@ public class Row implements Iterable<Cell> {
     private int sheetIndex;
 
     private int rowIndex;
-    
+
     protected Row(Sheet parent, int rowIndex) {
         this.parent = parent;
         this.documentId = parent.getDocument().getId();
@@ -89,16 +91,16 @@ public class Row implements Iterable<Cell> {
         cell.setValue(value);
     }
 
-    public void setValue(List<RowData> rowDataList) {
+    public void setValue(RowData rowData) {
         boolean isSessionHasBeenOpened = false;
         try {
             if (!GSessionManager.isSessionOpened(getDocument())) {
                 GSessionManager.openSession(getDocument());
                 isSessionHasBeenOpened = true;
             }
-            //set local value??
-            if (rowDataList != null && !rowDataList.isEmpty()) {
-                GSessionManager.getSession(getDocument()).addRowValue(this, rowDataList, getDocument());
+            setGSheetRow(rowData);
+            if (rowData != null && !rowData.isEmpty()) {
+                GSessionManager.getSession(getDocument()).addRowValueRequest(this, getDocument());
             }
         } finally {
             if (isSessionHasBeenOpened) {
@@ -200,10 +202,10 @@ public class Row implements Iterable<Cell> {
 
     public Cell createCell(int colIndex) {
         Cell cell = new Cell(parent, rowIndex, colIndex);
-        List<CellData> rowData =  getGSheetRow().getValues();
+        List<CellData> rowData = getGSheetRow().getValues();
         createEmptyCell(colIndex - rowData.size());
         CellData gCell = cell.getGCell();
-        if(gCell == null){
+        if (gCell == null) {
             gCell = new CellData();
         }
         rowData.add(colIndex, gCell);
@@ -242,11 +244,24 @@ public class Row implements Iterable<Cell> {
     }
 
     public RowData getGSheetRow() {
-        RowData row =  GSpreadsheetDocumentElementsCache.getGRow(documentId, id, sheetIndex, rowIndex);
-        if(row.getValues() == null){
+        RowData row = GSpreadsheetDocumentElementsCache.getGRow(documentId, id, sheetIndex, rowIndex);
+        if (row.getValues() == null) {
             row.setValues(new ArrayList<>());
         }
         return row;
+    }
+
+    private void setGSheetRow(RowData row) {
+        //TODO check this implementation
+        GSpreadsheetDocumentElementsCache.clearRowsAndCellsCache(documentId);
+        getDocument().getGSheetAt(sheetIndex).getData().get(0).getRowData().set(rowIndex,row);
+    }
+
+    private void createEmptyCell(int count) {
+        List<CellData> rowData = getGSheetRow().getValues();
+        for (int i = 0; i < count; i++) {
+            rowData.add(new CellData());
+        }
     }
 
     private class CellIterator implements Iterator<Cell> {
@@ -276,12 +291,5 @@ public class Row implements Iterable<Cell> {
         public Cell next() {
             return new Cell(parent, rowIndex, index++);
         }
-    }
-
-    private void createEmptyCell(int count){
-       List<CellData> rowData =  getGSheetRow().getValues();
-       for (int i=0; i<count;i++){
-           rowData.add(new CellData());
-       }
     }
 }
