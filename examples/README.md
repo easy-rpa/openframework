@@ -103,25 +103,19 @@
 
 ## Google Drive
 
- - [Getting a list of all files in the selected directory](google-drive/getting-files)
+ - [Getting of files from Google Drive](google-drive/drive-files-listing)
  
- - [Files manipulations](google-drive/files-manipulations)
-   * Create file
-   * Delete file
-   * Upload file
+ - [Files manipulating](google-drive/drive-files-manipulating)
+   * Upload new file
    * Rename file
-   
- - [Moving file from one directory to another](google-drive/file-moving)
+   * Move file
+   * Delete file
  
- - [Folders manipulations](google-drive/folders-manipulations)
+ - [Folders manipulating](google-drive/drive-folders-manipulating)
     * Create folder
     * Rename folder
     * Delete folder
-    
- - [Getting information about selected file/directory](google-drive/file-dir-info)
  
- - [Creating Google Sheet](google-drive/google-sheet-creating)
-
 ## Google Sheets
 
  - Downloading a spreadsheet as an XLSX or PDF file (sheets/spreadsheet-downloading)
