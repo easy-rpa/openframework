@@ -3,6 +3,8 @@ package eu.ibagroup.easyrpa.openframework.googledrive;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.InputStreamContent;
 import eu.ibagroup.easyrpa.openframework.core.sevices.RPAServicesAccessor;
+import eu.ibagroup.easyrpa.openframework.googleauth.AuthorizationPerformer;
+import eu.ibagroup.easyrpa.openframework.googleauth.GoogleAuthorizationService;
 import eu.ibagroup.easyrpa.openframework.googledrive.constants.GDriveConfigParam;
 import eu.ibagroup.easyrpa.openframework.googledrive.exceptions.GoogleDriveException;
 import eu.ibagroup.easyrpa.openframework.googledrive.model.GFile;
@@ -22,39 +24,37 @@ import java.util.stream.Collectors;
 
 public class GoogleDrive {
 
-    private String secret;
-
     private List<String> extraFileFields;
+
+    private GoogleAuthorizationService authorizationService;
 
     private GoogleDriveService service;
 
     private RPAServicesAccessor rpaServices;
 
     public GoogleDrive() {
+        authorizationService = new GoogleAuthorizationService();
     }
 
     @Inject
     public GoogleDrive(RPAServicesAccessor rpaServices) {
         this.rpaServices = rpaServices;
+        authorizationService = new GoogleAuthorizationService(rpaServices);
     }
 
-    public String getSecret() {
-        if (secret == null) {
-            String secretAlias = getConfigParam(GDriveConfigParam.DRIVE_SECRET);
-            if (secretAlias != null) {
-                secret = rpaServices.getSecret(secretAlias, String.class);
-            }
+    public GoogleDrive secret(String vaultAlias) {
+        if (rpaServices != null) {
+            authorizationService.setUserId(vaultAlias);
+            authorizationService.setSecret(rpaServices.getSecret(vaultAlias, String.class));
+            service = null;
         }
-        return secret;
+        return this;
     }
 
-    public void setSecret(String secret) {
-        this.secret = secret;
-        this.service = null;
-    }
-
-    public GoogleDrive secret(String secret) {
-        setSecret(secret);
+    public GoogleDrive secret(String userId, String secret) {
+        authorizationService.setUserId(userId);
+        authorizationService.setSecret(secret);
+        service = null;
         return this;
     }
 
@@ -72,14 +72,24 @@ public class GoogleDrive {
 
     public void setExtraFileFields(List<String> extraFileFields) {
         this.extraFileFields = extraFileFields;
-        if (this.service != null) {
-            this.service.setExtraFileFields(this.extraFileFields);
+        if (service != null) {
+            service.setExtraFileFields(this.extraFileFields);
         }
     }
 
     public GoogleDrive extraFields(String... fields) {
         setExtraFileFields(Arrays.stream(fields).collect(Collectors.toList()));
         return this;
+    }
+
+    public GoogleDrive onAuthorization(AuthorizationPerformer authorizationPerformer) {
+        authorizationService.setAuthorizationPerformer(authorizationPerformer);
+        service = null;
+        return this;
+    }
+
+    public GoogleAuthorizationService getAuthorizationService() {
+        return authorizationService;
     }
 
     public List<GFileInfo> listFiles() {
@@ -256,7 +266,7 @@ public class GoogleDrive {
 
     public void deleteFolder(String folderName) {
         Optional<GFileInfo> folder = getFolder(folderName);
-        folder.ifPresent(f->this.service.deleteFile(f.getFileId()));
+        folder.ifPresent(f -> this.service.deleteFile(f.getFileId()));
     }
 
     /**
@@ -284,8 +294,8 @@ public class GoogleDrive {
 
     private void initService() {
         if (service == null) {
-            service = new GoogleDriveService(getSecret());
-            service.setExtraFileFields(extraFileFields);
+            service = new GoogleDriveService(authorizationService);
+            service.setExtraFileFields(getExtraFileFields());
         }
     }
 }

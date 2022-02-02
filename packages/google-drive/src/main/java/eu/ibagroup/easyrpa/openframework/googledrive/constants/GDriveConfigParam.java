@@ -6,8 +6,6 @@ package eu.ibagroup.easyrpa.openframework.googledrive.constants;
  */
 public class GDriveConfigParam {
 
-    public static final String DRIVE_SECRET = "google.drive.secret";
-
     public static final String EXTRA_FILE_FIELDS = "google.drive.extra.file.fields";
 
     private GDriveConfigParam() {

@@ -17,6 +17,7 @@ public class ListAllFiles extends ApTask {
     private GoogleDrive drive;
 
     public void execute() {
+
         log.info("Getting the list of all files");
         List<GFileInfo> files = drive.listFiles();
 

@@ -3,6 +3,7 @@ package eu.ibagroup.easyrpa.examples.googledrive.drive_files_manipulating.task;
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Output;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
+import eu.ibagroup.easyrpa.openframework.core.utils.FilePathUtils;
 import eu.ibagroup.easyrpa.openframework.googledrive.GoogleDrive;
 import eu.ibagroup.easyrpa.openframework.googledrive.model.GFile;
 import eu.ibagroup.easyrpa.openframework.googledrive.model.GFileId;
@@ -18,7 +19,7 @@ import java.util.Optional;
 public class UploadNewFile extends ApTask {
 
     private static final String FILE_NAME = "RobotTest";
-    private static final String FILE_PATH = "/test.docx";
+    private static final String FILE_PATH = "test.docx";
 
     @Inject
     private GoogleDrive drive;
@@ -29,7 +30,7 @@ public class UploadNewFile extends ApTask {
     public void execute() throws FileNotFoundException {
 
         log.info("Upload file located at '{}' with name '{}'", FILE_PATH, FILE_NAME);
-        Optional<GFile> file = drive.createFile(FILE_NAME, new FileInputStream(FILE_PATH));
+        Optional<GFile> file = drive.createFile(FILE_NAME, new FileInputStream(FilePathUtils.getFile(FILE_PATH)));
 
         if (file.isPresent()) {
             testFileId = file.get().getFileId();

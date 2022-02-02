@@ -36,6 +36,10 @@ is added also.
 </dependency>
 ```
 
+All requests to the Drive API must be authorized by an authenticated user.
+
+https://developers.google.com/drive/api/v3/about-auth
+
 ### Creating of file
 
 In this example we will create a file in Google Drive, and after we'll move it to a specific location.
