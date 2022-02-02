@@ -1,4 +1,4 @@
-package eu.ibagroup.easyrpa.openframework.googleauth;
+package eu.ibagroup.easyrpa.openframework.googleauth.constants;
 
 /**
  * The list of configuration parameter names which can be specified within RPA platform to provide necessary

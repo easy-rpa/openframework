@@ -2,6 +2,7 @@ package eu.ibagroup.easyrpa.openframework.googledrive;
 
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.InputStreamContent;
+import com.google.api.services.drive.Drive;
 import eu.ibagroup.easyrpa.openframework.core.sevices.RPAServicesAccessor;
 import eu.ibagroup.easyrpa.openframework.googleauth.AuthorizationPerformer;
 import eu.ibagroup.easyrpa.openframework.googleauth.GoogleAuthorizationService;
@@ -26,6 +27,8 @@ public class GoogleDrive {
 
     private List<String> extraFileFields;
 
+    private Boolean supportsTeamDrives;
+
     private GoogleAuthorizationService authorizationService;
 
     private GoogleDriveService service;
@@ -40,6 +43,16 @@ public class GoogleDrive {
     public GoogleDrive(RPAServicesAccessor rpaServices) {
         this.rpaServices = rpaServices;
         authorizationService = new GoogleAuthorizationService(rpaServices);
+    }
+
+    public GoogleAuthorizationService getAuthorizationService() {
+        return authorizationService;
+    }
+
+    public GoogleDrive onAuthorization(AuthorizationPerformer authorizationPerformer) {
+        authorizationService.setAuthorizationPerformer(authorizationPerformer);
+        service = null;
+        return this;
     }
 
     public GoogleDrive secret(String vaultAlias) {
@@ -82,34 +95,57 @@ public class GoogleDrive {
         return this;
     }
 
-    public GoogleDrive onAuthorization(AuthorizationPerformer authorizationPerformer) {
-        authorizationService.setAuthorizationPerformer(authorizationPerformer);
-        service = null;
-        return this;
+    public boolean isSupportsTeamDrives() {
+        if(supportsTeamDrives == null){
+            String supportsTeamDrivesStr = getConfigParam(GDriveConfigParam.SUPPORT_TEAM_DRIVES);
+            supportsTeamDrives = supportsTeamDrivesStr == null || Boolean.getBoolean(supportsTeamDrivesStr);
+        }
+        return supportsTeamDrives;
     }
 
-    public GoogleAuthorizationService getAuthorizationService() {
-        return authorizationService;
+    public void setSupportsTeamDrives(boolean supportsTeamDrives) {
+        this.supportsTeamDrives = supportsTeamDrives;
+        if (service != null) {
+            service.setSupportsTeamDrives(this.supportsTeamDrives);
+        }
+    }
+
+    public GoogleDrive supportsTeamDrives(boolean supportsTeamDrives) {
+        setSupportsTeamDrives(supportsTeamDrives);
+        return this;
     }
 
     public List<GFileInfo> listFiles() {
         initService();
-        return this.service.listFiles(null, GFileType.FILE);
+        return this.service.listFiles(String.format("mimeType != '%s' ", GFileType.FOLDER.toString()), null);
     }
 
     public List<GFileInfo> listFiles(GFileType fileType) {
         initService();
-        return this.service.listFiles(null, fileType);
+        return this.service.listFiles(String.format("mimeType = '%s' ", fileType.getMimeType()), null);
     }
 
     public List<GFileInfo> listFiles(GFileId parentId) {
         initService();
-        return this.service.listFiles(parentId.getId(), GFileType.FILE);
+        return this.service.listFiles(
+                String.format("'%s' in parents and mimeType != '%s' ", parentId.getId(), GFileType.FOLDER.toString()),
+                null);
     }
 
     public List<GFileInfo> listFiles(GFileId parentId, GFileType fileType) {
         initService();
-        return this.service.listFiles(parentId.getId(), fileType);
+        return this.service.listFiles(
+                String.format("'%s' in parents and mimeType = '%s' ", parentId.getId(), fileType.getMimeType()),
+                null);
+    }
+
+    public List<GFileInfo> listFiles(String query) {
+        return listFiles(query, null);
+    }
+
+    public List<GFileInfo> listFiles(String query, Integer pageSize) {
+        initService();
+        return this.service.listFiles(query, pageSize);
     }
 
     public Optional<GFile> getFile(String fileName) {
@@ -269,6 +305,11 @@ public class GoogleDrive {
         folder.ifPresent(f -> this.service.deleteFile(f.getFileId()));
     }
 
+    public Drive getDrive() {
+        initService();
+        return service.getDrive();
+    }
+
     /**
      * Gets value of configuration parameter specified in the RPA platform by the given key.
      *
@@ -296,6 +337,7 @@ public class GoogleDrive {
         if (service == null) {
             service = new GoogleDriveService(authorizationService);
             service.setExtraFileFields(getExtraFileFields());
+            service.setSupportsTeamDrives(isSupportsTeamDrives());
         }
     }
 }

@@ -8,6 +8,8 @@ public class GDriveConfigParam {
 
     public static final String EXTRA_FILE_FIELDS = "google.drive.extra.file.fields";
 
+    public static final String SUPPORT_TEAM_DRIVES = "google.drive.support.team.drives";
+
     private GDriveConfigParam() {
     }
 }

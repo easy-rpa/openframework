@@ -4,6 +4,7 @@ import com.google.api.client.http.AbstractInputStreamContent;
 import com.google.api.client.http.InputStreamContent;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
 import eu.ibagroup.easyrpa.openframework.googleauth.GoogleAuthorizationService;
 import eu.ibagroup.easyrpa.openframework.googledrive.exceptions.GoogleDriveException;
 import eu.ibagroup.easyrpa.openframework.googledrive.model.GFile;
@@ -13,10 +14,7 @@ import eu.ibagroup.easyrpa.openframework.googledrive.model.GFileType;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class GoogleDriveService {
@@ -24,6 +22,8 @@ public class GoogleDriveService {
     private static final String DEFAULT_GOOGLE_FILE_FIELDS = "id, name, mimeType, description, size, parents, permissions";
 
     private Drive service;
+
+    private boolean supportsTeamDrives = true;
 
     private String fileFields = DEFAULT_GOOGLE_FILE_FIELDS;
 
@@ -33,6 +33,10 @@ public class GoogleDriveService {
                 authorizationService.getJsonFactory(),
                 authorizationService.getCredentials()
         ).build();
+    }
+
+    public void setSupportsTeamDrives(boolean supportsTeamDrives) {
+        this.supportsTeamDrives = supportsTeamDrives;
     }
 
     public void setExtraFileFields(List<String> extraFileFields) {
@@ -45,27 +49,30 @@ public class GoogleDriveService {
         }
     }
 
-    public List<GFileInfo> listFiles(String parentFolderId, GFileType fileType) {
+    public List<GFileInfo> listFiles(String query, Integer pageSize) {
+        List<GFileInfo> files = new ArrayList<>();
         try {
-            StringBuilder qParam = new StringBuilder();
-            if (parentFolderId != null) {
-                qParam.append(String.format("'%s' in parents and ", parentFolderId));
-            }
-            if (fileType == GFileType.FILE) {
-                qParam.append(String.format("mimeType != '%s' ", GFileType.FOLDER.toString()));
-            } else if (fileType != null) {
-                qParam.append(String.format("mimeType = '%s' ", fileType.toString()));
-            }
-            return service.files().list()
-                    .setQ(qParam.toString())
-                    .setFields(String.format("files(%s)", fileFields))
-                    .execute()
-                    .getFiles().stream().filter(Objects::nonNull).map(GFileInfo::new).collect(Collectors.toList());
+            String pageToken = null;
+            do {
+                FileList result = service.files().list()
+                        .setIncludeTeamDriveItems(supportsTeamDrives)
+                        .setSupportsTeamDrives(supportsTeamDrives)
+                        .setPageSize(pageSize != null ? pageSize : 100)
+                        .setQ(query)
+                        .setPageToken(pageToken)
+                        .setFields(String.format("nextPageToken, files(%s)", fileFields))
+                        .execute();
+                files.addAll(result.getFiles().stream().filter(Objects::nonNull).map(GFileInfo::new).collect(Collectors.toList()));
+                pageToken = result.getNextPageToken();
+            } while (pageToken != null);
+
+            System.out.println(files.size());
+
         } catch (IOException e) {
-            throw new GoogleDriveException(String.format("Getting the list of %s%s has failed.",
-                    fileType == GFileType.FOLDER ? "sub-folders" : "files",
-                    parentFolderId != null ? String.format(" in '%s' folder", parentFolderId) : ""), e);
+            throw new GoogleDriveException(String.format("Getting the list of files using query '%s' has failed.", query), e);
         }
+
+        return files;
     }
 
     public Optional<GFileInfo> getFileInfo(GFileId fileId) {
@@ -74,6 +81,7 @@ public class GoogleDriveService {
         }
         try {
             File result = service.files().get(fileId.getId())
+                    .setSupportsTeamDrives(supportsTeamDrives)
                     .setFields(fileFields)
                     .execute();
             return result != null ? Optional.of(new GFileInfo(result)) : Optional.empty();
@@ -88,6 +96,8 @@ public class GoogleDriveService {
         }
         try {
             return service.files().list()
+                    .setIncludeTeamDriveItems(supportsTeamDrives)
+                    .setSupportsTeamDrives(supportsTeamDrives)
                     .setQ(String.format("name = '%s'", name))
                     .setFields(String.format("files(%s)", fileFields))
                     .execute()
@@ -122,9 +132,11 @@ public class GoogleDriveService {
                 file.setParents(Collections.singletonList(parentId.getId()));
             }
             if (content != null) {
-                return Optional.of(new GFileInfo(service.files().create(file, content).execute()));
+                return Optional.of(new GFileInfo(service.files().create(file, content)
+                        .setSupportsTeamDrives(supportsTeamDrives).execute()));
             }
-            return Optional.of(new GFileInfo(service.files().create(file).execute()));
+            return Optional.of(new GFileInfo(service.files().create(file)
+                    .setSupportsTeamDrives(supportsTeamDrives).execute()));
         } catch (Exception e) {
             throw new GoogleDriveException(String.format("Creating of file '%s' has failed.", fileName), e);
         }
@@ -132,7 +144,8 @@ public class GoogleDriveService {
 
     public void renameFile(GFileInfo fileInfo, String newFileName) {
         try {
-            service.files().update(fileInfo.getId(), new File().setName(newFileName)).execute();
+            service.files().update(fileInfo.getId(), new File().setName(newFileName))
+                    .setSupportsTeamDrives(supportsTeamDrives).execute();
         } catch (Exception e) {
             throw new GoogleDriveException(String.format("Renaming of file '%s' to '%s' has failed.",
                     fileInfo.getName(), newFileName), e);
@@ -144,6 +157,7 @@ public class GoogleDriveService {
             service.files().update(fileInfo.getId(), null)
                     .setAddParents(targetFolderId.getId())
                     .setRemoveParents(String.join(",", fileInfo.getParents()))
+                    .setSupportsTeamDrives(supportsTeamDrives)
                     .setFields("id, parents")
                     .execute();
         } catch (Exception e) {
@@ -158,7 +172,8 @@ public class GoogleDriveService {
             if (file instanceof GFile) {
                 content = new InputStreamContent(file.getFileType().getContentType(), ((GFile) file).getContent());
             }
-            service.files().update(file.getId(), file.getGoogleFile(), content);
+            service.files().update(file.getId(), file.getGoogleFile(), content)
+                    .setSupportsTeamDrives(supportsTeamDrives).execute();
         } catch (Exception e) {
             throw new GoogleDriveException(String.format("Updating of file '%s' has failed.", file.getName()), e);
         }
@@ -166,9 +181,13 @@ public class GoogleDriveService {
 
     public void deleteFile(GFileId fileId) {
         try {
-            service.files().delete(fileId.getId()).execute();
+            service.files().delete(fileId.getId()).setSupportsTeamDrives(supportsTeamDrives).execute();
         } catch (Exception e) {
             throw new GoogleDriveException(String.format("Deleting of file with ID '%s' has failed.", fileId.getId()), e);
         }
+    }
+
+    public Drive getDrive() {
+        return service;
     }
 }

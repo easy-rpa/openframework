@@ -16,6 +16,7 @@ import com.google.api.client.util.store.DataStoreFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.DriveScopes;
 import eu.ibagroup.easyrpa.openframework.core.sevices.RPAServicesAccessor;
+import eu.ibagroup.easyrpa.openframework.googleauth.constants.GAuthConfigParam;
 import eu.ibagroup.easyrpa.openframework.googleauth.exceptions.GoogleAuthException;
 
 import java.io.IOException;
