@@ -118,6 +118,8 @@
  
 ## Google Sheets
 
+ - [Creating of new Spreadsheet](google-sheets/spreadsheet-creating)
+ 
  - Downloading a spreadsheet as an XLSX or PDF file (sheets/spreadsheet-downloading)
  - [Sheet manipulations](google-sheets/sheets-manipulating)
     * Create sheet

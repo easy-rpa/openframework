@@ -2,8 +2,8 @@ package eu.ibagroup.easyrpa.examples.googledrive.drive_files_listing.task;
 
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
-import eu.ibagroup.easyrpa.openframework.googledrive.GoogleDrive;
-import eu.ibagroup.easyrpa.openframework.googledrive.model.GFileInfo;
+import eu.ibagroup.easyrpa.openframework.google.drive.GoogleDrive;
+import eu.ibagroup.easyrpa.openframework.google.drive.model.GFileInfo;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;

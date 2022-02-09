@@ -4,9 +4,9 @@ import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Output;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.core.utils.FilePathUtils;
-import eu.ibagroup.easyrpa.openframework.googledrive.GoogleDrive;
-import eu.ibagroup.easyrpa.openframework.googledrive.model.GFile;
-import eu.ibagroup.easyrpa.openframework.googledrive.model.GFileId;
+import eu.ibagroup.easyrpa.openframework.google.drive.GoogleDrive;
+import eu.ibagroup.easyrpa.openframework.google.drive.model.GFile;
+import eu.ibagroup.easyrpa.openframework.google.drive.model.GFileId;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
