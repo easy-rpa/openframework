@@ -22,7 +22,7 @@ public class SpreadsheetUpdateRequestsBatch {
         requests.add(new Request().setUpdateSpreadsheetProperties(
                 new UpdateSpreadsheetPropertiesRequest()
                         .setProperties(spreadsheet.getProperties())
-                        .setFields(String.join(" ", propertyNames))
+                        .setFields(String.join(",", propertyNames))
         ));
     }
 
@@ -154,7 +154,7 @@ public class SpreadsheetUpdateRequestsBatch {
                         .setEndColumnIndex(colIndex + 1)
                 )
                 .setCell(cellData)
-                .setFields(String.join(" ", propertyNames))));
+                .setFields(String.join(",", propertyNames))));
     }
 
     public BatchUpdateSpreadsheetResponse send() {

@@ -369,9 +369,14 @@ public class Column implements Iterable<Cell> {
         int cellDataIndex = -1;
         List<CellData> cellsData = null;
         for (GridData gridData : parent.getGSheet().getData()) {
-            if (rowIndex >= gridData.getStartRow() && rowIndex < gridData.getStartRow() + gridData.getRowData().size()) {
-                cellDataIndex = columnIndex - gridData.getStartColumn();
-                cellsData = gridData.getRowData().get(rowIndex - gridData.getStartRow()).getValues();
+            if (gridData.getRowData() == null || gridData.getRowData().isEmpty()) {
+                continue;
+            }
+            int startRow = gridData.getStartRow() != null ? gridData.getStartRow() : 0;
+            int startColumn = gridData.getStartColumn() != null ? gridData.getStartColumn() : 0;
+            if (rowIndex >= startRow && rowIndex < startRow + gridData.getRowData().size()) {
+                cellDataIndex = columnIndex - startColumn;
+                cellsData = gridData.getRowData().get(rowIndex - startRow).getValues();
                 break;
             }
         }
@@ -393,21 +398,29 @@ public class Column implements Iterable<Cell> {
         GridData relatedGridData = null;
         com.google.api.services.sheets.v4.model.Sheet gSheet = parent.getGSheet();
         List<GridData> gridsData = gSheet.getData();
-        GridData lastGridData = gridsData.get(gridsData.size() - 1);
-        int lastRowIndex = lastGridData.getStartRow() + lastGridData.getRowData().size() - 1;
+
+        int lastRowIndex = getLastRowIndex();
         if (rowIndex > lastRowIndex) {
-            relatedGridData = lastGridData;
-            for (int i = lastRowIndex + 1; i <= rowIndex; i++) {
-                lastGridData.getRowData().add(new RowData());
+            GridData lastGridData = gridsData.get(gridsData.size() - 1);
+            List<RowData> rowsData = lastGridData.getRowData();
+            if (rowsData == null || rowsData.isEmpty()) {
+                rowData = new RowData();
+                rowsData = new ArrayList<>();
+                rowsData.add(rowData);
+                lastGridData.setRowData(rowsData);
+                lastGridData.setStartRow(rowIndex);
+            } else {
+                for (int i = lastRowIndex + 1; i <= rowIndex; i++) {
+                    rowsData.add(new RowData());
+                }
+                int startRow = lastGridData.getStartRow() != null ? lastGridData.getStartRow() : 0;
+                rowData = rowsData.get(rowIndex - startRow);
             }
-            rowData = lastGridData.getRowData().get(rowIndex - lastGridData.getStartRow());
-            getDocument().batchUpdate(r -> {
-                r.addAppendRowsRequest(rowIndex - lastRowIndex, gSheet.getProperties().getSheetId());
-            });
+
         } else {
             for (int gridIndex = 0; gridIndex < gridsData.size(); gridIndex++) {
                 GridData gridData = gridsData.get(gridIndex);
-                int startRow = gridData.getStartRow();
+                int startRow = gridData.getStartRow() != null ? gridData.getStartRow() : 0;
 
                 if (rowIndex < startRow) {
                     rowData = new RowData();
@@ -439,23 +452,27 @@ public class Column implements Iterable<Cell> {
         }
 
         List<CellData> cellsData = rowData.getValues();
-        if (cellsData == null) {
+        if (cellsData == null || cellsData.isEmpty()) {
             cellsData = new ArrayList<>();
             cellsData.add(new CellData());
             rowData.setValues(cellsData);
+            relatedGridData.setStartColumn(columnIndex);
+
+        } else {
+            int startColumn = relatedGridData.getStartColumn() != null ? relatedGridData.getStartColumn() : 0;
+
+            if (columnIndex < startColumn) {
+                for (int i = startColumn - columnIndex; i > 0; i--) {
+                    cellsData.add(0, new CellData());
+                }
+                relatedGridData.setStartColumn(columnIndex);
+            } else if (columnIndex > startColumn + cellsData.size() - 1) {
+                for (int i = columnIndex - startColumn - cellsData.size() + 1; i > 0; i--) {
+                    cellsData.add(new CellData());
+                }
+            }
         }
 
-        if (columnIndex < relatedGridData.getStartColumn()) {
-            for (int i = relatedGridData.getStartColumn() - columnIndex; i > 0; i--) {
-                cellsData.add(0, new CellData());
-            }
-            relatedGridData.setStartColumn(columnIndex);
-        } else if (columnIndex > relatedGridData.getStartColumn() + cellsData.size()) {
-            for (int i = columnIndex - relatedGridData.getStartColumn() - cellsData.size(); i > 0; i--) {
-                cellsData.add(new CellData());
-            }
-        }
-        //TODO check whether is necessary to do a request to add new cells data.
         return new Cell(parent, rowIndex, columnIndex);
     }
 
@@ -526,8 +543,16 @@ public class Column implements Iterable<Cell> {
 
         public CellIterator(com.google.api.services.sheets.v4.model.Sheet gSheet) {
             gridsData = gSheet.getData();
-            GridData lastGridData = gridsData.get(gridsData.size() - 1);
-            cellsCount = lastGridData.getStartRow() + lastGridData.getRowData().size();
+            GridData lastGridData = null;
+            for (int i = gridsData.size() - 1; i >= 0; i--) {
+                GridData gridData = gridsData.get(i);
+                if (gridData.getRowData() != null && gridData.getRowData().size() > 0) {
+                    lastGridData = gridData;
+                    break;
+                }
+            }
+            int startRow = lastGridData != null && lastGridData.getStartRow() != null ? lastGridData.getStartRow() : 0;
+            cellsCount = lastGridData != null ? startRow + lastGridData.getRowData().size() : 0;
         }
 
         @Override
@@ -536,9 +561,14 @@ public class Column implements Iterable<Cell> {
             RowData nextRow = null;
             while (nextRow == null && index < cellsCount) {
                 for (GridData gridData : gridsData) {
-                    if (index >= gridData.getStartRow() && index < gridData.getStartRow() + gridData.getRowData().size()) {
-                        cellDataIndex = columnIndex - gridData.getStartColumn();
-                        nextRow = gridData.getRowData().get(index - gridData.getStartRow());
+                    if (gridData.getRowData() == null || gridData.getRowData().isEmpty()) {
+                        continue;
+                    }
+                    int startRow = gridData.getStartRow() != null ? gridData.getStartRow() : 0;
+                    int startColumn = gridData.getStartColumn() != null ? gridData.getStartColumn() : 0;
+                    if (index >= startRow && index < startRow + gridData.getRowData().size()) {
+                        cellDataIndex = columnIndex - startColumn;
+                        nextRow = gridData.getRowData().get(index - startRow);
                         break;
                     }
                 }

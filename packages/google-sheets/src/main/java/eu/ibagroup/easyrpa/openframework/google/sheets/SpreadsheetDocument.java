@@ -282,17 +282,17 @@ public class SpreadsheetDocument implements Iterable<Sheet> {
      */
     public void withOneBatch(Consumer<SpreadsheetDocument> action) {
         boolean isRequestsBatchCreatedHere = false;
-        try {
-            if (updateRequestsBatch == null) {
-                updateRequestsBatch = new SpreadsheetUpdateRequestsBatch(this);
-                isRequestsBatchCreatedHere = true;
-            }
-            action.accept(this);
-        } finally {
-            if (isRequestsBatchCreatedHere) {
-                updateRequestsBatch.send();
-                updateRequestsBatch = null;
-            }
+
+        if (updateRequestsBatch == null) {
+            updateRequestsBatch = new SpreadsheetUpdateRequestsBatch(this);
+            isRequestsBatchCreatedHere = true;
+        }
+
+        action.accept(this);
+
+        if (isRequestsBatchCreatedHere) {
+            updateRequestsBatch.send();
+            updateRequestsBatch = null;
         }
     }
 

@@ -3,7 +3,22 @@
 This example creates new Google Spreadsheet file using collection of specific Java objects.
 
 ```Java
+@Inject
+private GoogleDrive googleDrive;
 
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+    log.info("Create new spreadsheet file.");
+    Optional<GFileInfo> spreadsheetFile = googleDrive.create("Passengers Book", GFileType.SPREADSHEET);
+
+    log.info("Get spreadsheet document related to created file.");
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(spreadsheetFile.get().getId());
+
+    List<Passenger> data = loadSampleData("passengers.json");
+    doc.getActiveSheet().insertTable("C3", data);
+}
 ```
 > The `insertTable()` inserts a new table where rows contains data of passed Java objects into it. The specification of 
 table header and its cells styling are specified using `@GSheetColumn` annotations within Java class of passed objects.
@@ -42,7 +57,7 @@ Its a fully workable process. To play around with it and run do the following:
     ```
 
 5. Build it using `mvn clean install` command. This command should be run within directory of this example.
-6. Run `main()` method of `SheetsCreatingModule` class.
+6. Run `main()` method of `SpreadsheetCreatingModule` class.
 
 [down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/google/sheets/spreadsheet_creating
 

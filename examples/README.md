@@ -120,6 +120,11 @@
 
  - [Creating of new Spreadsheet](google-sheets/spreadsheet-creating)
  
+ - [Reading data from sheets](google-sheets/sheets-data-reading)
+    * Read values of specific cells 
+    * Read values of cell range 
+    * Read the list of sheet table records   
+ 
  - Downloading a spreadsheet as an XLSX or PDF file (sheets/spreadsheet-downloading)
  - [Sheet manipulations](google-sheets/sheets-manipulating)
     * Create sheet

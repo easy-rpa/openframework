@@ -645,7 +645,7 @@ public class CellStyle {
      */
     public void applyTo(Cell cell, boolean updateAll) {
         if (cell != null && (updateAll || !dirtyFields.isEmpty())) {
-            List<String> fieldsToUpdate = updateAll ? Collections.singletonList("setUserEnteredFormat") : dirtyFields;
+            List<String> fieldsToUpdate = updateAll ? Collections.singletonList("userEnteredFormat") : dirtyFields;
             cell.getDocument().batchUpdate(r -> {
                 CellData gCell = cell.getGCell();
                 gCell.setUserEnteredFormat(cellFormat);

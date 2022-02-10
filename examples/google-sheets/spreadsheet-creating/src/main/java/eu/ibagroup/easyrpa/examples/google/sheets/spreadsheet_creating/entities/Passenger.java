@@ -14,7 +14,7 @@ import lombok.Data;
 @Data
 @GSheetTable(
         headerStyle = @GSheetCellStyle(
-                bold = true, background = Colors.DARK_GRAY,
+                bold = true, background = Colors.LIGHT_GRAY,
                 hAlign = HorizontalAlignment.CENTER, vAlign = VerticalAlignment.MIDDLE,
                 border = {BorderStyle.SOLID_MEDIUM, BorderStyle.SOLID, BorderStyle.SOLID_MEDIUM, BorderStyle.SOLID}
         ),
@@ -25,7 +25,7 @@ public class Passenger {
 
     @GSheetColumn(name = "Passenger Id", width = 120,
             headerStyle = @GSheetCellStyle(
-                    bold = true, background = Colors.DARK_GRAY,
+                    bold = true, background = Colors.LIGHT_GRAY,
                     hAlign = HorizontalAlignment.CENTER, vAlign = VerticalAlignment.MIDDLE,
                     border = {BorderStyle.SOLID_MEDIUM, BorderStyle.SOLID, BorderStyle.SOLID_MEDIUM, BorderStyle.SOLID_MEDIUM}
             ),
@@ -70,7 +70,7 @@ public class Passenger {
 
     @GSheetColumn(name = "Embarked", width = 120,
             headerStyle = @GSheetCellStyle(
-                    bold = true, background = Colors.DARK_GRAY,
+                    bold = true, background = Colors.LIGHT_GRAY,
                     hAlign = HorizontalAlignment.CENTER, vAlign = VerticalAlignment.MIDDLE,
                     border = {BorderStyle.SOLID_MEDIUM, BorderStyle.SOLID_MEDIUM, BorderStyle.SOLID_MEDIUM, BorderStyle.SOLID}
             ),

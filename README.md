@@ -86,10 +86,10 @@ The EasyRPA Open Framework includes following libraries:
     <tr><td valign="top"><a href="/packages/excel">Excel</a></td><td>
         Functionality to work with Excel documents. 
     </td></tr>   
-    <tr><td valign="top"><a href="/packages/google-drive">Google Drive</a></td><td>
+    <tr><td valign="top"><a href="/packages/google-drive">GoogleDrive</a></td><td>
         Functionality to work with Google Drive files and folders. 
     </td></tr>
-    <tr><td valign="top"><a href="/packages/google-sheets">Google Sheets</a></td><td>
+    <tr><td valign="top"><a href="/packages/google-sheets">GoogleSheets</a></td><td>
         Functionality to work with Google Sheets. 
     </td></tr>
 </table> 

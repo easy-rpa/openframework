@@ -51,9 +51,8 @@ public class CreateNewSpreadsheetDocument extends ApTask {
         if (spreadsheetFile.isPresent()) {
             log.info("Spreadsheet file is created successfully. Get related document.");
             SpreadsheetDocument doc = googleSheets.getSpreadsheet(spreadsheetFile.get().getId());
-
-            log.info("Create new sheet.");
-            Sheet sheet = doc.createSheet(SHEET_NAME);
+            Sheet sheet = doc.getActiveSheet();
+            sheet.rename(SHEET_NAME);
 
             log.info("Put data on the sheet '{}'.", sheet.getName());
             sheet.insertTable("C3", data);

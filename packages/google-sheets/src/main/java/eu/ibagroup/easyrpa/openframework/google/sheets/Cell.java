@@ -3,7 +3,9 @@ package eu.ibagroup.easyrpa.openframework.google.sheets;
 import com.google.api.services.sheets.v4.model.*;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Represents specific cell of Spreadsheet document and provides functionality to work with it.
@@ -157,23 +159,44 @@ public class Cell {
     public void setValue(Object value) {
         getDocument().batchUpdate(r -> {
             CellData gCell = getGCell();
+            if (gCell == null) {
+                return;
+            }
+            List<String> fieldsToUpdate = new ArrayList<>();
+            fieldsToUpdate.add("userEnteredValue");
+
             if (value == null) {
                 gCell.setUserEnteredValue(new ExtendedValue().setStringValue(""));
+
             } else if (value instanceof Date) {
-                NumberFormat format = gCell.getUserEnteredFormat().getNumberFormat();
-                if (!format.getType().equals(DATE_TYPE)) {
+                NumberFormat format = gCell.getUserEnteredFormat() != null
+                        ? gCell.getUserEnteredFormat().getNumberFormat()
+                        : null;
+                if (format == null) {
+                    format = new NumberFormat();
+                }
+                if (!DATE_TYPE.equals(format.getType())) {
                     format.setType(DATE_TYPE);
                     format.setPattern(DEFAULT_DATE_FORMAT);
+                    fieldsToUpdate.add("userEnteredFormat.numberFormat.type");
+                    fieldsToUpdate.add("userEnteredFormat.numberFormat.pattern");
                 }
                 SimpleDateFormat formatter = new SimpleDateFormat(format.getPattern());
                 gCell.setUserEnteredValue(new ExtendedValue().setStringValue(formatter.format((Date) value)));
 
             } else if (value instanceof Double) {
-                gCell.setUserEnteredValue(new ExtendedValue().setNumberValue((Double) value));
-                NumberFormat format = gCell.getUserEnteredFormat().getNumberFormat();
-                if (format.getType() == null || !format.getType().equals(NUMBER_TYPE)) {
-                    format.setType(NUMBER_TYPE);
+                NumberFormat format = gCell.getUserEnteredFormat() != null
+                        ? gCell.getUserEnteredFormat().getNumberFormat()
+                        : null;
+                if (format == null) {
+                    format = new NumberFormat();
                 }
+                if (!NUMBER_TYPE.equals(format.getType())) {
+                    format.setType(NUMBER_TYPE);
+                    fieldsToUpdate.add("userEnteredFormat.numberFormat.type");
+                }
+                gCell.setUserEnteredValue(new ExtendedValue().setNumberValue((Double) value));
+
             } else if (value instanceof Boolean) {
                 gCell.setUserEnteredValue(new ExtendedValue().setBoolValue((Boolean) value));
 
@@ -183,8 +206,8 @@ public class Cell {
             } else {
                 gCell.setUserEnteredValue(new ExtendedValue().setStringValue(value.toString()));
             }
-            r.addUpdateCellRequest(gCell, rowIndex, columnIndex, getSheet().getId(),
-                    "setUserEnteredValue");
+
+            r.addUpdateCellRequest(gCell, rowIndex, columnIndex, getSheet().getId(), fieldsToUpdate);
         });
     }
 
@@ -195,8 +218,11 @@ public class Cell {
      * otherwise.
      */
     public boolean isEmpty() {
-        CellData googleCell = getGCell();
-        ExtendedValue value = googleCell.getEffectiveValue();
+        CellData gCell = getGCell();
+        if (gCell == null) {
+            return true;
+        }
+        ExtendedValue value = gCell.getEffectiveValue();
         if (value.isEmpty())
             return true;
         return value.getNumberValue() == null && value.getFormulaValue() == null && value.getBoolValue() == null
@@ -209,7 +235,8 @@ public class Cell {
      * @return <code>true</code> if the formula is specified for this cell or <code>false</code> otherwise.
      */
     public boolean hasFormula() {
-        return getGCell().getUserEnteredValue().getFormulaValue() != null;
+        CellData gCell = getGCell();
+        return gCell != null && gCell.getUserEnteredValue().getFormulaValue() != null;
     }
 
     /**
@@ -218,7 +245,8 @@ public class Cell {
      * @return string with specified for this cell formula or <code>null</code> if cell does not have formula.
      */
     public String getFormula() {
-        return getGCell().getUserEnteredValue().getFormulaValue();
+        CellData gCell = getGCell();
+        return gCell != null ? gCell.getUserEnteredValue().getFormulaValue() : null;
     }
 
     /**
@@ -227,12 +255,14 @@ public class Cell {
      * @param newCellFormula string with formula to set.
      */
     public void setFormula(String newCellFormula) {
-        getDocument().batchUpdate(r -> {
-            CellData gCell = getGCell();
-            gCell.setUserEnteredValue(new ExtendedValue().setFormulaValue(newCellFormula));
-            r.addUpdateCellRequest(gCell, rowIndex, columnIndex, getSheet().getId(),
-                    "setUserEnteredValue");
-        });
+        CellData gCell = getGCell();
+        if (gCell != null) {
+            getDocument().batchUpdate(r -> {
+                gCell.setUserEnteredValue(new ExtendedValue().setFormulaValue(newCellFormula));
+                r.addUpdateCellRequest(gCell, rowIndex, columnIndex, getSheet().getId(),
+                        "userEnteredValue");
+            });
+        }
     }
 
     /**
@@ -279,10 +309,17 @@ public class Cell {
      */
     public CellData getGCell() {
         for (GridData gridData : parent.getGSheet().getData()) {
-            if (rowIndex >= gridData.getStartRow() && rowIndex < gridData.getStartRow() + gridData.getRowData().size()) {
-                RowData gRow = gridData.getRowData().get(rowIndex - gridData.getStartRow());
-                int cellIndex = columnIndex - gridData.getStartColumn();
-                return cellIndex >= 0 && cellIndex < gRow.getValues().size() ? gRow.getValues().get(cellIndex) : null;
+            if (gridData.getRowData() == null || gridData.getRowData().isEmpty()) {
+                continue;
+            }
+            int startRow = gridData.getStartRow() != null ? gridData.getStartRow() : 0;
+            int startColumn = gridData.getStartColumn() != null ? gridData.getStartColumn() : 0;
+            if (rowIndex >= startRow && rowIndex < startRow + gridData.getRowData().size()) {
+                RowData gRow = gridData.getRowData().get(rowIndex - startRow);
+                int cellIndex = columnIndex - startColumn;
+                return gRow.getValues() != null && cellIndex >= 0 && cellIndex < gRow.getValues().size()
+                        ? gRow.getValues().get(cellIndex)
+                        : null;
             }
         }
         return null;
