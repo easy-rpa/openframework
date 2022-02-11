@@ -1,24 +1,15 @@
 # Copying of sheet from one Excel file to another
 
-Following example demonstrates how copy sheet from one Excel file to another with preserving of all
-original styles.  
+This example demonstrates copying of sheet from one Excel file to another with preserving of all original styles.  
 
 ```Java
-public void execute() {
-    String sourceFile = "source.xlsx";
-    String targetFile = "sheet_copy_target.xlsx";
-    String sourceSheetName = "Passengers";
+    ExcelDocument src = new ExcelDocument("source.xlsx");
+    ExcelDocument target = new ExcelDocument("sheet_copy_target.xlsx");
 
-    log.info("Copy sheet '{}' from '{}' to '{}'", sourceSheetName, sourceFile, targetFile);
-    ExcelDocument src = new ExcelDocument(sourceFile);
-    ExcelDocument target = new ExcelDocument(targetFile);
+    Sheet targetSheet = target.createSheet("Passengers");
 
-    Sheet targetSheet = target.createSheet(sourceSheetName);
-    
-    src.selectSheet(sourceSheetName).copy(targetSheet);
-    log.info("Sheet '{}' has been copied successfully.", sourceSheetName);
+    src.selectSheet("Passengers").copy(targetSheet);
 
-    log.info("Save changes in target file.");
     target.save();
 }
 ```
@@ -59,13 +50,23 @@ EasyRPA Control Server:
 
 ### Configuration
 
-All necessary configuration files can be found in <code>src/main/resources</code> directory.
+All necessary configuration files can be found in `src/main/resources` directory.
 
 **apm_run.properties**
 
-| Parameter     | Value         |
-| ------------- |---------------|
-| `source.spreadsheet.file` | Path to source spreadsheet file. It can be path on local file system or within resources of this project. |
-| `source.sheet.name` | Name of sheet in the source spreadsheet file that has to be copied. |
-| `target.spreadsheet.file` | Path to target spreadsheet file where the sheet has to be copied. It can be path on local file system or within resources of this project. |
-| `output.files.dir` | Path to directory on local file system where robot will put all modified within this process spreadsheet files. |
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td valign="top"><code>source.spreadsheet.file</code></td><td>
+        Path to source spreadsheet file. It can be path on local file system or within resources of this module.
+    </td></tr>        
+    <tr><td valign="top"><code>source.sheet.name</code></td><td>
+        Name of sheet in the source spreadsheet file that has to be copied.
+    </td></tr>
+    <tr><td valign="top"><code>target.spreadsheet.file</code></td><td>
+        Path to target spreadsheet file where the sheet has to be copied. It can be path on local file system or within 
+        resources of this module.
+    </td></tr>
+    <tr><td valign="top"><code>output.files.dir</code></td><td>
+        Path to directory on local file system where robot will put all modified within this process spreadsheet files.
+    </td></tr>
+</table>

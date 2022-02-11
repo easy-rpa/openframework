@@ -12,7 +12,7 @@ import java.util.List;
 public class Row implements Iterable<Cell> {
 
     /**
-     * Unique id of this cell.
+     * Unique id of this row.
      */
     private String id;
 

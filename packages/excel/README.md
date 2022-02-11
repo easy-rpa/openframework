@@ -5,32 +5,43 @@
 * [Usage](#usage)
 * [Reading of Excel files](#reading-of-excel-files)
 * [Creating of Excel files](#creating-of-excel-files)
-* [Other Examples](#other-examples)
+* [Other examples](#other-examples)
 
 ### Description
 
-Excel package is a library for working with spreadsheet documents. It wraps Apache POI library and provides more easy 
-to use interface that is adapted to work within EasyRPA platform or any other RPA platform where processes are built 
-using Java program language.
+Excel package is a library for working with spreadsheet documents. It wraps [Apache POI](https://poi.apache.org/) 
+library and provides more easy to use interface that is adapted to work within EasyRPA platform or any other RPA 
+platform where processes are built using Java program language.
 
 ### Usage
 
-To start use the library first you need to add corresponding Maven dependency to your project:
+To start use the library first you need to add corresponding Maven dependency to your project.
 
-![mavenVersion](https://img.shields.io/maven-central/v/eu.ibagroup/easy-rpa-openframework-excel)
-
-```java
+![mavenVersion](https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-excel)
+```xml
 <dependency>
-    <groupId>eu.ibagroup</groupId>
+    <groupId>eu.easyrpa</groupId>
     <artifactId>easy-rpa-openframework-excel</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0</version>
+</dependency>
+```
+
+Additionally, to let the library collaborate with RPA platform make sure that Maven dependency to corresponding adapter 
+is added also. 
+
+![mavenVersion](https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-adapter-for-openframework)
+```xml
+<dependency>
+    <groupId>eu.easyrpa</groupId>
+    <artifactId>easy-rpa-adapter-for-openframework</artifactId>
+    <version>1.0</version>
 </dependency>
 ```
 
 ### Reading of Excel files
 
 Alongside direct reading values of cells or cells range this library supports a way to work with Excel file data via 
-plain java objects. 
+plain Java objects. 
 
 Often, the data on Excel sheet is presented using tables. Its a specific range of cells where each cell belongs to some
 column that is titled with value of its top row or rows. Lets take a following example that contains table with list of 
@@ -134,6 +145,6 @@ The following result should be gotten after calling of `insertTable()`:
   <img src="https://i.postimg.cc/y8SWvT5H/excel-file-creating.png">
 </p>
 
-### Other Examples
+### Other examples
 
 Please refer to [Excel Examples](../../examples#excel) to see more examples of using this library.

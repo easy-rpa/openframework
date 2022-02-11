@@ -523,7 +523,7 @@ public class Sheet implements Iterable<Row> {
      * @see CellRange
      */
     public void unmergeCells(CellRange range) {
-        mergeCells(range.getFirstRow(), range.getFirstCol(),
+        unmergeCells(range.getFirstRow(), range.getFirstCol(),
                 range.getLastRow(), range.getLastCol());
     }
 

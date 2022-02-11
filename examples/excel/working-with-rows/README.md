@@ -1,85 +1,44 @@
 # Working with sheet rows
 
-This process example show what is possible to do with sheet rows of spreadsheet document using Excel package 
-functionality.
+This example demonstrates what is possible to do with sheet rows of Excel file using Excel library.
 
 * #### Lookup and edit rows
 
 ```java
-    @Override
-    public void execute() {
-        String passengerName = "Moran, Mr. James";
-        String OUTPUT_FILE_NAME = "rows_edit_result.xlsx";
-        String outputFilesDir = "target/output";
-        
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
-        Sheet sheet = doc.selectSheet("Editing");
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
+    Sheet sheet = doc.selectSheet("Editing");
 
-        log.info("Lookup row that contains value '{}' in cells.", passengerName);
-        Row row = sheet.findRow(passengerName);
-        row.setValue("F", 99999);
+    Row row = sheet.findRow("Moran, Mr. James");
+    row.setValue("F", 99999);
 
-        String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);
-        log.info("Save changes to '{}'.", outputFilePath);
-        doc.saveAs(outputFilePath);
-
-        log.info("Spreadsheet document is saved successfully.");
-    }
+    doc.save();
 ```
 
 * #### Insert new rows
 
 ```java
-    @Override
-    public void execute() {
-        String OUTPUT_FILE_NAME = "rows_insert_result.xlsx";
-        String outputFilesDir = "target/output";
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
+    Sheet sheet = doc.selectSheet("Inserting");
 
-        int insertBeforeRow = 4;
-        String insertAfterCell = "D10";
-        
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
-        Sheet sheet = doc.selectSheet("Inserting");
+    List<List<String>> data = Arrays.asList(
+        Arrays.asList("Value 1 1", "Value 2 1"),
+        Arrays.asList("Value 1 2", "Value 2 2") 
+    );
 
-        List<List<String>> data = new ArrayList<>();
-        List<String> dataRow = new ArrayList<>();
-        dataRow.add(String.format("Value %d %d", 1, 1));
-        data.add(dataRow);
+    sheet.insertRows(InsertMethod.AFTER, "D10", data);
 
-        log.info("Insert rows after cell '{}' of sheet '{}'", insertAfterCell, sheet.getName());
-        sheet.insertRows(InsertMethod.AFTER, insertAfterCell, data);
-
-        String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);
-        log.info("Save changes to '{}'.", outputFilePath);
-        doc.saveAs(outputFilePath);
-
-        log.info("Spreadsheet document is saved successfully.");
-    }
+    doc.save();
 ```
 
 * #### Delete rows
 
 ```java
-    @Override
-    public void execute() {
-        String OUTPUT_FILE_NAME = "rows_delete_result.xlsx";
-        String outputFilesDir = "target/output";
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
+    Sheet sheet = doc.selectSheet("Deleting");
 
-        int rowIndex = 8;
-        String lookupValue = "keyword1";
-        
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
-        Sheet sheet = doc.selectSheet("Deleting");
+    sheet.removeRow(8);
 
-        log.info("Delete row with num '{}' from sheet '{}'", rowIndex + 1, sheet.getName());
-        sheet.removeRow(rowIndex);
-
-        String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);
-        log.info("Save changes to '{}'.", outputFilePath);
-        doc.saveAs(outputFilePath);
-
-        log.info("Spreadsheet document is saved successfully.");
-    }
+    doc.save();
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -116,12 +75,19 @@ Its a fully workable process. To play around with it and run do the following:
 
 [down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/excel/working-with-rows
 
-## Configuration
-All necessary configuration files can be found in <code>src/main/resources</code> directory.
+### Configuration
+
+All necessary configuration files can be found in `src/main/resources` directory.
 
 **apm_run.properties**
 
-| Parameter     | Value         |
-| ------------- |---------------|
-| `source.spreadsheet.file` | Path to the source spreadsheet file. It can be path on local file system or within resources of this project. |
-| `output.files.dir` | Path to directory on local file system where robot will put all modified within this process spreadsheet files. |
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td valign="top"><code>source.spreadsheet.file</code></td><td>
+        Path to the source spreadsheet file. It can be path on local file system or within resources of this module.
+    </td></tr>
+    <tr><td valign="top"><code>output.files.dir</code></td><td>
+        Path to directory on local file system where robot will put all modified within this process example spreadsheet 
+        files. 
+    </td></tr>    
+</table>

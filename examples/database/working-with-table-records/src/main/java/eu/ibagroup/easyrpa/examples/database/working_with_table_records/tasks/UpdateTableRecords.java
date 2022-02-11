@@ -1,6 +1,7 @@
 package eu.ibagroup.easyrpa.examples.database.working_with_table_records.tasks;
 
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
+import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.examples.database.working_with_table_records.entity.Invoice;
 import eu.ibagroup.easyrpa.openframework.database.DatabaseService;
@@ -15,6 +16,9 @@ import java.util.List;
 @Slf4j
 public class UpdateTableRecords extends ApTask {
 
+    @Configuration(value = "invoices.db.params")
+    private String invoicesDbParams;
+
     @Inject
     private DatabaseService dbService;
 
@@ -23,7 +27,7 @@ public class UpdateTableRecords extends ApTask {
         Date oldDate = DateTime.now().minusYears(3).toDate();
 
         log.info("Check and find outdated invoices in the table");
-        dbService.withConnection("testdb", (c) -> {
+        dbService.withConnection(invoicesDbParams, (c) -> {
             List<Invoice> outdatedInvoices = c.queryBuilder(Invoice.class)
                     .where().le("invoice_date", oldDate).query();
 

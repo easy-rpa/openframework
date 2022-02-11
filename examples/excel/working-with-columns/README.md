@@ -1,156 +1,99 @@
 # Working with sheet columns
 
-This process example show what is possible to do with sheet columns of spreadsheet document using Excel package 
-functionality.
+This example demonstrates what is possible to do with sheet columns of Excel file using Excel library.
 
 * #### Read column cells
 
 ```java
-    @Override
-    public void execute() {
-        String columnToReadRef = "D";
-        
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
-        Sheet activeSheet = doc.getActiveSheet();
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
+    Sheet activeSheet = doc.getActiveSheet();
 
-        log.info("Read cells of column '{}'", columnToReadRef);
-        Column column = activeSheet.getColumn(columnToReadRef);
-        for (Cell cell : column) {
-            Object value = cell.getValue();
-            log.info("Cell value at row '{}': {} ({})", cell.getRowIndex(), value, (value != null ? value.getClass() : "null"));
-        }
+    Column columnD = activeSheet.getColumn("D");
+    for (Cell cell : columnD) {
+        ...
     }
 ```
 
 * #### Add/insert new columns
 
+**IMPORTANT:** Excel library uses MS Excel functionality to perform inserting of column. To run this example without 
+errors, MS Excel application MUST be installed on machine where this example is going to be run. 
+
 ```java
-    @Override
-    public void execute() {
-        String OUTPUT_FILE_NAME = "column_insert_result.xlsx";
-        String outputFilesDir = "target/output";
-        String insertAfterColumn = "C";
-        String startWithRow = "C3";
-        
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
-        Sheet activeSheet = doc.getActiveSheet();
+    String startWithRow = "C3";        
+    List<String> columnData = Arrays.asList("Value 1", "Value 2");
+    
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
+    Sheet activeSheet = doc.getActiveSheet();
 
-        List<String> data = new ArrayList<>();
-        data.add(String.format("Value %d", 1));
+    activeSheet.addColumn(startWithRow, columnData);
 
-        log.info("Add column to the end of sheet '{}'", activeSheet.getName());
-        activeSheet.addColumn(startWithRow, data);
+    activeSheet.insertColumn(InsertMethod.AFTER, "C", startWithRow, columnData);
 
-        log.info("Insert column after column '{}' of sheet '{}'", insertAfterColumn, activeSheet.getName());
-        activeSheet.insertColumn(InsertMethod.AFTER, insertAfterColumn, startWithRow, data);
-
-        String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);
-        log.info("Save changes to '{}'.", outputFilePath);
-        doc.saveAs(outputFilePath);
-
-        log.info("Spreadsheet document is saved successfully.");
-    }
+    doc.save();
 ```
 
 * #### Move columns
 
+**IMPORTANT:** Excel library uses MS Excel functionality to perform moving of column. To run this example without 
+errors, MS Excel application MUST be installed on machine where this example is going to be run. 
+
 ```java
-    @Override
-    public void execute() {
-        String OUTPUT_FILE_NAME = "column_move_result.xlsx";
-        String outputFilesDir = "target/output";
-        
-        String columnToMoveRef = "D";
-        String moveBeforeColumn = "F";
-        
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
-        Sheet activeSheet = doc.getActiveSheet();
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
+    Sheet activeSheet = doc.getActiveSheet();
+    
+    String columnToMove = "D";
+    String moveBeforeColumn = "F";
+    activeSheet.moveColumn(columnToMove, InsertMethod.BEFORE, moveBeforeColumn);
 
-        log.info("Move column '{}' before column '{}' of sheet '{}'", columnToMoveRef, moveBeforeColumn, activeSheet.getName());
-        activeSheet.moveColumn(columnToMoveRef, InsertMethod.BEFORE, moveBeforeColumn);
-
-        String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);
-        log.info("Save changes to '{}'.", outputFilePath);
-        doc.saveAs(outputFilePath);
-
-        log.info("Spreadsheet document is saved successfully.");
-    }
+    doc.save();
 ```
 
 * #### Delete columns
 
+**IMPORTANT:** Excel library uses MS Excel functionality to perform removing of column. To run this example without 
+errors, MS Excel application MUST be installed on machine where this example is going to be run. 
+
 ```java
-    @Override
-    public void execute() {
-        String OUTPUT_FILE_NAME = "column_delete_result.xlsx";
-        String outputFilesDir = "target/output";
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
+    Sheet activeSheet = doc.getActiveSheet();
 
-        String columnToDeleteRef = "D";
-        
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
-        Sheet activeSheet = doc.getActiveSheet();
+    activeSheet.removeColumn("D");
 
-        log.info("Delete column '{}' from sheet '{}'", columnToDeleteRef, activeSheet.getName());
-        activeSheet.removeColumn(columnToDeleteRef);
-
-        log.info("Column '{}' has been deleted successfully.", columnToDeleteRef);
-
-        String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);
-        log.info("Save changes to '{}'.", outputFilePath);
-        doc.saveAs(outputFilePath);
-
-        log.info("Spreadsheet document is saved successfully.");
-    }
+    doc.save();
 ```
 
 * #### Sort table columns
 
+**IMPORTANT:** Excel library uses MS Excel functionality to perform sorting of column. To run this example without 
+errors, MS Excel application MUST be installed on machine where this example is going to be run. 
+
 ```java
-    @Override
-    public void execute() {
-        String OUTPUT_FILE_NAME = "column_sort_result.xlsx";
-        String outputFilesDir = "target/output";
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
+    Sheet activeSheet = doc.getActiveSheet();
+    
+    int columnIndexToSort = 1;
+    Table<Object> table = activeSheet.findTable(Object.class, "Name");
+    table.trimLeadingAndTrailingSpaces();
+    table.sort(columnIndexToSort, SortDirection.DESC);
 
-        int columnIndexToSort = 1;
-        
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
-        Sheet activeSheet = doc.getActiveSheet();
-
-        log.info("Find table on sheet '{}' and sort it's '{}' column", activeSheet.getName(), columnIndexToSort);
-        Table<Object> table = activeSheet.findTable(Object.class, "Name");
-        table.trimLeadingAndTrailingSpaces();
-        table.sort(columnIndexToSort, SortDirection.DESC);
-
-        String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);
-        log.info("Save changes to '{}'.", outputFilePath);
-        doc.saveAs(outputFilePath);
-
-        log.info("Spreadsheet document is saved successfully.");
-    }
+    doc.save();
 ```
 
 * #### Filter table columns
 
+**IMPORTANT:** Excel library uses MS Excel functionality to perform filtering of column. To run this example without 
+errors, MS Excel application MUST be installed on machine where this example is going to be run. 
+
 ```java
-    @Override
-    public void execute() {
-        String OUTPUT_FILE_NAME = "column_filter_result.xlsx";
-        String outputFilesDir = "target/output";
-        
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
-        Sheet activeSheet = doc.getActiveSheet();
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
+    Sheet activeSheet = doc.getActiveSheet();
 
-        log.info("Find table on sheet '{}' and filter it's rows", activeSheet.getName());
-        Table<Object> table = activeSheet.findTable(Object.class, "Name");
-        table.trimLeadingAndTrailingSpaces();
-        table.filter(0, "^1..").filter(5, "1");
+    Table<Object> table = activeSheet.findTable(Object.class, "Name");
+    table.trimLeadingAndTrailingSpaces();
+    table.filter(0, "^1..").filter(5, "1");
 
-        String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);
-        log.info("Save changes to '{}'.", outputFilePath);
-        doc.saveAs(outputFilePath);
-
-        log.info("Spreadsheet document is saved successfully.");
-    }
+    doc.save();
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -187,16 +130,19 @@ Its a fully workable process. To play around with it and run do the following:
 
 [down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/excel/working-with-columns
 
-## Configuration
-All necessary configuration files can be found in <code>src/main/resources</code> directory.
+### Configuration
+
+All necessary configuration files can be found in `src/main/resources` directory.
 
 **apm_run.properties**
 
-| Parameter     | Value         |
-| ------------- |---------------|
-| `source.spreadsheet.file` | Path to the source spreadsheet file. It can be path on local file system or within resources of this project. |
-| `output.files.dir` | Path to directory on local file system where robot will put all modified within this process spreadsheet files. |
-
-## Running
-
-Run `main()` method of `LocalRunner` class.
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td valign="top"><code>source.spreadsheet.file</code></td><td>
+        Path to the source spreadsheet file. It can be path on local file system or within resources of this module.
+    </td></tr>
+    <tr><td valign="top"><code>output.files.dir</code></td><td>
+        Path to directory on local file system where robot will put all modified within this process example spreadsheet 
+        files. 
+    </td></tr>    
+</table>

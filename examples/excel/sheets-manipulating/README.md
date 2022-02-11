@@ -1,144 +1,80 @@
 # Sheets manipulating
 
-This process example show how it's possible to perform different actions with sheets Excel package functionality.  
+This example demonstrates using of Excel library functionality to perform different actions with sheets of Excel file.  
 
 * #### List existing sheets
 
 ```java
-    @Override
-    public void execute() {
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
 
-        List<String> sheetNames = doc.getSheetNames();
-        log.info("Spreadsheet document has following sheets: {}", sheetNames);
-    }
+    List<String> sheetNames = doc.getSheetNames();
+    
+    ...
 ```
 
 * #### Activate sheet
 
 ```java
-@Override
-public void execute() {
-        int sheetIndex = 1;
-        String sheetName = "Summary";
-        
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
-        Sheet activeSheet = doc.getActiveSheet();
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
 
-        log.info("Active sheet before any action: {}", activeSheet.getName());
+    //Get currrent active sheet
+    Sheet activeSheet = doc.getActiveSheet();
+    
+    //Activate another sheet by name
+    activeSheet = doc.selectSheet("Summary");
 
-        log.info("Activate sheet.");
-        activeSheet = doc.selectSheet(sheetName);
-
-        log.info("Active sheet after activation: {}", activeSheet.getName());
-
-        log.info("Active sheet using index {}.", sheetIndex);
-        activeSheet = doc.selectSheet(sheetIndex);
-
-        log.info("Active sheet after activation: {}", activeSheet.getName());
-    }
+    //Activate another sheet by index
+    activeSheet = doc.selectSheet(1);
 ```
 
 * #### Rename sheet
 
 ```java
-@Override
-public void execute() {
-        String newSheetName = "Renamed Sheet";
-        
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
-        Sheet activeSheet = doc.getActiveSheet();
-
-        log.info("Current name of active sheet: '{}'. Rename it to '{}'.", activeSheet.getName(), newSheetName);
-        activeSheet.rename(newSheetName);
-        log.info("Sheet has been renamed successfully. Current name of active sheet: '{}'", activeSheet.getName());
-
-        String OUTPUT_FILE_NAME = "sheet_rename_result.xlsx";
-        String outputFilesDir = "target/output";
-        
-        String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);
-        log.info("Save changes to '{}'.", outputFilePath);
-        doc.saveAs(outputFilePath);
-
-        log.info("Spreadsheet document is saved successfully.");
-    }
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
+    Sheet activeSheet = doc.getActiveSheet();
+    
+    String newSheetName = "Renamed Sheet";
+    activeSheet.rename(newSheetName);
+    
+    doc.save();
 ```
 
 * #### Move sheet
 
 ```java
-@Override
-public void execute() {
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
-        Sheet activeSheet = doc.getActiveSheet();
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
+    Sheet activeSheet = doc.getActiveSheet();
 
-        log.info("Active sheet name: '{}'", activeSheet.getName());
+    int newPosition = doc.getSheetNames().size() - 1;
+    activeSheet.moveTo(newPosition);
 
-        int newPosition = doc.getSheetNames().size() - 1;
-        activeSheet.moveTo(newPosition);
-
-        log.info("Sheet '{}' has been moved to '{}' position successfully.", activeSheet.getName(), newPosition);
-
-        String OUTPUT_FILE_NAME = "sheet_rename_result.xlsx";
-        String outputFilesDir = "target/output";
-        
-        String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);
-        log.info("Save changes to '{}'.", outputFilePath);
-        doc.saveAs(outputFilePath);
-
-        log.info("Spreadsheet document is saved successfully.");
-    }
+    doc.save();
 ```
 
 * #### Clone sheet
 
 ```java
-@Override
-public void execute() {
-        String clonedSheetName = "Cloned Sheet";
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
+    Sheet activeSheet = doc.getActiveSheet();
+    
+    String clonedSheetName = "Cloned Sheet";
+    Sheet clonedSheet = activeSheet.cloneAs(clonedSheetName);
+    ...               
 
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
-        Sheet activeSheet = doc.getActiveSheet();
-
-        log.info("Active sheet name: '{}'", activeSheet.getName());
-
-        Sheet clonedSheet = activeSheet.cloneAs(clonedSheetName);
-        log.info("Sheet '{}' has been cloned successfully. Current name of cloned sheet '{}'", activeSheet.getName(), clonedSheet.getName());
-
-        String OUTPUT_FILE_NAME = "sheet_rename_result.xlsx";
-        String outputFilesDir = "target/output";
-        
-        String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);
-        log.info("Save changes to '{}'.", outputFilePath);
-        doc.saveAs(outputFilePath);
-
-        log.info("Spreadsheet document is saved successfully.");
-    }
+    doc.save();
 ```
 
 * #### Delete sheet
 
 ```java
-@Override
-public void execute() {     
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
-        List<String> sheetNames = doc.getSheetNames();
-        String lastSheetName = sheetNames.get(sheetNames.size() - 1);
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
 
-        log.info("Delete sheet with name '{}'.", lastSheetName);
-        doc.removeSheet(lastSheetName);
+    List<String> sheetNames = doc.getSheetNames();
+    String lastSheetName = sheetNames.get(sheetNames.size() - 1);
 
-        log.info("Sheet '{}' has been deleted successfully.", lastSheetName);
+    doc.removeSheet(lastSheetName);
 
-        String OUTPUT_FILE_NAME = "sheet_rename_result.xlsx";
-        String outputFilesDir = "target/output";
-
-        String outputFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);
-        log.info("Save changes to '{}'.", outputFilePath);
-        doc.saveAs(outputFilePath);
-
-        log.info("Spreadsheet document is saved successfully.");
-    }
+    doc.save();
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -175,13 +111,19 @@ Its a fully workable process. To play around with it and run do the following:
 
 [down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/excel/sheets-manipulating
 
+### Configuration
 
-## Configuration
-All necessary configuration files can be found in <code>src/main/resources</code> directory.
+All necessary configuration files can be found in `src/main/resources` directory.
 
 **apm_run.properties**
 
-| Parameter     | Value         |
-| ------------- |---------------|
-| `source.spreadsheet.file` | Path to the source spreadsheet file. It can be path on local file system or within resources of this project. |
-| `output.files.dir` | Path to directory on local file system where robot will put all edited within this process spreadsheet files. |
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td valign="top"><code>source.spreadsheet.file</code></td><td>
+        Path to the source spreadsheet file. It can be path on local file system or within resources of this module.
+    </td></tr>
+    <tr><td valign="top"><code>output.files.dir</code></td><td>
+        Path to directory on local file system where robot will put all edited within this process example spreadsheet 
+        files. 
+    </td></tr>    
+</table>

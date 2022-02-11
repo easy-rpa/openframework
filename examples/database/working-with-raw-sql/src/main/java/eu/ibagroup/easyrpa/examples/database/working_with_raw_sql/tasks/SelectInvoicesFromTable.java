@@ -1,6 +1,7 @@
 package eu.ibagroup.easyrpa.examples.database.working_with_raw_sql.tasks;
 
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
+import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.openframework.database.DatabaseService;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,9 @@ public class SelectInvoicesFromTable extends ApTask {
 
     private final String SELECT_INVOICES_SQL = "SELECT * FROM invoices WHERE invoice_date < '%s';";
 
+    @Configuration(value = "invoices.db.params")
+    private String invoicesDbParams;
+
     @Inject
     private DatabaseService dbService;
 
@@ -24,7 +28,7 @@ public class SelectInvoicesFromTable extends ApTask {
         String oldDate = DateTime.now().minusYears(3).toString("yyyy-MM-dd");
 
         log.info("Output invoices which are older than '{}'.", oldDate);
-        dbService.withConnection("testdb", (c) -> {
+        dbService.withConnection(invoicesDbParams, (c) -> {
             ResultSet rs = c.executeQuery(String.format(SELECT_INVOICES_SQL, oldDate));
             while (rs.next()) {
                 int id = rs.getInt("invoice_number");

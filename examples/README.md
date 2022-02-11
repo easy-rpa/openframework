@@ -35,14 +35,6 @@
     * Create new folder
     * Rename folder
     * Delete folder
-    
-- [TODO] Work with Outlook (email/work-with-outlook)
-
-- [TODO] Work with GMail (email/work-with-gmail)
-
-- [TODO] Work with Exchange Server (email/work-with-exchange)
-
-- [TODO] Work with Lotus Notes (email/work-with-lotus)
 
 ## Excel
 
@@ -108,31 +100,31 @@
  - [Running of macros](excel/macros-running)
  
  - [Running of custom VB script](excel/custom-vbs-running)
- 
-## CSV
 
- - Reading data from CSV file (csv/csv-file-reading)
- 
- - Writing data to CSV file (csv/csv-file-writing)
-    
 ## Google Drive
 
- - [Getting a list of all files in the selected directory](google-drive/getting-files)
- - [Files manipulations](google-drive/files-manipulations)
-   * Create file
-   * Delete file
-   * Upload file
+ - [Getting of files from Google Drive](google-drive/drive-files-listing)
+ 
+ - [Files manipulating](google-drive/drive-files-manipulating)
+   * Upload new file
    * Rename file
- - [Moving file from one directory to another](google-drive/file-moving)
- - [Folders manipulations](google-drive/folders-manipulations)
+   * Move file
+   * Delete file
+ 
+ - [Folders manipulating](google-drive/drive-folders-manipulating)
     * Create folder
     * Rename folder
     * Delete folder
- - [Getting information about selected file/directory](google-drive/file-dir-info)
- - [Creating Google Sheet](google-drive/google-sheet-creating)
-
+ 
 ## Google Sheets
 
+ - [Creating of new Spreadsheet](google-sheets/spreadsheet-creating)
+ 
+ - [Reading data from sheets](google-sheets/sheets-data-reading)
+    * Read values of specific cells 
+    * Read values of cell range 
+    * Read the list of sheet table records   
+ 
  - Downloading a spreadsheet as an XLSX or PDF file (sheets/spreadsheet-downloading)
  - [Sheet manipulations](google-sheets/sheets-manipulating)
     * Create sheet
@@ -174,16 +166,12 @@
     * Delete table records 
     
  - [Working with raw SQL queries](database/working-with-raw-sql)
-    * Execute SQL query
-    * Execute update statement
-    * Execute insert statement
-    * Execute delete statement 
+    * Execute SELECT query
+    * Execute UPDATE statement
+    * Execute INSERT statement
+    * Execute DELETE statement 
     
  - [Working with transaction](database/working-with-transaction)
  
  - [Working with different database types](database/working-with-different-db)
-     * Work with MySQL
-     * Work with PostgreSQL
-     * Work with MS SQL
-     * Work with Oracle
-     * Work with DB2
+

@@ -1,58 +1,41 @@
 # Working with large files
 
-This process example demonstrates how Excel library can work with large Excel files.  
+This example demonstrates how Excel library can work with large Excel files.  
 
 * #### Read sheet table records
 ```Java
-public void execute() {
-    String sourceFile = "input_400k.xlsx";
-    int startIndex = 350000;
-    int endIndex = 360000;
-
-    log.info("Open Excel file located at: {}", sourceFile);
-    ExcelDocument doc = new ExcelDocument(sourceFile, true); // second parameter is a special flag 
-                                                             // that allows to save memory
+    // second parameter is a special flag that allows to save memory
+    ExcelDocument doc = new ExcelDocument("input_400k.xlsx", true); 
     Sheet sheet = doc.getActiveSheet();
 
-    log.info("Find table on sheet '{}'.", sheet.getName());
     Table<Passenger> passengersTable = sheet.findTable(Passenger.class, MatchMethod.EXACT, "Passenger Id");
-
-    log.info("List each record with 1000th PassengerId between '{}' and '{}'.", startIndex, endIndex);
-    for (int i = startIndex; i <= endIndex; i++) {
+    for (int i = 350000; i <= 360000; i++) {
         Passenger p = passengersTable.getRecord(i);
         if (p.getPassengerId() % 1000 == 0) {
-            log.info("{}", p);
+            ...
         }
     }
-}
 ```
 
 * #### Edit sheet table records
 ```Java
-public void execute() {
-    String sourceFile = "input_400k.xlsx";
-    Integer passengerId = 35500;
-
-    log.info("Open Excel file located at: {}", sourceFile);
-    ExcelDocument doc = new ExcelDocument(sourceFile, true); // second parameter is a special flag 
-                                                             // that allows to save memory
+    // second parameter is a special flag that allows to save memory
+    ExcelDocument doc = new ExcelDocument("input_400k.xlsx", true); 
     Sheet sheet = doc.getActiveSheet();
 
-    log.info("Lookup Passengers table on sheet '{}'", sheet.getName());
     Table<Passenger> passengersTable = activeSheet.findTable(Passenger.class, "Passenger Id", "Name");
 
-    log.info("Lookup record by specific condition in the table");
+    //Lookup record by specific condition in the table
+    Integer passengerId = 35500;
     Passenger record = passengersTable.findRecord(r -> passengerId.equals(r.getPassengerId()));
  
-    log.info("Edit Age of the record.");
+    //Edit Age of the record
     record.setAge(110);
 
-    log.info("Update corresponding record on sheet.");
+    //Update corresponding record on sheet
     passengersTable.updateRecord(record);
-
-    log.info("Save changes");
+    
     doc.save();
-}
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -91,11 +74,17 @@ EasyRPA Control Server:
 
 ### Configuration
 
-All necessary configuration files can be found in <code>src/main/resources</code> directory.
+All necessary configuration files can be found in `src/main/resources` directory.
 
 **apm_run.properties**
 
-| Parameter     | Value         |
-| ------------- |---------------|
-| `source.spreadsheet.file` | Path to the source spreadsheet file. It can be path on local file system or within resources of this project. |
-| `output.files.dir` | Path to directory on local file system where robot will put all modified within this process spreadsheet files. |
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td valign="top"><code>source.spreadsheet.file</code></td><td>
+        Path to the source spreadsheet file. It can be path on local file system or within resources of this module.
+    </td></tr>
+    <tr><td valign="top"><code>output.files.dir</code></td><td>
+        Path to directory on local file system where robot will put all modified within this process example spreadsheet 
+        files. 
+    </td></tr>    
+</table>

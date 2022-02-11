@@ -1,24 +1,26 @@
 # Running of custom VB script
 
-This process example demonstrates how to run custom VB script for some spreadsheet document using Excel package functionality.
+This example demonstrates using of Excel library functionality to to run custom VB script for some spreadsheet document.
 
 ```java
-    @Override
-    public void execute() {
-        String sourceSpreadsheetFile = "test.xlsx";
-        String vbScriptFile = "test_script.vbs";
-        String outputSpreadsheetFile = "output.xlsx";
+    ExcelDocument doc = new ExcelDocument("test.xlsx");
+    doc.runScript("custom.vbs");
+    doc.save();
+```
 
-        log.info("Run VB script '{}' for spreadsheet document located at '{}'", vbScriptFile, sourceSpreadsheetFile);
-        ExcelDocument doc = new ExcelDocument(sourceSpreadsheetFile);
-        doc.runScript(vbScriptFile);
-        log.info("Running of VB script finished successfully.");
+*custom.vbs* 
 
-        log.info("Save changes to '{}'.", outputSpreadsheetFile);
-        doc.saveAs(outputSpreadsheetFile);
+```vbs
+Set excel = CreateObject("Excel.Application")
+Set workbook = excel.Workbooks.Open(Wscript.Arguments(0))
+excel.Application.DisplayAlerts = False
+excel.Visible = False
 
-        log.info("Excel document is saved successfully.");
-    }
+Set sheet1 = workbook.Sheets("Sheet1")
+sheet1.Select
+Set cellB6 = sheet1.Range("B6")
+cellB6.Select
+cellB6.Value = "TEST"
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -55,13 +57,19 @@ Its a fully workable process. To play around with it and run do the following:
 
 [down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/excel/custom-vbs-running
 
+### Configuration
 
-## Configuration
-All necessary configuration files can be found in <code>src/main/resources</code> directory.
+All necessary configuration files can be found in `src/main/resources` directory.
 
 **apm_run.properties**
 
-| Parameter     | Value         |
-| ------------- |---------------|
-| `source.spreadsheet.file` | Path to source spreadsheet file. It can be path on local file system or within resources of this project. |
-| `vb.script.file` | Path to VBS file that contains script to run. It can be path on local file system or within resources of this project. |
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td valign="top"><code>source.spreadsheet.file</code></td><td>
+        Path to source spreadsheet file. It can be path on local file system or within resources of this module.
+    </td></tr>
+    <tr><td valign="top"><code>vb.script.file</code></td><td>
+        Path to VBS file that contains script to run. It can be path on local file system or within resources of 
+        this module.
+    </td></tr>    
+</table>

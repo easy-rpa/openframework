@@ -1,69 +1,51 @@
 ## Editing of existing Excel file
 
-This process example demonstrates different ways of editing existing Excel file.  
+This example demonstrates different ways of editing existing Excel file.  
 
 * #### Edit specific cells on the sheet     
 ```Java
-public void execute() {
-    String sourceFile = "source.xlsx";
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
 
-    log.info("Open spreadsheet document located at '{}' and edit.", sourceFile);
-    ExcelDocument doc = new ExcelDocument(sourceFile);
     Sheet dataSheet = doc.selectSheet("Data");
-
-    log.info("Edit cells on sheet '{}'", dataSheet.getName());
     dataSheet.setValue("B2", "Some text");
     dataSheet.setValue("C3", 120);
     dataSheet.setValue("D4", DateTime.now());
 
-    log.info("Save changes");
     doc.save();
-}
 ```
 
 * #### Edit specific cell range of the sheet     
 ```Java
-public void execute() {
-    String sourceFile = "source.xlsx";
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
+
     List<List<String>> sampleData = getSampleData(20, 100);
 
-    log.info("Open spreadsheet document located at '{}' and edit.", sourceFile);
-    ExcelDocument doc = new ExcelDocument(sourceFile);
+    //Put range of sample data on sheet
     Sheet dataSheet = doc.selectSheet("Data");
-
-    log.info("Put range of sample data on sheet '{}'", dataSheet.getName());
     dataSheet.putRange("D11", sampleData);
 
-    log.info("Save changes");
     doc.save();
-}
 ```
 
 * #### Edit sheet table records     
 ```Java
-public void execute() {
-    String sourceFile = "source.xlsx";
-    String passengerName = "Wheadon, Mr. Edward H";
-
-    log.info("Open spreadsheet document located at '{}' and edit.", sourceFile);
-    ExcelDocument doc = new ExcelDocument(sourceFile);
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
     Sheet activeSheet = doc.getActiveSheet();
-
-    log.info("Lookup Passengers table on sheet '{}'", activeSheet.getName());
+    
+    //Lookup Passengers table on sheet
     Table<Passenger> passengersTable = activeSheet.findTable(Passenger.class, "Passenger Id", "Name");
-
-    log.info("Lookup record by specific condition in the table");
+ 
+    //Lookup record by specific condition in the table
+    String passengerName = "Wheadon, Mr. Edward H";
     Passenger record = passengersTable.findRecord(r -> passengerName.equals(r.getName()));
-
-    log.info("Edit Age of the record.");
+    
+    //Edit Age of the record
     record.setAge(110);
 
-    log.info("Update corresponding record on sheet.");
+    //Update corresponding record on sheet.
     passengersTable.updateRecord(record);
 
-    log.info("Save changes");
     doc.save();
-}
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -102,11 +84,18 @@ EasyRPA Control Server:
 
 ### Configuration
 
-All necessary configuration files can be found in <code>src/main/resources</code> directory.
+All necessary configuration files can be found in `src/main/resources` directory.
 
 **apm_run.properties**
 
-| Parameter     | Value         |
-| ------------- |---------------|
-| `source.spreadsheet.file` | Path to spreadsheet file that has to be edited. It can be path on local file system or within resources of this project. |
-| `output.files.dir` | Path to directory on local file system where robot will put all edited within this process spreadsheet files. |
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td valign="top"><code>source.spreadsheet.file</code></td><td>
+        Path to spreadsheet file that has to be edited. It can be path on local file system or within resources of 
+        this module.
+    </td></tr>
+    <tr><td valign="top"><code>output.files.dir</code></td><td>
+        Path to directory on local file system where robot will put all edited within this process example spreadsheet 
+        files. 
+    </td></tr>    
+</table>

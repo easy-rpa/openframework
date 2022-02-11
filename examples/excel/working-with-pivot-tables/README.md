@@ -1,97 +1,69 @@
 # Working with pivot tables
 
-This process example shows how to work with pivot tables using Excel package functionality.
+This example demonstrates using of Excel library functionality to work with pivot tables.
+
+**IMPORTANT:** Excel library uses MS Excel functionality to work with pivot tables. To run this example without 
+errors, MS Excel application MUST be installed on machine where this example is going to be run. 
 
 * #### Create pivot table
 
 ```java
-    @Override
-    public void execute() {
-        String outputFilesDir = "target/output";
-        String OUTPUT_FILE_NAME = "create_pivot_table_result.xlsx";
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
+    Sheet sheet = doc.selectSheet("Passengers");
 
-        String sourceSheetName = "Passengers";
-        String pivotTablesSheetName = "Pivot Tables";
-        String pivotTablePosition = "B5";
-        
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
-        Sheet sheet = doc.selectSheet(sourceSheetName);
+    Table<Object> sourceTable = sheet.findTable(Object.class, "Passenger Id");
+    sourceTable.trimLeadingAndTrailingSpaces();
 
-        log.info("Create new sheet '{}' and put pivot table at position '{}' using data of sheet '{}' as source.",
-        pivotTablesSheetName, pivotTablePosition, sheet.getName());
-        Table<Object> sourceTable = sheet.findTable(Object.class, "Passenger Id");
-        sourceTable.trimLeadingAndTrailingSpaces();
+    PivotTableParams ptParams = PivotTableParams.create("Pivot Table 1")
+    .position("B5")
+    .source(sourceTable)
+    .filter("Survived")
+    .row("Sex").row("Class")
+    .value("Passengers", "Passenger Id", PivotValueSumType.COUNT);
 
-        PivotTableParams ptParams = PivotTableParams.create("Pivot Table 1")
-        .position(pivotTablePosition)
-        .source(sourceTable)
-        .filter("Survived")
-        .row("Sex").row("Class")
-        .value("Passengers", "Passenger Id", PivotValueSumType.COUNT);
+    Sheet pivotTableSheet = doc.createSheet("Passengers Pivot Table");
+    pivotTablesSheet.addPivotTable(ptParams);
 
-        Sheet pivotTablesSheet = doc.createSheet(pivotTablesSheetName);
-        pivotTablesSheet.addPivotTable(ptParams);
-
-        log.info("Pivot table created successfully.");
-
-        excelFilePath = FilenameUtils.separatorsToSystem(outputFilesDir + File.separator + OUTPUT_FILE_NAME);
-        log.info("Save changes to '{}'.", excelFilePath);
-        doc.saveAs(excelFilePath);
-
-        log.info("Excel document is saved successfully.");
-    }
+    doc.save();  
 ```
 
 * #### Read pivot table
 
 ```java
-    @Override
-    public void execute() {
-        String pivotTablesSheetName = "Pivot Tables";
-        
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
 
-        log.info("Select sheet with pivot table");
-        Sheet ptSheet = doc.selectSheet(pivotTablesSheetName);
+    log.info("Select sheet with pivot table");
+    Sheet ptSheet = doc.selectSheet("Passengers Pivot Table");
 
-        log.info("Find Grand Total cell");
-        Cell totalLabelCell = ptSheet.findCell("Grand Total");
-        
-        Cell totalCell = ptSheet.getCell(totalLabelCell.getRowIndex(), totalLabelCell.getColumnIndex() + 1);
-        log.info("Value of Grand Total: {}", totalCell.getValue());
-    }
+    Cell totalLabelCell = ptSheet.findCell("Grand Total");
+    
+    Cell totalCell = ptSheet.getCell(totalLabelCell.getRowIndex(), totalLabelCell.getColumnIndex() + 1);
+    Object grandTotalValue = totalCell.getValue();
+    ...
 ```
 
 * #### Update pivot table
 
 ```java
-    @Override
-    public void execute() {
-        String sourceSheetName = "Passengers";
-        String pivotTablesSheetName = "Pivot Tables";
-        
-        ExcelDocument doc = new ExcelDocument("test.xlsx");
-        log.info("Select source data sheet '{}'", sourceSheetName);
-        Sheet srcSheet = doc.selectSheet(sourceSheetName);
+    ExcelDocument doc = new ExcelDocument("source.xlsx");
+    Sheet srcSheet = doc.selectSheet("Passengers");
 
-        log.info("Change source data by removing one row");
-        srcSheet.removeRow(5);
-        Table<Object> sourceTable = srcSheet.findTable(Object.class, "Passenger Id");
-        sourceTable.trimLeadingAndTrailingSpaces();
+    //Change source data by removing one row
+    srcSheet.removeRow(5);
+    
+    Table<Object> sourceTable = srcSheet.findTable(Object.class, "Passenger Id");
+    sourceTable.trimLeadingAndTrailingSpaces();
 
-        log.info("Update pivot table and get value of Grand Total");
-        Sheet ptSheet = doc.selectSheet(pivotTablesSheetName);
-        ptSheet.updatePivotTable(PivotTableParams.create("Pivot Table 1").source(sourceTable));
+    //Update pivot table and get value of Grand Total
+    Sheet ptSheet = doc.selectSheet("Passengers Pivot Table");
+    ptSheet.updatePivotTable(PivotTableParams.create("Pivot Table 1").source(sourceTable));
 
-        Cell totalLabelCell = ptSheet.findCell("Grand Total");
-        Cell totalCell = ptSheet.getCell(totalLabelCell.getRowIndex(), totalLabelCell.getColumnIndex() + 1);
-        log.info("Value of Grand Total: {}", totalCell.getValue());
+    Cell totalLabelCell = ptSheet.findCell("Grand Total");
+    Cell totalCell = ptSheet.getCell(totalLabelCell.getRowIndex(), totalLabelCell.getColumnIndex() + 1);
+    Object grandTotalValue = totalCell.getValue();
+    ...
 
-        log.info("Save changes");
-        doc.save();
-
-        log.info("Excel document is saved successfully.");
-    }
+    doc.save();
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -128,12 +100,19 @@ Its a fully workable process. To play around with it and run do the following:
 
 [down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/excel/working-with-pivot-tables
 
-## Configuration
-All necessary configuration files can be found in <code>src/main/resources</code> directory.
+### Configuration
+
+All necessary configuration files can be found in `src/main/resources` directory.
 
 **apm_run.properties**
 
-| Parameter     | Value         |
-| ------------- |---------------|
-| `source.spreadsheet.file` | Path to the source spreadsheet file. It can be path on local file system or within resources of this project. |
-| `output.files.dir` | Path to directory on local file system where robot will put all modified within this process spreadsheet files. |
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td valign="top"><code>source.spreadsheet.file</code></td><td>
+        Path to the source spreadsheet file. It can be path on local file system or within resources of this module.
+    </td></tr>
+    <tr><td valign="top"><code>output.files.dir</code></td><td>
+        Path to directory on local file system where robot will put all modified within this process example spreadsheet 
+        files. 
+    </td></tr>    
+</table>

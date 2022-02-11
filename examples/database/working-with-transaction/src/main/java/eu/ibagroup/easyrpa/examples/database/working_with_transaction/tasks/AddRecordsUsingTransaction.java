@@ -1,6 +1,7 @@
 package eu.ibagroup.easyrpa.examples.database.working_with_transaction.tasks;
 
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
+import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.examples.database.working_with_transaction.entity.Invoice;
 import eu.ibagroup.easyrpa.examples.database.working_with_transaction.service.InvoicesSupplier;
@@ -14,6 +15,9 @@ import java.util.List;
 @Slf4j
 public class AddRecordsUsingTransaction extends ApTask {
 
+    @Configuration(value = "invoices.db.params")
+    private String invoicesDbParams;
+
     @Inject
     private DatabaseService dbService;
 
@@ -22,7 +26,7 @@ public class AddRecordsUsingTransaction extends ApTask {
         List<Invoice> invoicesToAdd = InvoicesSupplier.provideSampleRecords();
 
         log.info("Adding of new records to the table within one transaction");
-        dbService.withTransaction("testdb", (c) -> {
+        dbService.withTransaction(invoicesDbParams, (c) -> {
             for (Invoice invoice : invoicesToAdd) {
                 c.create(invoice);
                 c.create(invoice.getProducts());

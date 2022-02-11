@@ -1,26 +1,21 @@
 ## Creating of new Excel file
 
-Following example creates a XLSX file on the local file system. 
+This example creates new Excel file on local file system using collection of specific Java objects.
 
 ```Java
-public void execute() {
-    String sampleDataFile = "passengers.json";
-    String outputFilePath = "passengers.xlsx";
-
-    log.info("Load sample data from '{}'.", sampleDataFile);
-    List<Passenger> data = loadSampleData(sampleDataFile);
-
-    log.info("Create new spreadsheet document.");
     ExcelDocument doc = new ExcelDocument();
-    Sheet activeSheet = doc.getActiveSheet();
 
-    log.info("Put data on the sheet '{}'.", activeSheet.getName());
-    activeSheet.insertTable("C3", data);
+    List<Passenger> data = loadSampleData("passengers.json");
+    doc.getActiveSheet().insertTable("C3", data);
 
-    log.info("Save file to '{}'.", outputFilePath);
-    doc.saveAs(outputFilePath);
-}
+    doc.saveAs("passengers.xlsx");
 ```
+
+> The `insertTable()` inserts a new table where rows contains data of passed Java objects into it. The specification of 
+table header and its cells styling are specified using `@ExcelColumn` annotations within Java class of passed objects.
+See the full definition of 
+[Passenger](src/main/java/eu/ibagroup/easyrpa/examples/excel/excel_file_creating/entities/Passenger.java)
+class for all details.
 
 See the full source of this example for more details or check following instructions to run it.
 
@@ -58,12 +53,18 @@ EasyRPA Control Server:
 
 ### Configuration
 
-All necessary configuration files can be found in <code>src/main/resources</code> directory.
+All necessary configuration files can be found in `src/main/resources` directory.
 
 **apm_run.properties**
 
-| Parameter     | Value         |
-| ------------- |---------------|
-| `sample.data.file` | Path to JSON file that contains sample data for this process. It can be path on local file system or within resources of this project. |
-| `output.files.dir` | Path to directory on local file system where robot will put all created within this process spreadsheet files. |
- 
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td valign="top"><code>sample.data.file</code></td><td>
+        Path to JSON file that contains sample data for this process. It can be path on local file system or within 
+        resources of this module.
+    </td></tr>
+    <tr><td valign="top"><code>output.files.dir</code></td><td>
+        Path to directory on local file system where robot will put all created within this process example 
+        spreadsheet files. 
+    </td></tr>    
+</table>

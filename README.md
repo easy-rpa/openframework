@@ -5,16 +5,28 @@
 
 ### Table of Contents
 * [Introduction](#introduction)
-* [Quick Start](#quick-start)
+* [Usage](#usage)
 * [Libraries](#libraries)
+* [Examples](#examples)
 * [Links](#links)
+* [Contributing](#contributing)
 * [License](#license)
 
 ## Introduction
-Usually to implement a process which automates work with different document formats and services such as Excel, PDF, Google, AWS, etc. it takes time to explore and investigate them and to find the necessary Java libraries. In addition, the functionality found in such libraries is poorly adapted for usage in RPA processes.
 
-Open Framework is a collection of open-source Java libraries for Robotic Process Automation (RPA) designed to be used with EasyRPA platform. 
-Open Framework contains functional to work with popular documents and services. It's usage simplifies development of RPA processes based on Java language.
+The Robotic Process Automation (RPA) supposes the doing of things in a way as human does it, via UI elements. But the 
+work with different document formats or services such as Excel, PDF, Google Docs, etc. can be done without actual 
+manipulation with UI elements. If RPA platform supports describing of robot scenarios based on the one of popular 
+program language like Java, the automation of these things can be done using tens of existing functional libraries 
+and APIs. Such approach allows significantly speedup the robot work and increase performance. At the same time, if you 
+are not familiar with these libraries it takes much time to find them and investigate. Moreover, the found 
+functionality will be poorly adapted for usage in the code of robot scenarios. As result the using of functional 
+libraries and APIs can become a nightmare. 
+
+**EasyRPA Open Framework** is a collection of open-source Java-libraries for Robotic Process Automation designed to be 
+used with [EasyRPA](http://easyrpa.eu) platform. It keeps in one place libraries to work with most popular document 
+formats and services. The functionality is clear and easy to use with minimal amount of preparation or configuration 
+steps in the code that ``significantly simplifies development of RPA processes.
 
 The project is:
 - 100% Open Source
@@ -23,73 +35,80 @@ The project is:
 
 ![License](https://img.shields.io/github/license/easyrpa/openframework?color=blue)
 
-## Quick Start
+## Usage
 
 EasyRPA Open Framework consist of several independent libraries. All of them are deployed on Maven Central repository.
 
-![mavenVersion](https://img.shields.io/maven-central/v/eu.ibagroup/database)
-![mavenVersion](https://img.shields.io/maven-central/v/eu.ibagroup/easy-rpa-openframework-email)
-![mavenVersion](https://img.shields.io/maven-central/v/eu.ibagroup/easy-rpa-openframework-excel)
-![mavenVersion](https://img.shields.io/maven-central/v/eu.ibagroup/easy-rpa-openframework-google-drive)
-![mavenVersion](https://img.shields.io/maven-central/v/eu.ibagroup/easy-rpa-openframework-google-sheets)
+![mavenVersion](https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-database)
+![mavenVersion](https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-email)
+![mavenVersion](https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-excel)
+![mavenVersion](https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-google-drive)
+![mavenVersion](https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-google-sheets)
 
 In order to use any of EasyRPA Open Framework's library you need simply add it as a dependency in your Maven POM file. 
 E.g.:
-```java
+```xml
 <dependency>
-    <groupId>eu.ibagroup</groupId>
+    <groupId>eu.easyrpa</groupId>
     <artifactId>easy-rpa-openframework-email</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0</version>
 </dependency>
 ```
 
-After adding of dependency the library can be used inside of your RPA process:
+Additionally, to let libraries collaborate with RPA platform it's necessary to add as dependency corresponding adapter. 
+Since this framework initially was intended and optimized to work with EasyRPA platform currently only adapter for 
+EasyRPA platform is implemented and supported.
 
-```java
-import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
-import eu.ibagroup.easyrpa.engine.apflow.ApTask;
-import eu.ibagroup.easyrpa.openframework.email.EmailMessage;
-import eu.ibagroup.easyrpa.openframework.email.EmailSender;
-import lombok.extern.slf4j.Slf4j;
-import javax.inject.Inject;
-
-@Slf4j
-@ApTaskEntry(name = "Send Message")
-public class SendMessage extends ApTask {
-
-    private static final String SUBJECT = "Test email";
-    private static final String BODY = "This message was sent by EasyRPA Bot";
-
-    @Inject
-    private EmailSender emailSender;
-
-    @Override
-    public void execute() {
-        log.info("Send message");
-        new EmailMessage(emailSender).subject(SUBJECT).html(BODY).send();
-
-        log.info("Messages have been sent successfully");
-    }
-}
-
+![mavenVersion](https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-adapter-for-openframework)
+```xml
+<dependency>
+    <groupId>eu.easyrpa</groupId>
+    <artifactId>easy-rpa-adapter-for-openframework</artifactId>
+    <version>1.0</version>
+</dependency>
 ```
 
-## Libraries
-The EasyRPA Open Framework currently includes the following libraries:
+> There is no limitation to implement similar adapter for any other RPA platform that uses Java program language for 
+> describing of robot scenarios but it's out of this project scope.  
 
-| Name                                    | Description |
-|:----------------------------------------|:---------------------------------------------------------------------------|
-| [Database](packages/database)           | Interact with databases (MySQL, PostgreSQL, Oracle, DB2, MS SQL Server) |
-| [Email](packages/email)                 | E-Mail operations |
-| [Excel](packages/excel)                 | Includes functionality related to Excel and CSV files. For optimal performance, all of the following functions can be used through the backend services without communicating with physical application |
-| [Google Drive](packages/google-drive)   | Operations with files and folders |
-| [Google Sheets](packages/google-sheets) | Manipulate Google Sheets files directly |
+## Libraries
+
+The EasyRPA Open Framework includes following libraries:
+
+<table>
+    <tr><th align="left">Name</th><th align="left">Description</th></tr>
+    <tr><td valign="top"><a href="/packages/database">Database</a></td><td>
+        Functionality to work with remote databases (MySQL, PostgreSQL, Oracle, DB2, MS SQL Server). 
+    </td></tr>
+    <tr><td valign="top"><a href="/packages/email">Email</a></td><td>
+        Functionality to work with mailboxes and email messages. 
+    </td></tr>
+    <tr><td valign="top"><a href="/packages/excel">Excel</a></td><td>
+        Functionality to work with Excel documents. 
+    </td></tr>   
+    <tr><td valign="top"><a href="/packages/google-drive">GoogleDrive</a></td><td>
+        Functionality to work with Google Drive files and folders. 
+    </td></tr>
+    <tr><td valign="top"><a href="/packages/google-sheets">GoogleSheets</a></td><td>
+        Functionality to work with Google Sheets. 
+    </td></tr>
+</table> 
+
+## Examples
+
+Please refer to [Examples page](examples) to see the full list of examples of using EasyRPA Open Framework 
+libraries.
 
 ## Links
 
 Here is you can find useful links to other resources:
 
 * [StackOverFlow](https://ru.stackoverflow.com/search?q=openframework)
+
+## Contributing
+
+Found a bug and it is necessary to make a fast fix? Wants to add a critical feature? Interested in contributing? Head 
+over to the [Contribution guide](./CONTRIBUTING.md) to see where to get started.
 
 ## License
 This project is open-source and licensed under the terms of the [Apache License 2.0](https://apache.org/licenses/LICENSE-2.0).

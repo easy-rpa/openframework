@@ -10,7 +10,8 @@ import javax.inject.Inject;
 /**
  * Service that provides convenient functionality for working with remote databases within RPA processes.
  * <p>
- * Actually this service provides functionality of ORMLite library with more easier way of its initialization and establishing of database connection.
+ * Actually this service provides functionality of ORMLite library with more easier way of its initialization and
+ * establishing of database connection.
  * <p>
  * For more info see <a href="https://ormlite.com">https://ormlite.com</a>
  */

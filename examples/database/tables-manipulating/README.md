@@ -1,37 +1,74 @@
 # Database tables manipulating
 
-* ### Create table to store specific entities
+This example demonstrates using of Database library functionality for working with database tables.
 
-```Java
-    @Inject
-    private DatabaseService dbService;
+* #### Create table to store specific entities
 
-    @Override
-    public void execute() {
-        log.info("Creating of tables for entities '{}' and '{}'", Invoice.class.getName());
-        dbService.withConnection("testdb", (c) -> {
-            c.createTableIfNotExists(Invoice.class);
-        });
+Using ORMLite annotations `@DatabaseTable` and `@DatabaseField` it's possible to tie the Java class and its fields 
+with specific database table and its columns. If the database table is not exist these annotations can provide enough 
+information to create such table from scratch.
+```java
+@Data
+@DatabaseTable(tableName = "invoices")
+public class Invoice {
 
-        log.info("Tables are created successfully.");
-    }
+    public static final String DB_DATE_FORMAT = "yyyy-MM-dd";
+
+    @DatabaseField(generatedId = true, allowGeneratedIdInsert = true)
+    private int id;
+
+    @DatabaseField(columnName = "invoice_number", canBeNull = false)
+    private int invoiceNumber;
+
+    @DatabaseField(columnName = "invoice_date", dataType = DataType.DATE, format = DB_DATE_FORMAT)
+    public Date invoiceDate;
+
+    @DatabaseField(columnName = "customer_name", canBeNull = false)
+    private String customerName;
+
+    @DatabaseField(canBeNull = false)
+    private double amount;
+}
 ```
 
-* ### Drop entity table
+Here for class `Invoice` is specified relation with database table `invoices`. Annotations `@DatabaseField` provides 
+all necessary information about data types of each field/column. Now, the `invoices` table can be easily created as 
+follows:   
 
 ```Java
-    @Inject
-    private DatabaseService dbService;
+@Configuration(value = "invoices.db.params")
+private String invoicesDbParams;
 
-    @Override
-    public void execute() {
-        log.info("Dropping of tables for '{}' and '{}'", Invoice.class.getName());
-        dbService.withConnection("testdb", (c) -> {
-            c.dropTable(Invoice.class);
-        });
+@Inject
+private DatabaseService dbService;
 
-        log.info("Table is dropped successfully.");
-    }
+public void execute() {
+    dbService.withConnection(invoicesDbParams, (c) -> {
+        c.createTable(Invoice.class);
+    });
+}
+```
+
+> For more information about `@DatabaseTable` and `@DatabaseField` annotations and using of them please refer to 
+> corresponding [ORMLite documentation](https://ormlite.com/javadoc/ormlite-core/doc-files/ormlite.html#Class-Setup).
+
+* #### Drop entity table
+
+By the same way if we have Java class tied with specific database table this table can be easily dropped using 
+tied Java class.
+
+```Java
+@Configuration(value = "invoices.db.params")
+private String invoicesDbParams;
+
+@Inject
+private DatabaseService dbService;
+
+public void execute() {
+    dbService.withConnection(invoicesDbParams, (c) -> {
+        c.dropTable(Invoice.class);
+    });
+}
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -67,3 +104,21 @@ Its a fully workable process. To play around with it and run do the following:
 6. Run `main()` method of `TablesManipulatingModule` class.
 
 [down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/database/tables-manipulating
+
+### Configuration
+
+All necessary configuration files can be found in `src/main/resources` directory.
+
+**apm_run.properties**
+
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>    
+    <tr><td valign="top"><code>invoices.db.params</code></td><td>
+        The alias of secret vault entry with parameters necessary for establishing connection with database. In case of 
+        running of this example without EasyRPA Control Server, secret vault entries can be specified in the 
+        <code>vault.properties</code> file. The value of secret vault entry in this case should be a JSON string with 
+        following structure encoded with Base64:<br>
+        <br>
+        <code>{"jdbcUrl":"jdbc:postgresql://localhost:5432/postgres", "user": "postgres", "password": "root"}</code>    
+    </td></tr>
+</table> 
