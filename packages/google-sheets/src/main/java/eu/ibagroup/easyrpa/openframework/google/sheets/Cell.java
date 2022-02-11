@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Represents specific cell of Spreadsheet document and provides functionality to work with it.
@@ -296,6 +297,9 @@ public class Cell {
     public Cell getMergedRegionCell() {
         CellRange region = getMergedRegion();
         if (region != null) {
+            if (region.getFirstRow() == rowIndex && region.getFirstCol() == columnIndex) {
+                return this;
+            }
             return new Cell(getSheet(), region.getFirstRow(), region.getFirstCol());
         }
         return null;
@@ -308,7 +312,14 @@ public class Cell {
      * @return Google API object representing this cell.
      */
     public CellData getGCell() {
-        for (GridData gridData : parent.getGSheet().getData()) {
+        com.google.api.services.sheets.v4.model.Sheet gSheet = parent.getGSheet();
+        if (gSheet.getMerges() != null) {
+            Cell mergedRegionCell = getMergedRegionCell();
+            if (mergedRegionCell != null && mergedRegionCell != this) {
+                return mergedRegionCell.getGCell();
+            }
+        }
+        for (GridData gridData : gSheet.getData()) {
             if (gridData.getRowData() == null || gridData.getRowData().isEmpty()) {
                 continue;
             }
@@ -323,6 +334,21 @@ public class Cell {
             }
         }
         return null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Cell)) return false;
+        Cell cell = (Cell) o;
+        return parent.getId() == cell.parent.getId() &&
+                rowIndex == cell.rowIndex &&
+                columnIndex == cell.columnIndex;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(parent.getId(), rowIndex, columnIndex);
     }
 
     /**

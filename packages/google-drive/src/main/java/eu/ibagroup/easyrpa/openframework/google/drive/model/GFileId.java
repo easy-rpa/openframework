@@ -16,4 +16,8 @@ public class GFileId {
     public String toString() {
         return id;
     }
+
+    public static GFileId of(String id){
+        return new GFileId(id);
+    }
 }

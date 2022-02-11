@@ -2,7 +2,7 @@
 
  [Email](#email)  
  [Excel](#excel)  
- [CSV](#csv)  
+ [Google Services](#google-services)  
  [Google Drive](#google-drive)  
  [Google Sheets](#google-sheets)  
  [Database](#database)  
@@ -54,9 +54,9 @@
      * Read sheet table records   
      * Edit sheet table records
  
- - [Copying of sheet from one Excel file to another](excel/sheets-copying)    
+ - [Copying of sheet from one Excel file to another](excel/excel-sheets-copying)    
  
- - [Sheets manipulating](excel/sheets-manipulating)
+ - [Sheets manipulating](excel/excel-sheets-manipulating)
     * List existing sheets
     * Activate sheet
     * Rename sheet
@@ -101,6 +101,12 @@
  
  - [Running of custom VB script](excel/custom-vbs-running)
 
+## Google Services
+
+ - [TODO Google API Service authorization and instantiation]
+
+ - [TODO Custom Google API Service authorization]
+
 ## Google Drive
 
  - [Getting of files from Google Drive](google-drive/drive-files-listing)
@@ -120,38 +126,50 @@
 
  - [Creating of new Spreadsheet](google-sheets/spreadsheet-creating)
  
- - [Reading data from sheets](google-sheets/sheets-data-reading)
+ - [Reading data from Spreadsheet](google-sheets/spreadsheet-reading)
     * Read values of specific cells 
     * Read values of cell range 
     * Read the list of sheet table records   
+    
+ - [Editing of existing Spreadsheet](google-sheets/spreadsheet-editing) 
+    * Edit specific cells
+    * Edit specific cell range
+    * Edit sheet table records   
+    
+ - [Copying of sheet from one Spreadsheet to another](google-sheets/spreadsheet-sheets-copying)
  
- - Downloading a spreadsheet as an XLSX or PDF file (sheets/spreadsheet-downloading)
- - [Sheet manipulations](google-sheets/sheets-manipulating)
-    * Create sheet
-    * Delete sheet
-    * Rename sheet
-    * Clone sheet
+ - [Sheets manipulating](google-sheets/spreadsheet-sheets-manipulating)
+    * List existing sheets
     * Activate sheet
-    * Get list of all sheets
- - Working with sheet rows (sheets/working-with-rows)
-     * Lookup and edit rows
-     * Add/insert new rows
-     * Delete rows
- - Working with sheet columns (sheets/working-with-columns)
-   * Read column cells
-   * Add/insert new columns
-   * Move columns
-   * Delete columns
-   * Filter columns
- - Working with cells (sheets/working-with-cells)
-    * Read cell formula
-    * Read cell value
-    * Change cell formula
-    * Recalculation cell formula
- - Working with data range (sheets/working-with-data-range)
-    * Reading a range of data
-    * Adding data range on sheet
-    * Removing data range from sheet
+    * Rename sheet
+    * Move sheet
+    * Clone sheet
+    * Delete sheet 
+     
+ - [Working with sheet rows](google-sheets/working-with-sheet-rows)
+    * Lookup and edit rows
+    * Insert new rows
+    * Delete rows
+    
+ - [Working with sheet columns](google-sheets/working-with-sheet-columns)
+    * Read column cells
+    * Add/insert new columns
+    * Move columns
+    * Delete columns
+     
+ - [Working with formulas](google-sheets/working-with-cell-formulas)
+    * Edit cell's formulas
+    * Evaluating of cell's formulas
+     
+ - [Working with merged cells](google-sheets/working-with-merges)
+    * Read value from merged cells
+    * Merge/unmerge cells 
+     
+ - [Changing cells style (fonts, colors etc.)](google-sheets/cells-style-changing)   
+
+ - [TODO export to XLSX]
+ 
+ - [TODO export to PDF]
  
 ## Database
   
