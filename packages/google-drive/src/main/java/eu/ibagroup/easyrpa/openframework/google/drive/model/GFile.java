@@ -6,16 +6,31 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
+
+/**
+ * A GFile object provides access to file and file info through @see {@link GFileInfo}, like id, name, description, size, type and parent ids.
+ */
 public class GFile extends GFileInfo {
 
     private InputStream contentIS;
     private byte[] bytes;
 
+    /**
+     * Construct GFile object with given file info @see {@link GFileInfo} and file contents.
+     *
+     * @param file      file info @see {@link GFileInfo}
+     * @param contentIS input stream contents
+     */
     public GFile(GFileInfo file, InputStream contentIS) {
         super(file.file);
         this.contentIS = contentIS;
     }
 
+    /**
+     * Gets the bytes if present, or reads the contents of input stream as a byte[].
+     *
+     * @return the requested array.
+     */
     public byte[] getBytes() {
         if (bytes == null) {
             try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
@@ -41,12 +56,22 @@ public class GFile extends GFileInfo {
         return bytes;
     }
 
+    /**
+     * Byte array representation of file contents.
+     *
+     * @param bytes byte array.
+     */
     public void setBytes(byte[] bytes) {
         this.bytes = bytes;
     }
 
+    /**
+     * Converts the bytes to an input stream, encoded as bytes using the default character encoding of the platform.
+     *
+     * @return the input stream.
+     */
     public InputStream getContent() {
-        if(contentIS == null && bytes != null){
+        if (contentIS == null && bytes != null) {
             return new ByteArrayInputStream(bytes);
         }
         return contentIS;

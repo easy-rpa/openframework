@@ -13,7 +13,6 @@ import eu.ibagroup.easyrpa.openframework.google.drive.model.GFileInfo;
 import eu.ibagroup.easyrpa.openframework.google.drive.model.GFileType;
 import eu.ibagroup.easyrpa.openframework.google.drive.service.GoogleDriveService;
 import eu.ibagroup.easyrpa.openframework.google.services.AuthorizationPerformer;
-import eu.ibagroup.easyrpa.openframework.google.services.GoogleAuth;
 import eu.ibagroup.easyrpa.openframework.google.services.GoogleServicesProvider;
 
 import javax.inject.Inject;
