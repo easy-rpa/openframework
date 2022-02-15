@@ -63,7 +63,7 @@ public class GoogleDriveService {
     /**
      * Send request to get list of files by given query.
      * <p></p>
-     * <b>NOTICE:</b> <code>query</code> parameter should contain same list of fields as <code>supportsTeamDrives</code> property.
+     * <b>NOTICE:</b> <code>query</code> parameter should contain same list of fields as <code>fileFields</code> property.
      * Query examples:
      * <pre>
      *     <code>query = "mimeType='image/jpeg'"</code>> // list "jpeg" files only
@@ -178,7 +178,7 @@ public class GoogleDriveService {
     }
 
     /**
-     * Creates a new file.
+     * Create a new file.
      * <p></p>
      * In order to create file under My Drive root directory set <code>parentId</code> to <code>null</code>.
      * <code>supportsTeamDrives</code> must be <code>true</code> to create file under Shared Drives.
@@ -244,7 +244,7 @@ public class GoogleDriveService {
         }
     }
 
-    /**
+   /**
      * Move file to a target folder.
      * <p></p>
      * In order to move file to My Drive root directory set <code>targetFolderId</code> to <code>null</code>.
