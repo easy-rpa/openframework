@@ -1504,6 +1504,7 @@ public class Sheet implements Iterable<Row> {
         com.google.api.services.sheets.v4.model.Sheet gSheet = sheets.remove(sheetIndex);
         sheets.add(newPos, gSheet);
         gSheet.getProperties().setIndex(newPos);
+        sheetIndex = newPos;
         parent.batchUpdate(r -> {
             r.addUpdateSheetPropertiesRequest(gSheet, "index");
         });
@@ -1552,12 +1553,15 @@ public class Sheet implements Iterable<Row> {
      * in another Spreadsheet document.
      *
      * @param destDoc object representing destination Spreadsheet document.
+     * @return object representing just copied sheet of destination Spreadsheet document.
      */
-    public void copyTo(SpreadsheetDocument destDoc) {
+    public Sheet copyTo(SpreadsheetDocument destDoc) {
         CopySheetToAnotherSpreadsheetRequest requestBody = new CopySheetToAnotherSpreadsheetRequest();
         requestBody.setDestinationSpreadsheetId(destDoc.getId());
         try {
-            parent.getSheetsService().spreadsheets().sheets().copyTo(getDocument().getId(), getId(), requestBody).execute();
+            SheetProperties props = parent.getSheetsService().spreadsheets().sheets().copyTo(getDocument().getId(), getId(), requestBody).execute();
+            destDoc.reload();
+            return destDoc.selectSheet(props.getIndex());
         } catch (IOException e) {
             throw new RuntimeException(String.format("Copying of sheet '%s' has failed.", getName()), e);
         }

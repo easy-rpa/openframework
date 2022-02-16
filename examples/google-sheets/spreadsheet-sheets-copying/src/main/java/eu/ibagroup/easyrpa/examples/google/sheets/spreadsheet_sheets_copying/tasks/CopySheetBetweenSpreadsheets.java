@@ -7,6 +7,7 @@ import eu.ibagroup.easyrpa.openframework.google.drive.GoogleDrive;
 import eu.ibagroup.easyrpa.openframework.google.drive.model.GFileId;
 import eu.ibagroup.easyrpa.openframework.google.drive.model.GFileInfo;
 import eu.ibagroup.easyrpa.openframework.google.sheets.GoogleSheets;
+import eu.ibagroup.easyrpa.openframework.google.sheets.Sheet;
 import eu.ibagroup.easyrpa.openframework.google.sheets.SpreadsheetDocument;
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,9 +44,12 @@ public class CopySheetBetweenSpreadsheets extends ApTask {
         SpreadsheetDocument src = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
         SpreadsheetDocument target = googleSheets.getSpreadsheet(targetSpreadsheetFile.getId());
 
-        src.selectSheet(sourceSheetName).copyTo(target);
+        Sheet copiedSheet = src.selectSheet(sourceSheetName).copyTo(target);
 
-        log.info("Sheet '{}' has been copied successfully.", sourceSheetName);
+        log.info("Sheet '{}' has been copied successfully. Current name of copied sheet: '{}'. Rename it back as '{}'",
+                sourceSheetName, copiedSheet.getName(), sourceSheetName);
+
+        copiedSheet.rename(sourceSheetName);
     }
 
     private GFileInfo createCopyOfSpreadsheetFile(String fileId) {

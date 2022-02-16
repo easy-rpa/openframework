@@ -572,14 +572,14 @@ public class Column implements Iterable<Cell> {
                         break;
                     }
                 }
-                if (nextRow == null) {
+                if (nextRow == null || nextRow.getValues() == null
+                        || cellDataIndex < 0 || cellDataIndex >= nextRow.getValues().size()
+                        || nextRow.getValues().get(cellDataIndex) == null) {
+                    nextRow = null;
                     index++;
                 }
             }
-
-            return nextRow != null && nextRow.getValues() != null
-                    && cellDataIndex >= 0 && cellDataIndex < nextRow.getValues().size()
-                    && nextRow.getValues().get(cellDataIndex) != null;
+            return nextRow != null;
         }
 
         @Override

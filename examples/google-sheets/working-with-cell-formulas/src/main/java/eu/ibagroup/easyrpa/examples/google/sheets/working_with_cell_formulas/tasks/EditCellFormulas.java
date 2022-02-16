@@ -52,6 +52,8 @@ public class EditCellFormulas extends ApTask {
         cell.setFormula(newFormula);
 
         log.info("Formula for cell '{}' has been changed/set successfully.", cellWithFormulaRef);
+
+        log.info("Current value of cell '{}': {}", cellWithFormulaRef, cell.getValue());
     }
 
     private GFileInfo createCopyOfSpreadsheetFile(String fileId) {

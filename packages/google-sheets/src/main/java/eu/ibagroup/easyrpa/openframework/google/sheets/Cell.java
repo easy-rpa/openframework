@@ -144,12 +144,16 @@ public class Cell {
      */
     @SuppressWarnings("unchecked")
     public <T> T getValue(Class<T> valueType) {
-        if (String.class.isAssignableFrom(valueType)) {
-            return (T) getValueAsString();
-        } else if (Number.class.isAssignableFrom(valueType)) {
-            return (T) getValueAsNumeric();
+        Cell thisCell = getMergedRegionCell();
+        if (thisCell == null) {
+            thisCell = this;
         }
-        return (T) getTypedValue();
+        if (String.class.isAssignableFrom(valueType)) {
+            return (T) thisCell.getValueAsString();
+        } else if (Number.class.isAssignableFrom(valueType)) {
+            return (T) thisCell.getValueAsNumeric();
+        }
+        return (T) thisCell.getTypedValue();
     }
 
     /**
@@ -159,7 +163,11 @@ public class Cell {
      */
     public void setValue(Object value) {
         getDocument().batchUpdate(r -> {
-            CellData gCell = getGCell();
+            Cell thisCell = getMergedRegionCell();
+            if (thisCell == null) {
+                thisCell = this;
+            }
+            CellData gCell = thisCell.getGCell();
             if (gCell == null) {
                 return;
             }
@@ -208,7 +216,7 @@ public class Cell {
                 gCell.setUserEnteredValue(new ExtendedValue().setStringValue(value.toString()));
             }
 
-            r.addUpdateCellRequest(gCell, rowIndex, columnIndex, getSheet().getId(), fieldsToUpdate);
+            r.addUpdateCellRequest(gCell, thisCell.rowIndex, thisCell.columnIndex, getSheet().getId(), fieldsToUpdate);
         });
     }
 
@@ -219,7 +227,11 @@ public class Cell {
      * otherwise.
      */
     public boolean isEmpty() {
-        CellData gCell = getGCell();
+        Cell thisCell = getMergedRegionCell();
+        if (thisCell == null) {
+            thisCell = this;
+        }
+        CellData gCell = thisCell.getGCell();
         if (gCell == null) {
             return true;
         }
@@ -236,7 +248,11 @@ public class Cell {
      * @return <code>true</code> if the formula is specified for this cell or <code>false</code> otherwise.
      */
     public boolean hasFormula() {
-        CellData gCell = getGCell();
+        Cell thisCell = getMergedRegionCell();
+        if (thisCell == null) {
+            thisCell = this;
+        }
+        CellData gCell = thisCell.getGCell();
         return gCell != null && gCell.getUserEnteredValue().getFormulaValue() != null;
     }
 
@@ -246,7 +262,11 @@ public class Cell {
      * @return string with specified for this cell formula or <code>null</code> if cell does not have formula.
      */
     public String getFormula() {
-        CellData gCell = getGCell();
+        Cell thisCell = getMergedRegionCell();
+        if (thisCell == null) {
+            thisCell = this;
+        }
+        CellData gCell = thisCell.getGCell();
         return gCell != null ? gCell.getUserEnteredValue().getFormulaValue() : null;
     }
 
@@ -256,11 +276,19 @@ public class Cell {
      * @param newCellFormula string with formula to set.
      */
     public void setFormula(String newCellFormula) {
-        CellData gCell = getGCell();
+        Cell thisCell = getMergedRegionCell();
+        if (thisCell == null) {
+            thisCell = this;
+        }
+        CellData gCell = thisCell.getGCell();
         if (gCell != null) {
+            final Cell cell = thisCell;
+            final String formula = newCellFormula != null && !newCellFormula.startsWith("=")
+                    ? "=" + newCellFormula
+                    : newCellFormula;
             getDocument().batchUpdate(r -> {
-                gCell.setUserEnteredValue(new ExtendedValue().setFormulaValue(newCellFormula));
-                r.addUpdateCellRequest(gCell, rowIndex, columnIndex, getSheet().getId(),
+                gCell.setUserEnteredValue(new ExtendedValue().setFormulaValue(formula));
+                r.addUpdateCellRequest(gCell, cell.rowIndex, cell.columnIndex, getSheet().getId(),
                         "userEnteredValue");
             });
         }
@@ -272,6 +300,9 @@ public class Cell {
      * @return <code>true</code> if this cell is merged with other neighbour cells or <code>false</code> otherwise.
      */
     public boolean isMerged() {
+        if (parent.getGSheet().getMerges() == null) {
+            return false;
+        }
         return parent.getMergedRegions().stream().anyMatch(r -> r.isInRange(rowIndex, columnIndex));
     }
 
@@ -283,6 +314,9 @@ public class Cell {
      * @see CellRange
      */
     public CellRange getMergedRegion() {
+        if (parent.getGSheet().getMerges() == null) {
+            return null;
+        }
         return parent.getMergedRegions().stream()
                 .filter(r -> r.isInRange(rowIndex, columnIndex))
                 .findFirst().orElse(null);
@@ -312,14 +346,7 @@ public class Cell {
      * @return Google API object representing this cell.
      */
     public CellData getGCell() {
-        com.google.api.services.sheets.v4.model.Sheet gSheet = parent.getGSheet();
-        if (gSheet.getMerges() != null) {
-            Cell mergedRegionCell = getMergedRegionCell();
-            if (mergedRegionCell != null && mergedRegionCell != this) {
-                return mergedRegionCell.getGCell();
-            }
-        }
-        for (GridData gridData : gSheet.getData()) {
+        for (GridData gridData : parent.getGSheet().getData()) {
             if (gridData.getRowData() == null || gridData.getRowData().isEmpty()) {
                 continue;
             }

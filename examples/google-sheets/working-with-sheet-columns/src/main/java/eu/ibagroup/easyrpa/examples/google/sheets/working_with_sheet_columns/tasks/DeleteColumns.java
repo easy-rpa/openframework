@@ -22,7 +22,7 @@ public class DeleteColumns extends ApTask {
 
     @Override
     public void execute() {
-        String columnToDeleteRef = "D";
+        String columnToDeleteRef = "E";
 
         log.info("Delete columns of spreadsheet with ID: {}", sourceSpreadsheetFileId);
         SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
