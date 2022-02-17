@@ -25,7 +25,9 @@ public class GoogleDriveService {
      */
     private static final String DEFAULT_GOOGLE_FILE_FIELDS = "id, name, mimeType, description, size, parents, permissions";
 
-    /** Google Drive service. */
+    /**
+     * Google Drive service.
+     */
     private Drive service;
 
     private boolean supportsTeamDrives = true;
@@ -225,6 +227,17 @@ public class GoogleDriveService {
         }
     }
 
+    /**
+     * Creates a copy of a file.
+     * <p></p>
+     * <code>supportsTeamDrives</code> must be <code>true</code> to create file under Shared Drives.
+     *
+     * @param source     the source file info.
+     * @param nameOfCopy the name of copied file.
+     * @return wrapper <code>Optional.of(GFileInfo))</code> for created file.
+     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     * @see Drive API reference <a href="https://developers.google.com/drive/api/v3/create-file">Create file</a> for more details.
+     */
     public Optional<GFileInfo> copyFile(GFileInfo source, String nameOfCopy) {
         try {
             return Optional.of(new GFileInfo(service.files().copy(source.getId(), new File().setName(nameOfCopy))
@@ -255,7 +268,7 @@ public class GoogleDriveService {
         }
     }
 
-   /**
+    /**
      * Move file to a target folder.
      * <p></p>
      * In order to move file to My Drive root directory set <code>targetFolderId</code> to <code>null</code>.

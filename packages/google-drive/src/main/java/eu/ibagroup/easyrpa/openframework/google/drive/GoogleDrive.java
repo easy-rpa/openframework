@@ -13,7 +13,6 @@ import eu.ibagroup.easyrpa.openframework.google.drive.model.GFileInfo;
 import eu.ibagroup.easyrpa.openframework.google.drive.model.GFileType;
 import eu.ibagroup.easyrpa.openframework.google.drive.service.GoogleDriveService;
 import eu.ibagroup.easyrpa.openframework.google.services.AuthorizationPerformer;
-import eu.ibagroup.easyrpa.openframework.google.services.GoogleAuth;
 import eu.ibagroup.easyrpa.openframework.google.services.GoogleServicesProvider;
 
 import javax.inject.Inject;
@@ -27,19 +26,29 @@ import java.util.stream.Collectors;
 
 public class GoogleDrive {
 
-    /** List of extra fields for query in API requests */
+    /**
+     * List of extra fields for query in API requests
+     */
     private List<String> extraFileFields;
 
-    /** Enable support team drives in API requests */
+    /**
+     * Enable support team drives in API requests
+     */
     private Boolean supportsTeamDrives;
 
-    /** Google Service Provider */
+    /**
+     * Google Service Provider
+     */
     private GoogleServicesProvider googleServicesProvider;
 
-    /** Google Drive Service*/
+    /**
+     * Google Drive Service
+     */
     private GoogleDriveService service;
 
-    /** Access to configuration parameters */
+    /**
+     * Access to configuration parameters
+     */
     private RPAServicesAccessor rpaServices;
 
     /**
@@ -62,6 +71,7 @@ public class GoogleDrive {
 
     /**
      * Set authorization performer.
+     *
      * @param authorizationPerformer an authorization performer.
      * @return a self reference.
      */
@@ -73,6 +83,7 @@ public class GoogleDrive {
 
     /**
      * Set secret vault alias.
+     *
      * @param vaultAlias new secret vault alias
      * @return a self reference.
      */
@@ -83,6 +94,7 @@ public class GoogleDrive {
 
     /**
      * Set secret by given user id and secret.
+     *
      * @param userId new user id.
      * @param secret new secret.
      * @return a self reference.
@@ -125,8 +137,8 @@ public class GoogleDrive {
      * Add extra fields for Google Service to include in results.
      *
      * @param fields array of fields.
-     * @see Drive <a href="https://developers.google.com/drive/api/v3/reference/files">API reference files</a>
      * @return a self reference.
+     * @see Drive <a href="https://developers.google.com/drive/api/v3/reference/files">API reference files</a>
      */
     public GoogleDrive extraFields(String... fields) {
         setExtraFileFields(Arrays.stream(fields).collect(Collectors.toList()));
@@ -146,6 +158,7 @@ public class GoogleDrive {
 
     /**
      * Set <code>supportsTeamDrives</code> value.
+     *
      * @param supportsTeamDrives set true if files / folders located on Shared Drives, otherwise false.
      */
     public void setSupportsTeamDrives(boolean supportsTeamDrives) {
@@ -157,6 +170,7 @@ public class GoogleDrive {
 
     /**
      * Set <code>supportsTeamDrives</code> value.
+     *
      * @param supportsTeamDrives set true if files / folders located on Shared Drives, otherwise false.
      * @return a self reference
      */
@@ -414,6 +428,17 @@ public class GoogleDrive {
         return Optional.empty();
     }
 
+    /**
+     * Creates a copy of a file.
+     * <p></p>
+     * <code>supportsTeamDrives</code> must be <code>true</code> to create file under Shared Drives.
+     *
+     * @param source     the source file info.
+     * @param nameOfCopy the name of copied file.
+     * @return wrapper <code>Optional.of(GFileInfo))</code> for created file.
+     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     * @see Drive API reference <a href="https://developers.google.com/drive/api/v3/create-file">Create file</a> for more details.
+     */
     public Optional<GFileInfo> copy(GFileInfo source, String nameOfCopy) {
         if (source != null && nameOfCopy != null) {
             initService();
