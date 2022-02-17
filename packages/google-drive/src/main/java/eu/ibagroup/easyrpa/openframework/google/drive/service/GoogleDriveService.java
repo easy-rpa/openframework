@@ -225,6 +225,16 @@ public class GoogleDriveService {
         }
     }
 
+    public Optional<GFileInfo> copyFile(GFileInfo source, String nameOfCopy) {
+        try {
+            return Optional.of(new GFileInfo(service.files().copy(source.getId(), new File().setName(nameOfCopy))
+                    .setSupportsTeamDrives(supportsTeamDrives).execute()));
+        } catch (Exception e) {
+            throw new GoogleDriveException(String.format("Copying of file '%s' as '%s' has failed.",
+                    source.getName(), nameOfCopy), e);
+        }
+    }
+
     /**
      * Rename a file with given name.
      *

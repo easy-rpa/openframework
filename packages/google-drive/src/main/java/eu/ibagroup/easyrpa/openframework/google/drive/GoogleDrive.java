@@ -13,6 +13,7 @@ import eu.ibagroup.easyrpa.openframework.google.drive.model.GFileInfo;
 import eu.ibagroup.easyrpa.openframework.google.drive.model.GFileType;
 import eu.ibagroup.easyrpa.openframework.google.drive.service.GoogleDriveService;
 import eu.ibagroup.easyrpa.openframework.google.services.AuthorizationPerformer;
+import eu.ibagroup.easyrpa.openframework.google.services.GoogleAuth;
 import eu.ibagroup.easyrpa.openframework.google.services.GoogleServicesProvider;
 
 import javax.inject.Inject;
@@ -409,6 +410,14 @@ public class GoogleDrive {
         if (name != null) {
             initService();
             return this.service.createFile(name, type, null, folderId);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<GFileInfo> copy(GFileInfo source, String nameOfCopy) {
+        if (source != null && nameOfCopy != null) {
+            initService();
+            return this.service.copyFile(source, nameOfCopy);
         }
         return Optional.empty();
     }

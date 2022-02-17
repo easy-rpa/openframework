@@ -70,8 +70,32 @@ All necessary configuration files can be found in `src/main/resources` directory
 <table>
     <tr><th>Parameter</th><th>Value</th></tr>
     <tr><td valign="top"><code>google.services.auth.secret</code></td><td>
-        Vault alias that contains credentials for authentication on the google server
-        </td></tr>
+        The alias of secret vault entry with OAuth 2.0 Client JSON necessary for authentication on the Google 
+        server.<br>
+        <br>
+        For information regarding how to configure OAuth 2.0 Client see 
+        <a href="https://developers.google.com/workspace/guides/create-credentials#oauth-client-id">OAuth client ID credentials</a><br>
+        <br>         
+        In case of running of this example without EasyRPA Control Server, secret vault entries can be specified in the 
+        <code>vault.properties</code> file. The value of secret vault entry in this case should be a JSON string with 
+        following structure encoded with Base64:<br>
+        <pre>
+{
+    "installed": {
+      "client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
+      "project_id": "XXXXXXX-XXXXXX",
+      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+      "token_uri": "https://oauth2.googleapis.com/token",
+      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+      "client_secret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "redirect_uris": [
+          "urn:ietf:wg:oauth:2.0:oob",
+          "http://localhost"
+      ]
+    }
+}
+         </pre>    
+    </td></tr>      
     <tr><td valign="top"><code>sample.data.file</code></td><td>
         Path to JSON file that contains sample data for this process. It can be path on local file system or within 
         resources of this module.

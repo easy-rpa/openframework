@@ -245,6 +245,18 @@ public class SpreadsheetDocument implements Iterable<Sheet> {
     }
 
     /**
+     * Gets an actual Spreadsheet data from Google Drive.
+     */
+    public void reload(){
+        try {
+            spreadsheet = sheetsService.spreadsheets().get(spreadsheet.getSpreadsheetId()).setIncludeGridData(true).execute();
+        } catch (IOException e) {
+            throw new SpreadsheetException(String.format("Getting of spreadsheet with ID '%s' " +
+                    "from Google Drive has failed.", spreadsheet.getSpreadsheetId()), e);
+        }
+    }
+
+    /**
      * @return Spreadsheet document sheets iterator
      */
     @Override
@@ -272,6 +284,7 @@ public class SpreadsheetDocument implements Iterable<Sheet> {
         if (updateRequestsBatch != null) {
             updateRequestsBatch.send();
             updateRequestsBatch = null;
+            reload();
         }
     }
 
@@ -293,6 +306,7 @@ public class SpreadsheetDocument implements Iterable<Sheet> {
         if (isRequestsBatchCreatedHere) {
             updateRequestsBatch.send();
             updateRequestsBatch = null;
+            reload();
         }
     }
 
