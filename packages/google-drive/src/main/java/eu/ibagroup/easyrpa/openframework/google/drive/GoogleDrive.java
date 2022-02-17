@@ -183,6 +183,14 @@ public class GoogleDrive {
         return Optional.empty();
     }
 
+    public Optional<GFileInfo> copy(GFileInfo source, String nameOfCopy) {
+        if (source != null && nameOfCopy != null) {
+            initService();
+            return this.service.copyFile(source, nameOfCopy);
+        }
+        return Optional.empty();
+    }
+
     public Optional<GFile> createFile(File file) {
         return createFile(file, null);
     }
@@ -221,6 +229,8 @@ public class GoogleDrive {
         }
         return Optional.empty();
     }
+
+
 
     public Optional<GFileInfo> createFolder(String folderName) {
         return createFolder(folderName, null);
