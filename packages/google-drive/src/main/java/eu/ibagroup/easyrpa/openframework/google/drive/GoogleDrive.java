@@ -26,16 +26,24 @@ import java.util.stream.Collectors;
 
 public class GoogleDrive {
 
+    /** List of extra fields for query in API requests */
     private List<String> extraFileFields;
 
+    /** Enable support team drives in API requests */
     private Boolean supportsTeamDrives;
 
+    /** Google Service Provider */
     private GoogleServicesProvider googleServicesProvider;
 
+    /** Google Drive Service*/
     private GoogleDriveService service;
 
+    /** Access to configuration parameters */
     private RPAServicesAccessor rpaServices;
 
+    /**
+     * Construct GoogleDrive without predefined configuration paramateres.
+     */
     public GoogleDrive() {
         googleServicesProvider = new GoogleServicesProvider();
     }
@@ -52,8 +60,8 @@ public class GoogleDrive {
     }
 
     /**
-     * //TODO
-     * @param authorizationPerformer
+     * Set authorization performer.
+     * @param authorizationPerformer an authorization performer.
      * @return a self reference.
      */
     public GoogleDrive onAuthorization(AuthorizationPerformer authorizationPerformer) {
@@ -63,8 +71,8 @@ public class GoogleDrive {
     }
 
     /**
-     * //TODO
-     * @param vaultAlias
+     * Set secret vault alias.
+     * @param vaultAlias new secret vault alias
      * @return a self reference.
      */
     public GoogleDrive secret(String vaultAlias) {
@@ -73,9 +81,9 @@ public class GoogleDrive {
     }
 
     /**
-     * //TODO
-     * @param userId
-     * @param secret
+     * Set secret by given user id and secret.
+     * @param userId new user id.
+     * @param secret new secret.
      * @return a self reference.
      */
     public GoogleDrive secret(String userId, String secret) {
@@ -85,7 +93,7 @@ public class GoogleDrive {
     }
 
     /**
-     * Return list of extra fields.
+     * Return list of extra fields if present or take from configuration parameter split by ";" delimiter.
      */
     public List<String> getExtraFileFields() {
         if (extraFileFields == null) {

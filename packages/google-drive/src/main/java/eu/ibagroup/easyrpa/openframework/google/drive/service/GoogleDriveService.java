@@ -25,6 +25,7 @@ public class GoogleDriveService {
      */
     private static final String DEFAULT_GOOGLE_FILE_FIELDS = "id, name, mimeType, description, size, parents, permissions";
 
+    /** Google Drive service. */
     private Drive service;
 
     private boolean supportsTeamDrives = true;

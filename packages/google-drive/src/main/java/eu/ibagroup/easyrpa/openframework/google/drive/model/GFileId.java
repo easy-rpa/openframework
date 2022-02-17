@@ -5,6 +5,7 @@ package eu.ibagroup.easyrpa.openframework.google.drive.model;
  */
 public class GFileId {
 
+    /** File id of a google entity. */
     private String id;
 
     /**

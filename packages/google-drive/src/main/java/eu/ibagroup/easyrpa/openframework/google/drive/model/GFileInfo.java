@@ -10,6 +10,7 @@ import java.util.List;
 
 public class GFileInfo {
 
+    /** Metadata of a file. */
     protected File file;
 
     /**

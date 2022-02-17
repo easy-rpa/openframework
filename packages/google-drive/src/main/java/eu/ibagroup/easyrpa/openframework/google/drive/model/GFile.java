@@ -12,7 +12,10 @@ import java.io.InputStream;
  */
 public class GFile extends GFileInfo {
 
+    /** Input stream with content of a file. */
     private InputStream contentIS;
+
+    /** Byte array content of a file. */
     private byte[] bytes;
 
     /**
