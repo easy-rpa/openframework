@@ -121,7 +121,7 @@ public class SpreadsheetDocument implements Iterable<Sheet> {
 
             SpreadsheetUpdateRequestsBatch request = new SpreadsheetUpdateRequestsBatch(this);
             request.addNewSheetRequest(newSheet);
-            BatchUpdateSpreadsheetResponse response = request.send();
+            BatchUpdateSpreadsheetResponse response = request.send().get(0);
             newSheet.setProperties(response.getReplies().get(0).getAddSheet().getProperties());
         }
         return new Sheet(this, activeSheetIndex);
@@ -247,7 +247,7 @@ public class SpreadsheetDocument implements Iterable<Sheet> {
     /**
      * Gets an actual Spreadsheet data from Google Drive.
      */
-    public void reload(){
+    public void reload() {
         try {
             spreadsheet = sheetsService.spreadsheets().get(spreadsheet.getSpreadsheetId()).setIncludeGridData(true).execute();
         } catch (IOException e) {

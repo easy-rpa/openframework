@@ -10,6 +10,8 @@ import java.util.List;
 
 public class SpreadsheetUpdateRequestsBatch {
 
+    private static final int MAX_REQUESTS_IN_BATCH_COUNT = 100000;
+
     private List<Request> requests = new ArrayList<>();
 
     private SpreadsheetDocument document;
@@ -43,7 +45,7 @@ public class SpreadsheetUpdateRequestsBatch {
     public void addUpdateSheetPropertiesRequest(Sheet sheet, String... propertyNames) {
         requests.add(new Request().setUpdateSheetProperties(new UpdateSheetPropertiesRequest()
                 .setProperties(sheet.getProperties())
-                .setFields(String.join(" ", propertyNames))));
+                .setFields(String.join(",", propertyNames))));
     }
 
     public void addMergeCellsRequest(GridRange range) {
@@ -87,7 +89,7 @@ public class SpreadsheetUpdateRequestsBatch {
                 .setRange(range).setShiftDimension("COLUMNS")));
     }
 
-    public void addColumnsRowsRequest(int columnsCount, int sheetId) {
+    public void addAppendColumnsRequest(int columnsCount, int sheetId) {
         requests.add(new Request().setAppendDimension(new AppendDimensionRequest()
                 .setDimension("COLUMNS").setLength(columnsCount).setSheetId(sheetId)));
     }
@@ -157,11 +159,17 @@ public class SpreadsheetUpdateRequestsBatch {
                 .setFields(String.join(",", propertyNames))));
     }
 
-    public BatchUpdateSpreadsheetResponse send() {
+    public List<BatchUpdateSpreadsheetResponse> send() {
+        List<BatchUpdateSpreadsheetResponse> responses = new ArrayList<>();
         if (requests.size() > 0) {
-            BatchUpdateSpreadsheetRequest body = new BatchUpdateSpreadsheetRequest().setRequests(requests);
             try {
-                return document.getSheetsService().spreadsheets().batchUpdate(document.getId(), body).execute();
+                int i = 0;
+                List<Request> batch;
+                while (i < requests.size() && (batch = requests.subList(i, i + Math.min(requests.size() - i, MAX_REQUESTS_IN_BATCH_COUNT))).size() > 0) {
+                    i += batch.size();
+                    BatchUpdateSpreadsheetRequest body = new BatchUpdateSpreadsheetRequest().setRequests(batch);
+                    responses.add(document.getSheetsService().spreadsheets().batchUpdate(document.getId(), body).execute());
+                }
             } catch (Exception e) {
                 throw new SpreadsheetException("Batch update of spreadsheet has failed.", e);
             } finally {
@@ -170,6 +178,6 @@ public class SpreadsheetUpdateRequestsBatch {
                 document = null;
             }
         }
-        return null;
+        return responses;
     }
 }

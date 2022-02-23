@@ -168,11 +168,18 @@ public class Row implements Iterable<Cell> {
      * @param value    the value to set.
      */
     public void setValue(int colIndex, Object value) {
-        Cell cell = getCell(colIndex);
-        if (cell == null) {
-            cell = createCell(colIndex);
-        }
-        cell.setValue(value);
+        final int columnsAmountToAppend = colIndex + 1 - parent.getMaxColumnsCount();
+        getDocument().batchUpdate(r -> {
+            if (columnsAmountToAppend > 0) {
+                parent.appendColumnMetadata(columnsAmountToAppend);
+                r.addAppendColumnsRequest(columnsAmountToAppend, parent.getId());
+            }
+            Cell cell = getCell(colIndex);
+            if (cell == null) {
+                cell = createCell(colIndex);
+            }
+            cell.setValue(value);
+        });
     }
 
     /**
@@ -340,10 +347,20 @@ public class Row implements Iterable<Cell> {
      */
     public void putRange(int startCol, List<?> values) {
         if (values != null) {
+            final int columnsAmountToAppend = startCol + values.size() - parent.getMaxColumnsCount();
             getDocument().batchUpdate(r -> {
+                if (columnsAmountToAppend > 0) {
+                    parent.appendColumnMetadata(columnsAmountToAppend);
+                    r.addAppendColumnsRequest(columnsAmountToAppend, parent.getId());
+                }
                 int col = startCol;
                 for (Object cellValue : values) {
-                    setValue(col++, cellValue);
+                    Cell cell = getCell(col);
+                    if (cell == null) {
+                        cell = createCell(col);
+                    }
+                    cell.setValue(cellValue);
+                    col++;
                 }
             });
         }
@@ -396,7 +413,7 @@ public class Row implements Iterable<Cell> {
     public Cell createCell(int colIndex) {
         GridData relatedGridData = null;
         RowData row = null;
-        for (GridData gridData : parent.getGSheet().getData()) {
+        for (GridData gridData : parent.getGSheetGridsData()) {
             if (gridData.getRowData() == null || gridData.getRowData().isEmpty()) {
                 continue;
             }
@@ -412,25 +429,26 @@ public class Row implements Iterable<Cell> {
             return null;
         }
 
+        int startColumn = relatedGridData.getStartColumn() != null ? relatedGridData.getStartColumn() : 0;
+
         List<CellData> cellsData = row.getValues();
-        if (cellsData == null || cellsData.isEmpty()) {
+        if (cellsData == null) {
             cellsData = new ArrayList<>();
-            cellsData.add(new CellData());
             row.setValues(cellsData);
-            relatedGridData.setStartColumn(colIndex);
+        }
 
-        } else {
-            int startColumn = relatedGridData.getStartColumn() != null ? relatedGridData.getStartColumn() : 0;
-
-            if (colIndex < startColumn) {
-                for (int i = startColumn - colIndex; i > 0; i--) {
+        if (colIndex < startColumn) {
+            for (int i = startColumn - colIndex; i > 0; i--) {
+                if (cellsData.isEmpty()) {
+                    cellsData.add(new CellData());
+                } else {
                     cellsData.add(0, new CellData());
                 }
-                relatedGridData.setStartColumn(colIndex);
-            } else if (colIndex > startColumn + cellsData.size() - 1) {
-                for (int i = colIndex - startColumn - cellsData.size() + 1; i > 0; i--) {
-                    cellsData.add(new CellData());
-                }
+            }
+            relatedGridData.setStartColumn(colIndex);
+        } else if (colIndex > startColumn + cellsData.size() - 1) {
+            for (int i = colIndex - startColumn - cellsData.size() + 1; i > 0; i--) {
+                cellsData.add(new CellData());
             }
         }
 

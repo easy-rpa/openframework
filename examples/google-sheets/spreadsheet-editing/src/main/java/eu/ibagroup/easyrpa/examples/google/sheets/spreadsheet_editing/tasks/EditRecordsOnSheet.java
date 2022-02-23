@@ -2,6 +2,7 @@ package eu.ibagroup.easyrpa.examples.google.sheets.spreadsheet_editing.tasks;
 
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Configuration;
+import eu.ibagroup.easyrpa.engine.annotation.Output;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.examples.google.sheets.spreadsheet_editing.entities.Passenger;
 import eu.ibagroup.easyrpa.openframework.google.drive.GoogleDrive;
@@ -21,7 +22,7 @@ import java.util.Optional;
 @Slf4j
 public class EditRecordsOnSheet extends ApTask {
 
-    private static final String RESULT_FILE_POSTFIX = "_EDIT_RECORDS_RESULT";
+    private static final String RESULT_FILE_POSTFIX = "_EDIT_RESULT";
 
     @Configuration(value = "source.spreadsheet.file.id")
     private String sourceSpreadsheetFileId;
@@ -32,15 +33,19 @@ public class EditRecordsOnSheet extends ApTask {
     @Inject
     private GoogleSheets googleSheets;
 
+    @Output
+    private String resultSpreadsheetFileId;
+
     @Override
     public void execute() {
         String passengerName = "Wheadon, Mr. Edward H";
 
         GFileInfo sourceSpreadsheetFile = createCopyOfSpreadsheetFile(sourceSpreadsheetFileId);
         if (sourceSpreadsheetFile == null) return;
+        resultSpreadsheetFileId = sourceSpreadsheetFile.getId();
 
-        log.info("Open spreadsheet file with ID '{}'.", sourceSpreadsheetFile.getId());
-        SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFile.getId());
+        log.info("Open spreadsheet file with ID '{}'.", resultSpreadsheetFileId);
+        SpreadsheetDocument doc = googleSheets.getSpreadsheet(resultSpreadsheetFileId);
         Sheet activeSheet = doc.getActiveSheet();
 
         log.info("Lookup Passengers table on sheet '{}'", activeSheet.getName());
