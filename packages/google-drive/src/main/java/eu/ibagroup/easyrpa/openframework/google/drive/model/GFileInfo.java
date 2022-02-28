@@ -10,13 +10,16 @@ import java.util.List;
 
 public class GFileInfo {
 
-    /** Metadata of a file. */
+    /**
+     * Metadata of a file.
+     */
     protected File file;
 
     /**
-     * Construct a new Google File Info object from the given @see {@link File}
+     * Construct a new Google File Info object from the given Google File model.
      *
-     * @param file - the File instance
+     * @param file the File instance
+     * @see File
      */
     public GFileInfo(File file) {
         this.file = file;
@@ -25,7 +28,7 @@ public class GFileInfo {
     /**
      * The ID of the file.
      *
-     * @return value or {@code null} for none
+     * @return value or <code>null</code> for none
      */
     public String getId() {
         return file.getId();
@@ -42,12 +45,12 @@ public class GFileInfo {
 
     /**
      * The name of the file.
-     * <p></p>
+     * <p>
      * This is not necessarily unique within a folder. Note that for immutable
      * items such as the top level folders of Team Drives, My Drive root folder, and Application Data
      * folder the name is constant.
      *
-     * @return value or {@code null} for none
+     * @return value or <code>null</code> for none
      */
     public String getName() {
         return file.getName();
@@ -60,7 +63,7 @@ public class GFileInfo {
      * items such as the top level folders of Team Drives, My Drive root folder, and Application Data
      * folder the name is constant.
      *
-     * @param name name or {@code null} for none
+     * @param name name or <code>null</code> for none
      */
     public void setName(String name) {
         file.setName(name);
@@ -69,7 +72,7 @@ public class GFileInfo {
     /**
      * A short description of the file.
      *
-     * @return value or {@code null} for none
+     * @return value or <code>null</code> for none
      */
     public String getDescription() {
         return file.getDescription();
@@ -78,7 +81,7 @@ public class GFileInfo {
     /**
      * A short description of the file.
      *
-     * @param description description or {@code null} for none
+     * @param description description or <code>null</code> for none
      */
     public void setDescription(String description) {
         file.setDescription(description);
@@ -87,7 +90,9 @@ public class GFileInfo {
     /**
      * The IDs of the parent folders which contain the file.
      * <p>
-     * If file is placed directly in the user's My Drive folder, then returns {@code null}
+     * If file is placed directly in the user's My Drive folder, then returns <code>null</code>
+     *
+     * @return list of folder IDs.
      */
     public List<String> getParents() {
         return file.getParents();
@@ -98,7 +103,7 @@ public class GFileInfo {
      * <p>
      * If not specified as part of a create request, the file will be placed directly in the user's My Drive folder.
      *
-     * @param list list or {@code null} for none
+     * @param list list or <code>null</code> for none
      */
     public void setParents(List<String> list) {
         file.setParents(list);
@@ -109,7 +114,7 @@ public class GFileInfo {
      * <p>
      * This is only applicable to files with binary content in Drive.
      *
-     * @return value or {@code null} for none
+     * @return value or <code>null</code> for none
      */
     public Long getSize() {
         return file.getSize();
@@ -121,7 +126,8 @@ public class GFileInfo {
      * Google Drive will attempt to automatically detect an appropriate value from uploaded content if no value is provided.
      *
      * @return enum constant for the file MIME type,
-     * or {@code null} if @see {@link GFileType} enumeration has not the file MIME type.
+     * or <code>null</code> if GFileType enumeration has not the file MIME type.
+     * @see GFileType
      */
     public GFileType getFileType() {
         return GFileType.getValue(file.getMimeType());
@@ -132,14 +138,14 @@ public class GFileInfo {
      * <p>
      * Google Drive will attempt to automatically detect an appropriate value from uploaded content if no value is provided
      *
-     * @param type type or {@code null} for none
+     * @param type type or <code>null</code> for none
      */
     public void setType(GFileType type) {
         file.setMimeType(type.getMimeType());
     }
 
     /**
-     * @return the file @see {@link File}
+     * @return the Google File model instance.
      */
     public File getGoogleFile() {
         return file;

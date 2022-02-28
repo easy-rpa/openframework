@@ -12,17 +12,22 @@ import java.io.InputStream;
  */
 public class GFile extends GFileInfo {
 
-    /** Input stream with content of a file. */
+    /**
+     * Input stream with content of a file.
+     */
     private InputStream contentIS;
 
-    /** Byte array content of a file. */
+    /**
+     * Byte array content of a file.
+     */
     private byte[] bytes;
 
     /**
-     * Construct GFile object with given file info @see {@link GFileInfo} and file contents.
+     * Construct GFile object with given file info and file contents.
      *
-     * @param file      file info @see {@link GFileInfo}
+     * @param file      file info
      * @param contentIS input stream contents
+     * @see GFileInfo
      */
     public GFile(GFileInfo file, InputStream contentIS) {
         super(file.file);

@@ -85,8 +85,8 @@ public enum GFileType {
     /**
      * Construct a new Google File Type object from the given stings.
      *
-     * @param mimeType    - MIME type string.
-     * @param contentType - content type string.
+     * @param mimeType    MIME type string.
+     * @param contentType content type string.
      */
     GFileType(String mimeType, String contentType) {
         this.mimeType = mimeType;
@@ -110,7 +110,7 @@ public enum GFileType {
     /**
      * Return GFileType enum constant with specified string MIME value
      *
-     * @param mimeType - the string MIME value of the enum to be returned
+     * @param mimeType the string MIME value of the enum to be returned
      * @return enum constant with specified string MIME value,
      * or null if this enum has no constant for the specified string value
      */

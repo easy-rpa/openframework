@@ -58,7 +58,7 @@ public class GoogleAuth {
     }
 
     /**
-     * Construct instance of <code>GoogleAuth</code> using configuration parameters from @see {@link RPAServicesAccessor}
+     * Construct instance of <code>GoogleAuth</code> using configuration parameters from accessor.
      *
      * @param rpaServices the service to provide parameters.
      */
@@ -183,12 +183,14 @@ public class GoogleAuth {
 
     /**
      * Attempts to create StoredCredential token with given scopes.
-     * <p></p>
+     * <p>
      * If StoredCredential token is not present, human will be asked to approve requested access by given scopes.
      * If scopes have been changed, or package is updated then human will be asked again.
      *
-     * @param scopes list of requested scopes, @see {@link com.google.api.services.drive.DriveScopes).
-     * @return For more details @see <a href="https://developers.google.com/identity/protocols/oauth2#expiration">Refresh token expiration</a>
+     * @param scopes list of requested scopes.
+     * @return Credential object
+     * @see com.google.api.services.drive.DriveScopes
+     * @see <a href="https://developers.google.com/identity/protocols/oauth2#expiration">Refresh token expiration</a>
      */
     public Credential authorize(List<String> scopes) {
         try {
