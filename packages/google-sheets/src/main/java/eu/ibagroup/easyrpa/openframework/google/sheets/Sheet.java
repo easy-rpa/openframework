@@ -232,11 +232,18 @@ public class Sheet implements Iterable<Row> {
      */
     public void setValue(int rowIndex, int colIndex, Object value) {
         if (rowIndex >= 0 && colIndex >= 0) {
-            Row row = getRow(rowIndex);
-            if (row == null) {
-                row = createRow(rowIndex);
-            }
-            row.setValue(colIndex, value);
+            final int rowsAmountToAppend = rowIndex + 1 - getMaxRowsCount();
+            parent.batchUpdate(r -> {
+                if (rowsAmountToAppend > 0) {
+                    appendRowsMetadata(rowsAmountToAppend);
+                    r.addAppendRowsRequest(rowsAmountToAppend, getId());
+                }
+                Row row = getRow(rowIndex);
+                if (row == null) {
+                    row = createRow(rowIndex);
+                }
+                row.setValue(colIndex, value);
+            });
         }
     }
 
@@ -402,7 +409,12 @@ public class Sheet implements Iterable<Row> {
     public void putRange(int startRow, int startCol, List<?> values) {
         if (values != null && values.size() > 0) {
             final List<?> data = values.get(0) instanceof List ? values : Collections.singletonList(values);
+            final int rowsAmountToAppend = startRow + values.size() - getMaxRowsCount();
             parent.batchUpdate(r -> {
+                if (rowsAmountToAppend > 0) {
+                    appendRowsMetadata(rowsAmountToAppend);
+                    r.addAppendRowsRequest(rowsAmountToAppend, getId());
+                }
                 int rowIndex = startRow;
                 for (Object rowList : data) {
                     if (rowList instanceof List) {
@@ -690,14 +702,7 @@ public class Sheet implements Iterable<Row> {
         if (rowIndex < 0) {
             throw new IllegalArgumentException("Row index can not be negative.");
         }
-        com.google.api.services.sheets.v4.model.Sheet gSheet = getGSheet();
-        List<GridData> gridsData = gSheet.getData();
-        if (gridsData == null) {
-            gridsData = new ArrayList<>();
-            gridsData.add(new GridData());
-            gSheet.setData(gridsData);
-        }
-
+        List<GridData> gridsData = getGSheetGridsData();
         int lastRowIndex = getLastRowIndex();
         if (rowIndex > lastRowIndex) {
             GridData lastGridData = gridsData.get(gridsData.size() - 1);
@@ -786,8 +791,7 @@ public class Sheet implements Iterable<Row> {
             final List<?> data = values.get(0) instanceof List ? values : Collections.singletonList(values);
             int rowsCount = data.size();
 
-            com.google.api.services.sheets.v4.model.Sheet gSheet = getGSheet();
-            List<GridData> gridsData = gSheet.getData();
+            List<GridData> gridsData = getGSheetGridsData();
             for (int gridIndex = 0; gridIndex < gridsData.size(); gridIndex++) {
                 GridData gridData = gridsData.get(gridIndex);
                 int startRow = gridData.getStartRow() != null ? gridData.getStartRow() : 0;
@@ -819,7 +823,7 @@ public class Sheet implements Iterable<Row> {
             }
 
             parent.batchUpdate(r -> {
-                r.addInsertRowsRequest(rowIndex, rowsCount, gSheet.getProperties().getSheetId());
+                r.addInsertRowsRequest(rowIndex, rowsCount, getId());
                 putRange(rowIndex, startCol, data);
             });
         }
@@ -853,19 +857,14 @@ public class Sheet implements Iterable<Row> {
         if (rowIndex < 0 || rowIndex > lastRowIndex) {
             return;
         }
-        com.google.api.services.sheets.v4.model.Sheet gSheet = getGSheet();
-        List<GridData> gridsData = getGSheet().getData();
-        if (gridsData == null) {
-            return;
-        }
-        for (GridData gridData : gridsData) {
+        for (GridData gridData : getGSheetGridsData()) {
             List<RowData> rowsData = gridData.getRowData();
             int startRow = gridData.getStartRow() != null ? gridData.getStartRow() : 0;
 
             if (rowsData != null && rowIndex >= startRow && rowIndex < startRow + rowsData.size()) {
                 rowsData.remove(rowIndex - startRow);
                 parent.batchUpdate(r -> {
-                    r.addDeleteRowsRequest(rowIndex, 1, gSheet.getProperties().getSheetId());
+                    r.addDeleteRowsRequest(rowIndex, 1, getId());
                 });
             }
         }
@@ -895,19 +894,14 @@ public class Sheet implements Iterable<Row> {
      * @param rowIndex 0-based index of target row.
      */
     public void cleanRow(int rowIndex) {
-        com.google.api.services.sheets.v4.model.Sheet gSheet = getGSheet();
-        List<GridData> gridsData = getGSheet().getData();
-        if (gridsData == null) {
-            return;
-        }
-        for (GridData gridData : gridsData) {
+        for (GridData gridData : getGSheetGridsData()) {
             List<RowData> rowsData = gridData.getRowData();
             int startRow = gridData.getStartRow() != null ? gridData.getStartRow() : 0;
 
             if (rowsData != null && rowIndex >= startRow && rowIndex < startRow + rowsData.size()) {
                 rowsData.get(rowIndex - startRow).clear();
                 parent.batchUpdate(r -> {
-                    r.addCleanRowRequest(rowIndex, gSheet.getProperties().getSheetId());
+                    r.addCleanRowRequest(rowIndex, getId());
                 });
             }
         }
@@ -1048,9 +1042,7 @@ public class Sheet implements Iterable<Row> {
         if (columnIndex > getLastColumnIndex()) {
             putRange(startRow, columnIndex, columnData);
         } else {
-            com.google.api.services.sheets.v4.model.Sheet gSheet = getGSheet();
-            List<GridData> gridsData = gSheet.getData();
-            for (GridData gridsDatum : gridsData) {
+            for (GridData gridsDatum : getGSheetGridsData()) {
                 for (RowData rowData : gridsDatum.getRowData()) {
                     List<CellData> cellsData = rowData.getValues();
                     if (cellsData != null && columnIndex < cellsData.size()) {
@@ -1059,7 +1051,7 @@ public class Sheet implements Iterable<Row> {
                 }
             }
             parent.batchUpdate(r -> {
-                r.addInsertColumnsRequest(columnIndex, 1, gSheet.getProperties().getSheetId());
+                r.addInsertColumnsRequest(columnIndex, 1, getId());
                 putRange(startRow, columnIndex, columnData);
             });
         }
@@ -1123,7 +1115,6 @@ public class Sheet implements Iterable<Row> {
         }
         int pos = method == null || method == InsertMethod.BEFORE ? toPositionIndex : toPositionIndex + 1;
         if (pos != columnToMoveIndex) {
-            //TODO get grid data from response
             parent.batchUpdate(r -> {
                 r.addMoveColumnsRequest(columnToMoveIndex, pos, 1, getGSheet().getProperties().getSheetId());
             });
@@ -1157,12 +1148,7 @@ public class Sheet implements Iterable<Row> {
         if (colIndex < 0 || colIndex > getLastColumnIndex()) {
             return;
         }
-        com.google.api.services.sheets.v4.model.Sheet gSheet = getGSheet();
-        List<GridData> gridsData = gSheet.getData();
-        if (gridsData == null) {
-            return;
-        }
-        for (GridData gridData : gridsData) {
+        for (GridData gridData : getGSheetGridsData()) {
             List<RowData> rowsData = gridData.getRowData();
             if (rowsData == null) {
                 continue;
@@ -1175,7 +1161,7 @@ public class Sheet implements Iterable<Row> {
             }
         }
         parent.batchUpdate(r -> {
-            r.addDeleteColumnsRequest(colIndex, 1, gSheet.getProperties().getSheetId());
+            r.addDeleteColumnsRequest(colIndex, 1, getId());
         });
     }
 
@@ -1206,12 +1192,7 @@ public class Sheet implements Iterable<Row> {
         if (colIndex < 0 || colIndex > getLastColumnIndex()) {
             return;
         }
-        com.google.api.services.sheets.v4.model.Sheet gSheet = getGSheet();
-        List<GridData> gridsData = gSheet.getData();
-        if (gridsData == null) {
-            return;
-        }
-        for (GridData gridData : gridsData) {
+        for (GridData gridData : getGSheetGridsData()) {
             List<RowData> rowsData = gridData.getRowData();
             if (rowsData == null) {
                 continue;
@@ -1224,7 +1205,7 @@ public class Sheet implements Iterable<Row> {
             }
         }
         parent.batchUpdate(r -> {
-            r.addCleanColumnRequest(colIndex, gSheet.getProperties().getSheetId());
+            r.addCleanColumnRequest(colIndex, getId());
         });
     }
 
@@ -1248,15 +1229,7 @@ public class Sheet implements Iterable<Row> {
         if (columnIndex < 0 || columnIndex > getLastColumnIndex()) {
             return;
         }
-        com.google.api.services.sheets.v4.model.Sheet gSheet = getGSheet();
-        List<GridData> gridsData = gSheet.getData();
-        if (gridsData == null) {
-            gridsData = new ArrayList<>();
-            gridsData.add(new GridData());
-            gSheet.setData(gridsData);
-        }
-
-        for (GridData gridData : gridsData) {
+        for (GridData gridData : getGSheetGridsData()) {
             int startColumn = gridData.getStartColumn() != null ? gridData.getStartColumn() : 0;
             List<DimensionProperties> columns = gridData.getColumnMetadata();
             if (columns == null) {
@@ -1268,11 +1241,11 @@ public class Sheet implements Iterable<Row> {
                 columns.add(new DimensionProperties());
             }
 
-            if (columnIndex >= startColumn) {
+            if (columnIndex >= startColumn && columnIndex < startColumn + columns.size()) {
                 DimensionProperties columnMetadata = columns.get(columnIndex - startColumn);
                 columnMetadata.setPixelSize(width);
                 parent.batchUpdate(r -> {
-                    r.addUpdateColumnMetadataRequest(columnIndex, columnMetadata, gSheet.getProperties().getSheetId());
+                    r.addUpdateColumnMetadataRequest(columnIndex, columnMetadata, getId());
                 });
                 break;
             }
@@ -1290,7 +1263,7 @@ public class Sheet implements Iterable<Row> {
         List<GridData> gridsData = getGSheet().getData();
         if (gridsData == null || gridsData.size() == 0) return -1;
         for (GridData gridData : gridsData) {
-            if (gridData.getColumnMetadata() == null || gridData.getColumnMetadata().isEmpty()) {
+            if (gridData.getRowData() == null || gridData.getRowData().isEmpty()) {
                 continue;
             }
             int startColumn = gridData.getStartColumn() != null ? gridData.getStartColumn() : 0;
@@ -1300,20 +1273,24 @@ public class Sheet implements Iterable<Row> {
     }
 
     /**
-     * Gets index of the last column contained on the sheet.
+     * Gets index of the last defined column contained on the sheet.
      *
-     * @return 0-based index of the last column contained on the sheet or <code>-1</code> if no columns exist.
+     * @return 0-based index of the last defined column contained on the sheet or <code>-1</code> if no columns exist.
      */
     public int getLastColumnIndex() {
         int lastColIndex = -1;
         List<GridData> gridsData = getGSheet().getData();
         if (gridsData == null || gridsData.size() == 0) return -1;
         for (GridData gridData : gridsData) {
-            if (gridData.getColumnMetadata() == null || gridData.getColumnMetadata().isEmpty()) {
+            if (gridData.getRowData() == null || gridData.getRowData().isEmpty()) {
                 continue;
             }
             int startColumn = gridData.getStartColumn() != null ? gridData.getStartColumn() : 0;
-            lastColIndex = Math.max(lastColIndex, startColumn + gridData.getColumnMetadata().size() - 1);
+            for (RowData rowData : gridData.getRowData()) {
+                if (rowData.getValues() != null) {
+                    lastColIndex = Math.max(lastColIndex, startColumn + rowData.getValues().size() - 1);
+                }
+            }
         }
         return lastColIndex;
     }
@@ -1541,7 +1518,7 @@ public class Sheet implements Iterable<Row> {
 
         SpreadsheetUpdateRequestsBatch request = new SpreadsheetUpdateRequestsBatch(getDocument());
         request.addDuplicateSheetRequest(gSheet, clonedSheetIndex, clonedSheetName);
-        BatchUpdateSpreadsheetResponse response = request.send();
+        BatchUpdateSpreadsheetResponse response = request.send().get(0);
         gSheetClone.setProperties(response.getReplies().get(0).getDuplicateSheet().getProperties());
         parent.getGSpreadsheet().getSheets().add(gSheetClone);
 
@@ -1593,6 +1570,114 @@ public class Sheet implements Iterable<Row> {
      */
     public com.google.api.services.sheets.v4.model.Sheet getGSheet() {
         return parent.getGSpreadsheet().getSheets().get(sheetIndex);
+    }
+
+
+    /**
+     * Gets the list of GridData contained in underlay Google API object representing this sheet.
+     *
+     * @return the list of GridData of this sheet.
+     */
+    List<GridData> getGSheetGridsData() {
+        com.google.api.services.sheets.v4.model.Sheet gSheet = getGSheet();
+        List<GridData> gridsData = gSheet.getData();
+        if (gridsData == null) {
+            gridsData = new ArrayList<>();
+            gSheet.setData(gridsData);
+        }
+        if (gridsData.isEmpty()) {
+            gridsData.add(new GridData());
+        }
+        return gridsData;
+    }
+
+    /**
+     * Gets max amount of available rows on this sheet.
+     *
+     * @return the max amount of available rows on this sheet.
+     */
+    int getMaxRowsCount() {
+        int maxRowsCount = 0;
+        GridData lastGridData = null;
+        int startMetaRow = 0;
+        List<GridData> gridsData = getGSheetGridsData();
+        for (int i = gridsData.size() - 1; i >= 0; i--) {
+            GridData gridData = gridsData.get(i);
+            if (gridData.getRowMetadata() != null && gridData.getRowMetadata().size() > 0) {
+                startMetaRow = gridData.getStartRow() != null ? gridData.getStartRow() : 0;
+                lastGridData = gridData;
+                break;
+            }
+        }
+        if (lastGridData != null) {
+            maxRowsCount = startMetaRow + lastGridData.getRowMetadata().size();
+        }
+        return maxRowsCount;
+    }
+
+    /**
+     * Appends empty records to rows metadata to increase the max amount of available rows on this sheet.
+     *
+     * @param rowsAmount amount of rows to append.
+     */
+    void appendRowsMetadata(int rowsAmount) {
+        List<GridData> gridsData = getGSheetGridsData();
+        GridData lastGridData = null;
+        for (int i = gridsData.size() - 1; i >= 0; i--) {
+            GridData gridData = gridsData.get(i);
+            if (gridData.getRowMetadata() != null && gridData.getRowMetadata().size() > 0) {
+                lastGridData = gridData;
+                break;
+            }
+        }
+        if (lastGridData == null) {
+            lastGridData = gridsData.get(gridsData.size() - 1);
+            lastGridData.setRowMetadata(new ArrayList<>());
+        }
+        for (int i = rowsAmount; i >= 0; i--) {
+            lastGridData.getRowMetadata().add(new DimensionProperties());
+        }
+    }
+
+    /**
+     * Gets max amount of available columns on this sheet.
+     *
+     * @return the max amount of available columns on this sheet.
+     */
+    int getMaxColumnsCount() {
+        int maxColumnsCount = 0;
+        for (GridData gridData : getGSheetGridsData()) {
+            if (gridData.getColumnMetadata() == null || gridData.getColumnMetadata().isEmpty()) {
+                continue;
+            }
+            int startColumn = gridData.getStartColumn() != null ? gridData.getStartColumn() : 0;
+            maxColumnsCount = Math.max(maxColumnsCount, startColumn + gridData.getColumnMetadata().size());
+        }
+        return maxColumnsCount;
+    }
+
+    /**
+     * Appends empty records to column metadata to increase the max amount of available columns on this sheet.
+     *
+     * @param columnsAmount amount of columns to append.
+     */
+    void appendColumnMetadata(int columnsAmount) {
+        List<GridData> gridsData = getGSheetGridsData();
+        GridData lastGridData = null;
+        for (int i = gridsData.size() - 1; i >= 0; i--) {
+            GridData gridData = gridsData.get(i);
+            if (gridData.getColumnMetadata() != null && gridData.getColumnMetadata().size() > 0) {
+                lastGridData = gridData;
+                break;
+            }
+        }
+        if (lastGridData == null) {
+            lastGridData = gridsData.get(gridsData.size() - 1);
+            lastGridData.setColumnMetadata(new ArrayList<>());
+        }
+        for (int i = columnsAmount; i >= 0; i--) {
+            lastGridData.getColumnMetadata().add(new DimensionProperties());
+        }
     }
 
     /**
