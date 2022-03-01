@@ -24,21 +24,41 @@ public class GoogleServicesProvider {
         authService = new GoogleAuth();
     }
 
+    /**
+     * Construct Google Service Provider using configuration parameters.
+     *
+     * @param rpaServices the service to provide parameters.
+     */
     @Inject
     public GoogleServicesProvider(RPAServicesAccessor rpaServices) {
         this.rpaServices = rpaServices;
         authService = new GoogleAuth(rpaServices);
     }
 
+    /**
+     * @return reference to GoogleAuth instance.
+     */
     public GoogleAuth getAuth() {
         return authService;
     }
 
+    /**
+     * Set authorization performer.
+     *
+     * @param authorizationPerformer new authorization performer.
+     * @return a self reference.
+     */
     public GoogleServicesProvider onAuthorization(AuthorizationPerformer authorizationPerformer) {
         authService.setAuthorizationPerformer(authorizationPerformer);
         return this;
     }
 
+    /**
+     * Set user is and secret by given secret vault alias.
+     *
+     * @param vaultAlias the vault with user id and secret.
+     * @return a self reference.
+     */
     public GoogleServicesProvider secret(String vaultAlias) {
         if (rpaServices != null) {
             authService.setUserId(vaultAlias);
@@ -47,12 +67,27 @@ public class GoogleServicesProvider {
         return this;
     }
 
+    /**
+     * Set user id and secret by given values.
+     *
+     * @param userId new user id.
+     * @param secret new secret.
+     * @return a self reference.
+     */
     public GoogleServicesProvider secret(String userId, String secret) {
         authService.setUserId(userId);
         authService.setSecret(secret);
         return this;
     }
 
+    /**
+     * Get Google Service for given <code>serviceClass</code> and scopes.
+     *
+     * @param serviceClass class of the service.
+     * @param scopes       list of scopes requested for the service.
+     * @param <T>          type of the service.
+     * @return the service of specified type.
+     */
     @SuppressWarnings("unchecked")
     public <T extends AbstractGoogleJsonClient> T getService(Class<T> serviceClass, String... scopes) {
         Class<? extends AbstractGoogleJsonClient.Builder> builderClass = null;
@@ -71,6 +106,14 @@ public class GoogleServicesProvider {
         return (T) getServiceBuilder(builderClass, scopes).build();
     }
 
+    /**
+     * Get builder wrapper of Google Service for given <code>serviceClass</code> and scopes.
+     *
+     * @param builderClass class of the service.
+     * @param scopes       list of scopes requested for the service.
+     * @param <T>          type of the service.
+     * @return the builder wrapper for service of specified type.
+     */
     @SuppressWarnings("unchecked")
     public <T extends AbstractGoogleJsonClient.Builder> T getServiceBuilder(Class<T> builderClass, String... scopes) {
         try {

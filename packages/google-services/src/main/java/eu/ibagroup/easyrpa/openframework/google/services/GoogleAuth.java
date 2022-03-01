@@ -29,9 +29,9 @@ public class GoogleAuth {
     private static final String DEFAULT_TOKEN_STORES_DIRECTORY_PATH = "tokens";
     private static final String DEFAULT_VERIFICATION_CODE_RECEIVER = "localhost:8888";
 
-    private HttpTransport httpTransport;
+    private final HttpTransport httpTransport;
 
-    private JsonFactory jsonFactory;
+    private final JsonFactory jsonFactory;
 
     private String userId;
 
@@ -45,6 +45,9 @@ public class GoogleAuth {
 
     private RPAServicesAccessor rpaServices;
 
+    /**
+     * Construct instance of <code>GoogleAuth</code> class using HTTP trusted transport and json factory.
+     */
     public GoogleAuth() {
         try {
             httpTransport = GoogleNetHttpTransport.newTrustedTransport();
@@ -54,20 +57,34 @@ public class GoogleAuth {
         }
     }
 
+    /**
+     * Construct instance of <code>GoogleAuth</code> using configuration parameters from accessor.
+     *
+     * @param rpaServices the service to provide parameters.
+     */
     @Inject
     public GoogleAuth(RPAServicesAccessor rpaServices) {
         this();
         this.rpaServices = rpaServices;
     }
 
+    /**
+     * @return reference to HTTP Transport.
+     */
     public HttpTransport getHttpTransport() {
         return httpTransport;
     }
 
+    /**
+     * @return reference to Json Factory.
+     */
     public JsonFactory getJsonFactory() {
         return jsonFactory;
     }
 
+    /**
+     * @return the user id from configuration parameters.
+     */
     public String getUserId() {
         if (userId == null) {
             userId = getConfigParam(GServicesConfigParam.AUTH_SECRET);
@@ -78,10 +95,18 @@ public class GoogleAuth {
         return userId;
     }
 
+    /**
+     * Set user id.
+     *
+     * @param userId new user id.
+     */
     public void setUserId(String userId) {
         this.userId = userId;
     }
 
+    /**
+     * @return the secret from configuration parameters.
+     */
     public String getSecret() {
         if (secret == null) {
             String secretAlias = getConfigParam(GServicesConfigParam.AUTH_SECRET);
@@ -92,10 +117,18 @@ public class GoogleAuth {
         return secret;
     }
 
+    /**
+     * Set new secret.
+     *
+     * @param secret new secret.
+     */
     public void setSecret(String secret) {
         this.secret = secret;
     }
 
+    /**
+     * @return the path to StoredCredential token from configuration parameters.
+     */
     public String getTokenStoresDir() {
         if (tokenStoresDir == null) {
             tokenStoresDir = getConfigParam(GServicesConfigParam.AUTH_TOKEN_STORES_DIR);
@@ -106,10 +139,20 @@ public class GoogleAuth {
         return tokenStoresDir;
     }
 
+    /**
+     * Set path to StoredCredential token.
+     *
+     * @param tokenStoresDir new path.
+     */
     public void setTokenStoresDir(String tokenStoresDir) {
         this.tokenStoresDir = tokenStoresDir;
     }
 
+    /**
+     * Get host and port for local server receiver from configuration parameters.
+     *
+     * @return host:port string value.
+     */
     public String getVerCodeReceiver() {
         if (verCodeReceiver == null) {
             verCodeReceiver = getConfigParam(GServicesConfigParam.AUTH_VERIFICATION_CODE_RECEIVER);
@@ -120,14 +163,35 @@ public class GoogleAuth {
         return verCodeReceiver;
     }
 
+    /**
+     * Set new <code>host:port</code> string value as local server receiver.
+     *
+     * @param verCodeReceiver new <code>host:port</code> value
+     */
     public void setVerCodeReceiver(String verCodeReceiver) {
         this.verCodeReceiver = verCodeReceiver;
     }
 
+    /**
+     * Set authorization performer.
+     *
+     * @param authorizationPerformer new authorization performer.
+     */
     public void setAuthorizationPerformer(AuthorizationPerformer authorizationPerformer) {
         this.authorizationPerformer = authorizationPerformer;
     }
 
+    /**
+     * Attempts to create StoredCredential token with given scopes.
+     * <p>
+     * If StoredCredential token is not present, human will be asked to approve requested access by given scopes.
+     * If scopes have been changed, or package is updated then human will be asked again.
+     *
+     * @param scopes list of requested scopes.
+     * @return Credential object
+     * @see com.google.api.services.drive.DriveScopes
+     * @see <a href="https://developers.google.com/identity/protocols/oauth2#expiration">Refresh token expiration</a>
+     */
     public Credential authorize(List<String> scopes) {
         try {
             return createAuthorizationFlow(getSecret(), scopes).authorize(getUserId());
