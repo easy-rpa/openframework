@@ -23,11 +23,6 @@
             <groupId>com.google.apis</groupId>
             <artifactId>google-api-services-sheets</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.apache.commons</groupId>-->
-<!--            <artifactId>commons-lang3</artifactId>-->
-<!--            <version>3.12.0</version>-->
-<!--        </dependency>-->
     </dependencies>
 
     <build>
@@ -37,8 +32,8 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
                     <excludePackageNames>
-                        eu.ibagroup.easyrpa.openframework.googlesheets.internal;
-                        eu.ibagroup.easyrpa.openframework.googlesheets.internal.*
+                        eu.ibagroup.easyrpa.openframework.google.sheets.internal;
+                        eu.ibagroup.easyrpa.openframework.google.sheets.internal.*
                     </excludePackageNames>
                 </configuration>
             </plugin>

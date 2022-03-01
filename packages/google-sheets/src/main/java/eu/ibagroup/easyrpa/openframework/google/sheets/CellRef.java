@@ -135,8 +135,8 @@ public class CellRef {
      * @param sheetName name of related sheet.
      * @param rowIndex  0-based row index of the reference.
      * @param colIndex  0-based column index of the reference.
-     * @param isRowAbs  <code>true</code> if row index should be absolute or <code>false</code> otherwise.
-     * @param isColAbs  <code>true</code> if column index should be absolute or <code>false</code> otherwise.
+     * @param isRowAbs  {@code true} if row index should be absolute or {@code false} otherwise.
+     * @param isColAbs  {@code true} if column index should be absolute or {@code false} otherwise.
      */
     public CellRef(String sheetName, int rowIndex, int colIndex, boolean isRowAbs, boolean isColAbs) {
         this.sheetName = sheetName;
@@ -149,7 +149,7 @@ public class CellRef {
     /**
      * Gets the name of related sheet.
      *
-     * @return name of related sheet or <code>null</code> if this cell reference is sheet-free.
+     * @return name of related sheet or {@code null} if this cell reference is sheet-free.
      */
     public String getSheetName() {
         return sheetName;
@@ -216,7 +216,7 @@ public class CellRef {
     /**
      * Gets whether row index is absolute.
      *
-     * @return <code>true</code> if row index is absolute or <code>false</code> otherwise.
+     * @return {@code true} if row index is absolute or {@code false} otherwise.
      */
     public boolean isRowAbsolute() {
         return isRowAbs;
@@ -225,7 +225,7 @@ public class CellRef {
     /**
      * Sets row index as absolute.
      *
-     * @param rowAbs <code>true</code> if row index should be absolute or <code>false</code> otherwise.
+     * @param rowAbs {@code true} if row index should be absolute or {@code false} otherwise.
      */
     public void setRowAbsolute(boolean rowAbs) {
         if (this.isRowAbs != rowAbs) {
@@ -238,7 +238,7 @@ public class CellRef {
     /**
      * Gets whether column index is absolute.
      *
-     * @return <code>true</code> if column index is absolute or <code>false</code> otherwise.
+     * @return {@code true} if column index is absolute or {@code false} otherwise.
      */
     public boolean isColAbsolute() {
         return isColAbs;
@@ -247,7 +247,7 @@ public class CellRef {
     /**
      * Sets column index as absolute.
      *
-     * @param colAbs <code>true</code> if column index should be absolute or <code>false</code> otherwise.
+     * @param colAbs {@code true} if column index should be absolute or {@code false} otherwise.
      */
     public void setColAbsolute(boolean colAbs) {
         if (this.isColAbs != colAbs) {
@@ -272,7 +272,7 @@ public class CellRef {
     /**
      * Formats this cell reference as string in A1-style. E.g. "A3" or "Sheet1!A3".
      *
-     * @param includeSheetName set to <code>false</code> if necessary to exclude sheet name in the output string.
+     * @param includeSheetName set to {@code false} if necessary to exclude sheet name in the output string.
      * @return string representation of this cell reference in A1-style.
      */
     public String formatAsString(boolean includeSheetName) {
@@ -300,7 +300,7 @@ public class CellRef {
     /**
      * Formats this cell reference as string in R1C1-style. E.g. "R3C1:R20C7" or "Sheet1!R3C1:R20C7".
      *
-     * @param includeSheetName set to <code>false</code> if necessary to exclude sheet name in the output string.
+     * @param includeSheetName set to {@code false} if necessary to exclude sheet name in the output string.
      * @return string representation of this cell reference in R1C1-style.
      */
     public String formatAsRowColString(boolean includeSheetName) {
@@ -327,7 +327,7 @@ public class CellRef {
     /**
      * Checks whether related sheet name is defined for this cell reference (sheet-based or not).
      *
-     * @return <code>true</code> is related sheet name is defined or <code>false</code> otherwise.
+     * @return {@code true} is related sheet name is defined or {@code false} otherwise.
      */
     public boolean isSheetNameDefined() {
         return sheetName != null && sheetName.length() > 0;

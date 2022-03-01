@@ -101,7 +101,7 @@ public class CellStyle {
     /**
      * Sets whether cells font should be bold.
      *
-     * @param isBold <code>true</code> to set as bold and <code>false</code> otherwise.
+     * @param isBold {@code true} to set as bold and {@code false} otherwise.
      * @return this cell style object to allow joining of methods calls into chain.
      */
     public CellStyle bold(boolean isBold) {
@@ -126,7 +126,7 @@ public class CellStyle {
     /**
      * Sets whether cells font should be italic.
      *
-     * @param isItalic <code>true</code> to set as italic and <code>false</code> otherwise.
+     * @param isItalic {@code true} to set as italic and {@code false} otherwise.
      * @return this cell style object to allow joining of methods calls into chain.
      */
     public CellStyle italic(boolean isItalic) {
@@ -151,7 +151,7 @@ public class CellStyle {
     /**
      * Sets whether cells font should be strikeout.
      *
-     * @param isStrikeout <code>true</code> to set as strikeout and <code>false</code> otherwise.
+     * @param isStrikeout {@code true} to set as strikeout and {@code false} otherwise.
      * @return this cell style object to allow joining of methods calls into chain.
      */
     public CellStyle strikeout(boolean isStrikeout) {
@@ -176,7 +176,7 @@ public class CellStyle {
     /**
      * Sets whether cell font should be underlined.
      *
-     * @param isUnderline <code>true</code> to set as underlined and <code>false</code> otherwise.
+     * @param isUnderline {@code true} to set as underlined and {@code false} otherwise.
      * @return this cell style object to allow joining of methods calls into chain.
      */
     public CellStyle underline(boolean isUnderline) {
@@ -385,7 +385,7 @@ public class CellStyle {
     /**
      * Sets whether the text in the cell should be displayed vertically.
      *
-     * @param isVertical <code>true</code> to display text vertically and <code>false</code> otherwise.
+     * @param isVertical {@code true} to display text vertically and {@code false} otherwise.
      * @return this cell style object to allow joining of methods calls into chain.
      */
     public CellStyle vertical(boolean isVertical) {
@@ -640,7 +640,7 @@ public class CellStyle {
      * Applies this style to given cell.
      *
      * @param cell      object representing target cell.
-     * @param updateAll <code>true</code> to force updating of all cell format fields. Otherwise only dirty fields
+     * @param updateAll {@code true} to force updating of all cell format fields. Otherwise only dirty fields
      *                  will be updated.
      */
     public void applyTo(Cell cell, boolean updateAll) {

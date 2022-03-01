@@ -41,7 +41,7 @@ public class SpreadsheetDocument implements Iterable<Sheet> {
     private SpreadsheetUpdateRequestsBatch updateRequestsBatch;
 
     /**
-     * Creates a new Spreadsheet document for Google Spreadsheet with given ID.
+     * Creates a new Spreadsheet document for Google Spreadsheet with given file ID.
      *
      * @param sheetsService instance of related Google Spreadsheets service.
      * @param spreadsheetId the file ID of source spreadsheet in Google Drive.
@@ -137,7 +137,6 @@ public class SpreadsheetDocument implements Iterable<Sheet> {
         Optional<com.google.api.services.sheets.v4.model.Sheet> sheet = spreadsheet.getSheets().stream()
                 .filter(s -> s.getProperties().getTitle().equals(sheetName)).findFirst();
         if (sheet.isPresent()) {
-            //TODO get changes from response instead of manual changing
             spreadsheet.getSheets().remove(sheet.get());
             batchUpdate(request -> request.addDeleteSheetRequest(sheet.get().getProperties().getSheetId()));
         }
@@ -150,14 +149,15 @@ public class SpreadsheetDocument implements Iterable<Sheet> {
      */
     public void removeSheet(Sheet sheet) {
         if (sheet.getDocument() == this) {
-            //TODO get changes from response instead of manual changing
             spreadsheet.getSheets().remove(sheet.getIndex());
             batchUpdate(request -> request.addDeleteSheetRequest(sheet.getId()));
         }
     }
 
     /**
-     * @return current active sheet.
+     * Gets current active sheet.
+     *
+     * @return object representing current active sheet.
      */
     public Sheet getActiveSheet() {
         return new Sheet(this, activeSheetIndex);
@@ -265,9 +265,35 @@ public class SpreadsheetDocument implements Iterable<Sheet> {
     }
 
     /**
-     * TODO
+     * Sets automatic sending of change requests to Google server on/off.
+     * <p>
+     * By default any change of spreadsheet data using SpreadsheetDocument or related objects (Sheet, Row, Cell etc.)
+     * initiates sending of corresponding change requests to Google server. But when it's necessary to do a lot of
+     * such changes it's possibly to face with limitation of Google quotes. Since no more than 60 requests can be done
+     * per minute. See <a href="https://developers.google.com/sheets/api/limits">Sheets API Usage Limits</a> for more
+     * details.
+     * <p>
+     * Using this method it's possible to switch off this behaviour and change requests won't be sent at all until
+     * {@link #commit()} method is invoked. The same goal can be achieved using method {@link #withOneBatch(Consumer)}.
+     * <pre>
+     * ...
+     * SpreadsheetDocument doc = ...;
+     * ...
+     * doc.setAutoCommit(false);
+     * Sheet sheet = doc.getActiveSheet();
+     * for(int i = 0; i < 100; i++){
+     *  // No one actual request will be sent to Google server.
+     *  // All changes will be done locally in memory.
+     *  sheet.setValue(i, 0, "Value" + i);
+     * }
+     * // Commit initiate sending of previously done changes to Google server as one batch.
+     * doc.commit();  //or doc.setAutoCommit(true);
+     * ...
+     * </pre>
      *
-     * @param isAutoCommit
+     * @param isAutoCommit {@code false} to switch off automatic sending of change requests to Google server and
+     *                     {@code true} vice versa. In case of {@code true} value it's additionally calls
+     *                     {@link #commit()} to insure that all previously done changes are sent to Google server.
      */
     public void setAutoCommit(boolean isAutoCommit) {
         if (isAutoCommit) {
@@ -278,20 +304,43 @@ public class SpreadsheetDocument implements Iterable<Sheet> {
     }
 
     /**
-     * TODO
+     * Sends all previously done changes to Google server and gets back the actual content of this spreadsheet
+     * after applying these changes on Google side.
+     * <p>
+     * This method is actually working only after calling of {@code setAutoCommit(false)} or within
+     * {@link #withOneBatch(Consumer)}. In other cases it does nothing.
      */
     public void commit() {
         if (updateRequestsBatch != null) {
             updateRequestsBatch.send();
-            updateRequestsBatch = null;
             reload();
+            updateRequestsBatch = new SpreadsheetUpdateRequestsBatch(this);
         }
     }
 
     /**
-     * TODO
+     * Collects all changes are done within given lambda and sends them as one batch to Google server in the end.
+     * <p>
+     * Example:
+     * <pre>
+     * ...
+     * doc.withOneBatch(d -> {
      *
-     * @param action
+     *   Sheet sheet = d.getActiveSheet();
+     *   for(int i = 0; i < 100; i++){
+     *       // No one actual request will be sent to Google server.
+     *       // All changes will be done locally in memory.
+     *       sheet.setValue(i, 0, "Value" + i);
+     *   }
+     *
+     * }); // In the end of calling this method all done changes sent to Google
+     *     // server as one batch and the actual content of this spreadsheet
+     *     // is got back after applying these changes on Google side.
+     * ...
+     * </pre>
+     *
+     * @param action {@link Consumer<SpreadsheetDocument>} lambda expression that implements specific logic of changing
+     *               this SpreadsheetDocument.
      */
     public void withOneBatch(Consumer<SpreadsheetDocument> action) {
         boolean isRequestsBatchCreatedHere = false;
@@ -311,9 +360,10 @@ public class SpreadsheetDocument implements Iterable<Sheet> {
     }
 
     /**
-     * TODO
+     * Allows to put a set of spreadsheet update requests into one batch.
      *
-     * @param action
+     * @param action {@link Consumer} lambda expression with {@link SpreadsheetUpdateRequestsBatch} as argument. Within
+     *               this lambda expression necessary update requests can be put into SpreadsheetUpdateRequestsBatch.
      */
     protected void batchUpdate(Consumer<SpreadsheetUpdateRequestsBatch> action) {
         withOneBatch(doc -> {

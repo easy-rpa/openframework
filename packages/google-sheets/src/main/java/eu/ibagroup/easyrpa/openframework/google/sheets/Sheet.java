@@ -80,7 +80,7 @@ public class Sheet implements Iterable<Row> {
      * Gets the cell represented by given reference.
      *
      * @param cellRef reference to necessary cell. E.g. "A23".
-     * @return instance of corresponding cell or <code>null</code> if cell is not defined.
+     * @return instance of corresponding cell or {@code null} if cell is not defined.
      */
     public Cell getCell(String cellRef) {
         CellRef ref = new CellRef(cellRef);
@@ -92,7 +92,7 @@ public class Sheet implements Iterable<Row> {
      *
      * @param rowIndex 0-based row index of necessary cell.
      * @param colIndex 0-based column index of necessary cell.
-     * @return instance of corresponding cell or <code>null</code> if cell is not defined.
+     * @return instance of corresponding cell or {@code null} if cell is not defined.
      */
     public Cell getCell(int rowIndex, int colIndex) {
         Row row = getRow(rowIndex);
@@ -103,7 +103,7 @@ public class Sheet implements Iterable<Row> {
      * Searches cell with given value on the sheet.
      *
      * @param value the value to lookup. Exact matching is used during comparing.
-     * @return instance of the first found cell with given value or <code>null</code> if nothing is found.
+     * @return instance of the first found cell with given value or {@code null} if nothing is found.
      */
     public Cell findCell(String value) {
         return findCell(MatchMethod.EXACT, value);
@@ -114,7 +114,7 @@ public class Sheet implements Iterable<Row> {
      *
      * @param matchMethod the way how the given value will be matched with value of cell.
      * @param value       the value to lookup.
-     * @return instance of the first found cell with given value or <code>null</code> if nothing is found.
+     * @return instance of the first found cell with given value or {@code null} if nothing is found.
      * @see MatchMethod
      */
     public Cell findCell(MatchMethod matchMethod, String value) {
@@ -135,9 +135,8 @@ public class Sheet implements Iterable<Row> {
      * Gets the value of this sheet cell by given cell reference.
      *
      * @param cellRef reference string to necessary cell. E.g. "A23".
-     * @return value of corresponding cell or <code>null</code> if nothing is found. The actual class of value
-     * is depend on cell type. Can be returned <code>Double</code>, <code>Boolean</code>, <code>Date</code>
-     * or <code>String</code>.
+     * @return value of corresponding cell or {@code null} if nothing is found. The actual class of value
+     * is depend on cell type. Can be returned {@code Double}, {@code Boolean}, {@code LocalDateTime} or {@code String}.
      */
     public Object getValue(String cellRef) {
         CellRef ref = new CellRef(cellRef);
@@ -146,25 +145,24 @@ public class Sheet implements Iterable<Row> {
 
     /**
      * Gets the value of this sheet cell by given cell reference and converts it to the type
-     * specified by <code>valueType</code>.
+     * specified by {@code valueType}.
      * <p>
-     * <b>Currently only following values of <code>valueType</code> are supported:</b>
-     * <table><tr><td valign="top" width="70"><b>String.class</b></td><td>performs automatic conversion of cell
-     * values to string based on data format specified for corresponding cells. The output values looks the same
-     * as human can see it in cell of Google Sheet in browser.</td></tr>
-     * <tr><td valign="top" width="70"><b>Double.class</b></td><td>performs automatic conversion of cell value to double.
-     * If such conversion is not possible then value will be <code>null</code>.</td></tr>
-     * <tr><td valign="top" width="70">Other</td><td>performs simple type casting of cell value to <code>T</code>.
-     * Throws <code>ClassCastException</code> if such type casting is not possible.</tr></table>
+     * If {@code valueType} is <b>{@code String.class}</b>, <b>{@code Byte.class}</b>, <b>{@code Short.class}</b>,
+     * <b>{@code Integer.class}</b>, <b>{@code Long.class}</b>, <b>{@code Float.class}</b> or <b>{@code Double.class}</b>
+     * this method performs automatic conversion of cell value to corresponding type or return {@code null} if
+     * the conversion fails.
+     * <p>
+     * For other types it performs simple type casting of cell value to {@code T} or throws {@code ClassCastException}
+     * if such type casting is not possible.
      *
      * @param cellRef   reference string to necessary cell. E.g. "A23".
      * @param valueType class instance of return value.
-     * @param <T>       type of return value. Defined by value of <code>valueType</code>.
-     * @return value of corresponding cell or <code>null</code> if nothing is found. The class of return
-     * value is defined by <code>valueType</code>. If the actual class of cell value is different from
-     * <code>valueType</code> the automatic conversion will be applied.
-     * @throws ClassCastException if <code>T</code> is different from String or Double and the value of cell
-     *                            cannot be cast to <code>T</code>.
+     * @param <T>       type of return value. Defined by value of {@code valueType}.
+     * @return value of corresponding cell or {@code null} if nothing is found. The class of return
+     * value is defined by {@code valueType}. If the actual class of cell value is different from
+     * {@code valueType} the automatic conversion will be applied.
+     * @throws ClassCastException if {@code T} is different from String or Number and the value of cell cannot be
+     *                            cast to {@code T}.
      */
     public <T> T getValue(String cellRef, Class<T> valueType) {
         CellRef ref = new CellRef(cellRef);
@@ -176,9 +174,8 @@ public class Sheet implements Iterable<Row> {
      *
      * @param rowIndex 0-based row index of necessary cell.
      * @param colIndex 0-based column index of necessary cell.
-     * @return value of corresponding cell or <code>null</code> if nothing is found. The actual class of value
-     * is depend on cell type. Can be returned <code>Double</code>, <code>Boolean</code>, <code>Date</code>
-     * or <code>String</code>.
+     * @return value of corresponding cell or {@code null} if nothing is found. The actual class of value
+     * is depend on cell type. Can be returned {@code Double}, {@code Boolean}, {@code LocalDateTime} or {@code String}.
      */
     public Object getValue(int rowIndex, int colIndex) {
         return getValue(rowIndex, colIndex, Object.class);
@@ -186,26 +183,25 @@ public class Sheet implements Iterable<Row> {
 
     /**
      * Gets the value of this sheet cell by given row and column indexes. The return value is automatically
-     * converted to the type specified by <code>valueType</code>.
+     * converted to the type specified by {@code valueType}.
      * <p>
-     * <b>Currently only following values of <code>valueType</code> are supported:</b>
-     * <table><tr><td valign="top" width="70"><b>String.class</b></td><td>performs automatic conversion of cell
-     * values to string based on data format specified for corresponding cells. The output values looks the same
-     * as human can see it in cell of Google Sheet in browser.</td></tr>
-     * <tr><td valign="top" width="70"><b>Double.class</b></td><td>performs automatic conversion of cell value to double.
-     * If such conversion is not possible then value will be <code>null</code>.</td></tr>
-     * <tr><td valign="top" width="70">Other</td><td>performs simple type casting of cell value to <code>T</code>.
-     * Throws <code>ClassCastException</code> if such type casting is not possible.</tr></table>
+     * If {@code valueType} is <b>{@code String.class}</b>, <b>{@code Byte.class}</b>, <b>{@code Short.class}</b>,
+     * <b>{@code Integer.class}</b>, <b>{@code Long.class}</b>, <b>{@code Float.class}</b> or <b>{@code Double.class}</b>
+     * this method performs automatic conversion of cell value to corresponding type or return {@code null} if
+     * the conversion fails.
+     * <p>
+     * For other types it performs simple type casting of cell value to {@code T} or throws {@code ClassCastException}
+     * if such type casting is not possible.
      *
      * @param rowIndex  0-based row index of necessary cell.
      * @param colIndex  0-based column index of necessary cell.
      * @param valueType class instance of return value.
-     * @param <T>       type of return value. Defined by value of <code>valueType</code>.
-     * @return value of corresponding cell or <code>null</code> if nothing is found. The class of return
-     * value is defined by <code>valueType</code>. If the actual class of cell value is different from
-     * <code>valueType</code> the automatic conversion will be applied.
-     * @throws ClassCastException if <code>T</code> is different from String or Double and the value of cell
-     *                            cannot be cast to <code>T</code>.
+     * @param <T>       type of return value. Defined by value of {@code valueType}.
+     * @return value of corresponding cell or {@code null} if nothing is found. The class of return
+     * value is defined by {@code valueType}. If the actual class of cell value is different from
+     * {@code valueType} the automatic conversion will be applied.
+     * @throws ClassCastException if {@code T} is different from String or Number and the value of cell cannot be
+     *                            cast to {@code T}.
      */
     public <T> T getValue(int rowIndex, int colIndex, Class<T> valueType) {
         Cell cell = getCell(rowIndex, colIndex);
@@ -252,7 +248,7 @@ public class Sheet implements Iterable<Row> {
      * bottom-right cells of this sheet.
      *
      * @return list of cell value lists. Returns empty list if sheet is empty. The actual class of values in lists
-     * depend on cell types. Can be <code>Double</code>, <code>Boolean</code>, <code>Date</code> or <code>String</code>.
+     * depend on cell types. Can be {@code Double}, {@code Boolean}, {@code LocalDateTime} or {@code String}.
      * @see #getRange(int, int, int, int)
      * @see #getFirstRowIndex()
      * @see #getFirstColumnIndex()
@@ -284,34 +280,33 @@ public class Sheet implements Iterable<Row> {
      * @param startRef reference string to top-left cell of the range. E.g. "A23".
      * @param endRef   reference string to bottom-right cell of the range. E.g. "D50".
      * @return list of cell value lists. Returns empty list if specified range is empty. The actual class of values in lists
-     * depend on cell types. Can be <code>Double</code>, <code>Boolean</code>, <code>Date</code> or <code>String</code>.
+     * depend on cell types. Can be {@code Double}, {@code Boolean}, {@code LocalDateTime} or {@code String}.
      */
     public List<List<Object>> getRange(String startRef, String endRef) {
         return getRange(startRef, endRef, Object.class);
     }
 
     /**
-     * Gets values of cells range on this sheet and converts them to the type specified by <code>valueType</code>.
+     * Gets values of cells range on this sheet and converts them to the type specified by {@code valueType}.
      * The range is defined by given top-left and bottom-right cell references.
      * <p>
-     * <b>Currently only following values of <code>valueType</code> are supported:</b>
-     * <table><tr><td valign="top" width="70"><b>String.class</b></td><td>performs automatic conversion of cell
-     * values to string based on data format specified for corresponding cells. The output values looks the same
-     * as human can see it in cell of Google Sheet in browser.</td></tr>
-     * <tr><td valign="top" width="70"><b>Double.class</b></td><td>performs automatic conversion of cell values to double.
-     * If such conversion is not possible then values will be <code>null</code>.</td></tr>
-     * <tr><td valign="top" width="70">Other</td><td>performs simple type casting of cell values to <code>T</code>.
-     * Throws <code>ClassCastException</code> if such type casting is not possible.</tr></table>
+     * If {@code valueType} is <b>{@code String.class}</b>, <b>{@code Byte.class}</b>, <b>{@code Short.class}</b>,
+     * <b>{@code Integer.class}</b>, <b>{@code Long.class}</b>, <b>{@code Float.class}</b> or <b>{@code Double.class}</b>
+     * this method performs automatic conversion of cell values to corresponding type or {@code null} if the conversion
+     * fails.
+     * <p>
+     * For other types it performs simple type casting of cell values to {@code T} or throws {@code ClassCastException}
+     * if such type casting is not possible.
      *
      * @param startRef  reference string to top-left cell of the range. E.g. "A23".
      * @param endRef    reference string to bottom-right cell of the range. E.g. "D50".
      * @param valueType class instance of return cell values.
-     * @param <T>       type of return cell values. Defined by value of <code>valueType</code>.
+     * @param <T>       type of return cell values. Defined by value of {@code valueType}.
      * @return list of cell value lists. Returns empty list if specified range is empty. The class of return
-     * cell values is defined by <code>valueType</code>. If the actual class of cell values is different from
-     * <code>valueType</code> the automatic conversion will be applied.
-     * @throws ClassCastException if <code>T</code> is different from String or Double and value of cells
-     *                            cannot be cast to <code>T</code>.
+     * cell values is defined by {@code valueType}. If the actual class of cell values is different from
+     * {@code valueType} the automatic conversion will be applied.
+     * @throws ClassCastException if {@code T} is different from String or Number and the value of cell cannot be
+     *                            cast to {@code T}.
      */
     public <T> List<List<T>> getRange(String startRef, String endRef, Class<T> valueType) {
         CellRef sRef = new CellRef(startRef);
@@ -328,36 +323,35 @@ public class Sheet implements Iterable<Row> {
      * @param endRow   0-based index of bottom row of the range.
      * @param endCol   0-based index of right column of the range.
      * @return list of cell value lists. Returns empty list if specified range is empty. The actual class of values in lists
-     * depend on cell types. Can be <code>Double</code>, <code>Boolean</code>, <code>Date</code> or <code>String</code>.
+     * depend on cell types. Can be {@code Double}, {@code Boolean}, {@code LocalDateTime} or {@code String}.
      */
     public List<List<Object>> getRange(int startRow, int startCol, int endRow, int endCol) {
         return getRange(startRow, startCol, endRow, endCol, Object.class);
     }
 
     /**
-     * Gets values of cells range on this sheet and converts them to the type specified by <code>valueType</code>.
+     * Gets values of cells range on this sheet and converts them to the type specified by {@code valueType}.
      * The range is defined by given top row, left column, bottom row and right column indexes.
      * <p>
-     * <b>Currently only following values of <code>valueType</code> are supported:</b>
-     * <table><tr><td valign="top" width="70"><b>String.class</b></td><td>performs automatic conversion of cell
-     * values to string based on data format specified for corresponding cells. The output values looks the same
-     * as human can see it in cell of Google Sheet in browser.</td></tr>
-     * <tr><td valign="top" width="70"><b>Double.class</b></td><td>performs automatic conversion of cell values to double.
-     * If such conversion is not possible then values will be <code>null</code>.</td></tr>
-     * <tr><td valign="top" width="70">Other</td><td>performs simple type casting of cell values to <code>T</code>.
-     * Throws <code>ClassCastException</code> if such type casting is not possible.</tr></table>
+     * If {@code valueType} is <b>{@code String.class}</b>, <b>{@code Byte.class}</b>, <b>{@code Short.class}</b>,
+     * <b>{@code Integer.class}</b>, <b>{@code Long.class}</b>, <b>{@code Float.class}</b> or <b>{@code Double.class}</b>
+     * this method performs automatic conversion of cell values to corresponding type or {@code null} if the conversion
+     * fails.
+     * <p>
+     * For other types it performs simple type casting of cell values to {@code T} or throws {@code ClassCastException}
+     * if such type casting is not possible.
      *
      * @param startRow  0-based index of top row of the range.
      * @param startCol  0-based index of left column of the range.
      * @param endRow    0-based index of bottom row of the range.
      * @param endCol    0-based index of right column of the range.
      * @param valueType class instance of return cell values.
-     * @param <T>       type of return cell values. Defined by value of <code>valueType</code>.
+     * @param <T>       type of return cell values. Defined by value of {@code valueType}.
      * @return list of cell value lists. Returns empty list if specified range is empty. The class of return
-     * cell values is defined by <code>valueType</code>. If the actual class of cell values is different from
-     * <code>valueType</code> the automatic conversion will be applied.
-     * @throws ClassCastException if <code>T</code> is different from String or Double and value of cells
-     *                            cannot be cast to <code>T</code>.
+     * cell values is defined by {@code valueType}. If the actual class of cell values is different from
+     * {@code valueType} the automatic conversion will be applied.
+     * @throws ClassCastException if {@code T} is different from String or Number and the value of cell cannot be
+     *                            cast to {@code T}.
      */
     public <T> List<List<T>> getRange(int startRow, int startCol, int endRow, int endCol, Class<T> valueType) {
         List<List<T>> data = new ArrayList<>();
@@ -598,7 +592,7 @@ public class Sheet implements Iterable<Row> {
      * Gets the row represented by given reference.
      *
      * @param rowRef reference to cell that belongs to necessary row. E.g. "A23" defines row with index 22.
-     * @return high level Row object representing corresponding row or <code>null</code> if row is not defined.
+     * @return high level Row object representing corresponding row or {@code null} if row is not defined.
      */
     public Row getRow(String rowRef) {
         return getRow(new CellRef(rowRef).getRow());
@@ -608,7 +602,7 @@ public class Sheet implements Iterable<Row> {
      * Gets the row represented with given index.
      *
      * @param rowIndex 0-based index of necessary row.
-     * @return high level Row object representing corresponding row or <code>null</code> if row is not defined.
+     * @return high level Row object representing corresponding row or {@code null} if row is not defined.
      */
     public Row getRow(int rowIndex) {
         if (rowIndex >= 0) {
@@ -642,7 +636,7 @@ public class Sheet implements Iterable<Row> {
      *
      * @param values the set of values to lookup. Exact matching is used during comparing.
      * @return high level Row object representing the first found row that have cells match to all given values
-     * or <code>null</code> if nothing is found.
+     * or {@code null} if nothing is found.
      */
     public Row findRow(String... values) {
         return findRow(MatchMethod.EXACT, values);
@@ -660,10 +654,10 @@ public class Sheet implements Iterable<Row> {
      * </p>
      *
      * @param matchMethod the way how the given values will be matched with value of cells. If <code>matchMethod</code>
-     *                    is <code>null</code> the {@link MatchMethod#EXACT} is used as default.
+     *                    is {@code null} the {@link MatchMethod#EXACT} is used as default.
      * @param values      the set of values to lookup.
      * @return high level Row object representing the first found row that have cells match to all given values
-     * or <code>null</code> if nothing is found.
+     * or {@code null} if nothing is found.
      * @see MatchMethod
      */
     public Row findRow(MatchMethod matchMethod, String... values) {
@@ -951,7 +945,7 @@ public class Sheet implements Iterable<Row> {
      * Gets column of this sheet represented by given reference.
      *
      * @param colRef reference to cell that belongs to necessary column. E.g. "C23" defines column with index 2.
-     * @return high level object representing corresponding column or <code>null</code> if column is not defined.
+     * @return high level object representing corresponding column or {@code null} if column is not defined.
      */
     public Column getColumn(String colRef) {
         return getColumn(new CellRef(colRef).getCol());
@@ -961,7 +955,7 @@ public class Sheet implements Iterable<Row> {
      * Gets column of this sheet represented by given index.
      *
      * @param colIndex 0-based index of necessary column.
-     * @return high level object representing corresponding column or <code>null</code> if column is not defined.
+     * @return high level object representing corresponding column or {@code null} if column is not defined.
      */
     public Column getColumn(int colIndex) {
         return colIndex >= 0 && colIndex <= getLastColumnIndex() ? new Column(this, colIndex) : null;
@@ -1362,7 +1356,7 @@ public class Sheet implements Iterable<Row> {
      * @param recordType class instance of records that this table works with.
      * @param keywords   - keywords to localize table header. Exact matching is used during comparing keywords with
      *                   table column names.
-     * @return object representing the table or <code>null</code> if nothing was found.
+     * @return object representing the table or {@code null} if nothing was found.
      * @see #findRow(MatchMethod, String...)
      */
     public <T> Table<T> findTable(Class<T> recordType, String... keywords) {
@@ -1374,9 +1368,9 @@ public class Sheet implements Iterable<Row> {
      *
      * @param recordType  class instance of records that this table works with.
      * @param matchMethod the way how given keywords will be matched with table column names. If <code>matchMethod</code>
-     *                    is <code>null</code> the {@link MatchMethod#EXACT} is used as default.
+     *                    is {@code null} the {@link MatchMethod#EXACT} is used as default.
      * @param keywords    keywords to localize table header
-     * @return object representing the table or <code>null</code> if nothing was found.
+     * @return object representing the table or {@code null} if nothing was found.
      * @see #findRow(MatchMethod, String...)
      */
     public <T> Table<T> findTable(Class<T> recordType, MatchMethod matchMethod, String... keywords) {

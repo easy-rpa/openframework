@@ -18,10 +18,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * <p>FOR INTERNAL USE ONLY</p>
- * <br>
- * <p>Helper class that is responsible for extraction of necessary meta information from specific class of table records
- * and performing of necessary data conversions and actions using this information.</p>
+ * FOR INTERNAL USE ONLY
+ * <p>
+ * Helper class that is responsible for extraction of necessary meta information from specific class of table records
+ * and performing of necessary data conversions and actions using this information.
  *
  * @param <T> class of related table record.
  * @see GSheetTable

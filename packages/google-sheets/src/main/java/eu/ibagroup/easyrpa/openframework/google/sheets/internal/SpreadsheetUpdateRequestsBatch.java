@@ -8,6 +8,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * FOR INTERNAL USE ONLY
+ * <p>
+ * Helper class that is responsible for collecting of necessary change requests in proper order to send them to
+ * Google server as one batch.
+ * <p>
+ * <b>IMPORTANT:</b> Google Sheets API has limitation in 100000 requests in one batch. If the amount of requests of
+ * this batch is exceed this limit this batch will be slitted into several batch requests per 100000 requests in one.
+ */
 public class SpreadsheetUpdateRequestsBatch {
 
     private static final int MAX_REQUESTS_IN_BATCH_COUNT = 100000;

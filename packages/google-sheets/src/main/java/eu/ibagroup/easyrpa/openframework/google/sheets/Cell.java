@@ -118,13 +118,15 @@ public class Cell {
     }
 
     /**
-     * Gets the value of this cell and converts it to the type specified by <code>valueType</code>.
+     * Gets the value of this cell and converts it to the type specified by {@code valueType}.
      * <p>
      * If {@code valueType} is <b>{@code String.class}</b>, <b>{@code Byte.class}</b>, <b>{@code Short.class}</b>,
      * <b>{@code Integer.class}</b>, <b>{@code Long.class}</b>, <b>{@code Float.class}</b> or <b>{@code Double.class}</b>
-     * this method performs automatic conversion of cell value to corresponding type. For other types it performs
-     * simple type casting of cell value to {@code T} or throws {@code ClassCastException} if such type
-     * casting is not possible.
+     * this method performs automatic conversion of cell value to corresponding type or return {@code null} if
+     * the conversion fails.
+     * <p>
+     * For other types it performs simple type casting of cell value to {@code T} or throws {@code ClassCastException}
+     * if such type casting is not possible.
      *
      * @param valueType class instance of return value.
      * @param <T>       type of return value. Defined by value of {@code valueType}.

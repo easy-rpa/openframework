@@ -106,7 +106,7 @@ public class CellRange {
     /**
      * Gets the name of related sheet.
      *
-     * @return name of related sheet or <code>null</code> if this range is sheet-free.
+     * @return name of related sheet or {@code null} if this range is sheet-free.
      */
     public String getSheetName() {
         return firstCell.getSheetName();
@@ -217,7 +217,7 @@ public class CellRange {
     /**
      * Gets whether index of the top row is absolute.
      *
-     * @return <code>true</code> if index of the top row is absolute or <code>false</code> otherwise.
+     * @return {@code true} if index of the top row is absolute or {@code false} otherwise.
      */
     public boolean isFirstRowAbsolute() {
         return firstCell.isRowAbsolute();
@@ -226,7 +226,7 @@ public class CellRange {
     /**
      * Sets index of the top row as absolute.
      *
-     * @param rowAbs <code>true</code> if index of the top row should be absolute or <code>false</code> otherwise.
+     * @param rowAbs {@code true} if index of the top row should be absolute or {@code false} otherwise.
      */
     public void setFirstRowAbsolute(boolean rowAbs) {
         if (firstCell.isRowAbsolute() != rowAbs) {
@@ -239,7 +239,7 @@ public class CellRange {
     /**
      * Gets whether index of the left column is absolute.
      *
-     * @return <code>true</code> if index of the left column is absolute or <code>false</code> otherwise.
+     * @return {@code true} if index of the left column is absolute or {@code false} otherwise.
      */
     public boolean isFirstColAbsolute() {
         return firstCell.isColAbsolute();
@@ -248,7 +248,7 @@ public class CellRange {
     /**
      * Sets index of the left column as absolute.
      *
-     * @param colAbs <code>true</code> if index of the left column should be absolute or <code>false</code> otherwise.
+     * @param colAbs {@code true} if index of the left column should be absolute or {@code false} otherwise.
      */
     public void setFirstColAbsolute(boolean colAbs) {
         if (firstCell.isColAbsolute() != colAbs) {
@@ -261,7 +261,7 @@ public class CellRange {
     /**
      * Gets whether index of the bottom row is absolute.
      *
-     * @return <code>true</code> if index of the bottom row is absolute or <code>false</code> otherwise.
+     * @return {@code true} if index of the bottom row is absolute or {@code false} otherwise.
      */
     public boolean isLastRowAbsolute() {
         return lastCell.isRowAbsolute();
@@ -270,7 +270,7 @@ public class CellRange {
     /**
      * Sets index of the bottom row as absolute.
      *
-     * @param rowAbs <code>true</code> if index of the bottom row should be absolute or <code>false</code> otherwise.
+     * @param rowAbs {@code true} if index of the bottom row should be absolute or {@code false} otherwise.
      */
     public void setLastRowAbsolute(boolean rowAbs) {
         if (lastCell.isRowAbsolute() != rowAbs) {
@@ -283,7 +283,7 @@ public class CellRange {
     /**
      * Gets whether index of the right column is absolute.
      *
-     * @return <code>true</code> if index of the right column is absolute or <code>false</code> otherwise.
+     * @return {@code true} if index of the right column is absolute or {@code false} otherwise.
      */
     public boolean isLastColAbsolute() {
         return lastCell.isColAbsolute();
@@ -292,7 +292,7 @@ public class CellRange {
     /**
      * Sets index of the right column as absolute.
      *
-     * @param colAbs <code>true</code> if index of the right column should be absolute or <code>false</code> otherwise.
+     * @param colAbs {@code true} if index of the right column should be absolute or {@code false} otherwise.
      */
     public void setLastColAbsolute(boolean colAbs) {
         if (lastCell.isColAbsolute() != colAbs) {
@@ -361,7 +361,7 @@ public class CellRange {
     /**
      * Checks whether related sheet name is defined for this range (sheet-based or not).
      *
-     * @return <code>true</code> is related sheet name is defined or <code>false</code> otherwise.
+     * @return {@code true} is related sheet name is defined or {@code false} otherwise.
      */
     public boolean isSheetNameDefined() {
         String sheetName = getSheetName();
@@ -373,7 +373,7 @@ public class CellRange {
      *
      * @param rowInd 0-based row index to check.
      * @param colInd 0-based column index to check.
-     * @return <code>true</code> if given coordinates lie within the bounds or <code>false</code> otherwise.
+     * @return {@code true} if given coordinates lie within the bounds or {@code false} otherwise.
      */
     public boolean isInRange(int rowInd, int colInd) {
         return firstCell.getRow() <= rowInd && rowInd <= lastCell.getRow() && //containsRow
@@ -384,7 +384,7 @@ public class CellRange {
      * Determines if the given {@link CellRef} lies within the bounds of this range.
      *
      * @param ref the cell reference to check.
-     * @return <code>true</code> if given reference lie within the bounds or <code>false</code> otherwise.
+     * @return {@code true} if given reference lie within the bounds or {@code false} otherwise.
      */
     public boolean isInRange(CellRef ref) {
         return isInRange(ref.getRow(), ref.getCol());
@@ -394,7 +394,7 @@ public class CellRange {
      * Determines if the given {@link CellRange} lies within the bounds of this range.
      *
      * @param range the cells range to check.
-     * @return <code>true</code> if given range lies within the bounds or <code>false</code> otherwise.
+     * @return {@code true} if given range lies within the bounds or {@code false} otherwise.
      */
     public boolean isInRange(CellRange range) {
         return isInRange(range.firstCell.getRow(), range.firstCell.getCol())
@@ -405,7 +405,7 @@ public class CellRange {
      * Determines whether this range intersects with given {@link CellRange}.
      *
      * @param other the cells range to check for intersection with this range.
-     * @return <code>true</code> if ranges have at least 1 cell in common or <code>false</code> otherwise.
+     * @return {@code true} if ranges have at least 1 cell in common or {@code false} otherwise.
      * @see #isInRange(int, int) for checking if a single cell intersects
      */
     public boolean intersects(CellRange other) {

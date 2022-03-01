@@ -273,7 +273,7 @@ public class Table<T> implements Iterable<T> {
      * Records are indexed starting with the row right below the header bottom row.
      *
      * @param index 0-based index of the record to get.
-     * @return instance of corresponding record or <code>null</code> if record at such index is not exist.
+     * @return instance of corresponding record or {@code null} if record at such index is not exist.
      */
     public T getRecord(int index) {
         int recordsCount = getRecordsCount();
@@ -295,11 +295,11 @@ public class Table<T> implements Iterable<T> {
 
     /**
      * Iterates over all records starting from the first till the moment when <code>isSatisfy</code> is return
-     * <code>true</code> for some record.
+     * {@code true} for some record.
      *
-     * @param isSatisfy lambda expression that accepts instance of each record and should return <code>true</code>
+     * @param isSatisfy lambda expression that accepts instance of each record and should return {@code true}
      *                  if the record satisfies to some condition.
-     * @return instance of record for which <code>isSatisfy</code> returned <code>true</code> or <code>null</code>
+     * @return instance of record for which <code>isSatisfy</code> returned {@code true} or {@code null}
      * if there are no such records.
      */
     public T findRecord(Predicate<T> isSatisfy) {
@@ -309,11 +309,11 @@ public class Table<T> implements Iterable<T> {
 
     /**
      * Iterates over all records starting from the first till the moment when <code>isSatisfy</code> is return
-     * <code>true</code> for some record.
+     * {@code true} for some record.
      *
-     * @param isSatisfy lambda expression that accepts instance of each record and should return <code>true</code>
+     * @param isSatisfy lambda expression that accepts instance of each record and should return {@code true}
      *                  if the record satisfies to some condition.
-     * @return index of record for which <code>isSatisfy</code> returned <code>true</code> or <code>-1</code>
+     * @return index of record for which <code>isSatisfy</code> returned {@code true} or <code>-1</code>
      * if there are no such records.
      */
     public int findRecordIndex(Predicate<T> isSatisfy) {
@@ -503,7 +503,7 @@ public class Table<T> implements Iterable<T> {
     /**
      * Removes given record and corresponding row from this table.
      * <p>
-     * Do nothing if the record is <code>null</code> or does not belong to this table.
+     * Do nothing if the record is {@code null} or does not belong to this table.
      *
      * @param record the record to remove.
      */
@@ -523,7 +523,7 @@ public class Table<T> implements Iterable<T> {
     /**
      * Removes given records and corresponding rows from this table.
      *
-     * @param records list of records to remove. Do nothing if this list is <code>null</code>.
+     * @param records list of records to remove. Do nothing if this list is {@code null}.
      */
     public void removeRecords(List<T> records) {
         if (records != null) {
