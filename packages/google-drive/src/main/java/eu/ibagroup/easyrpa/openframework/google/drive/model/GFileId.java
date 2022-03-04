@@ -1,29 +1,32 @@
 package eu.ibagroup.easyrpa.openframework.google.drive.model;
 
+import com.google.api.services.drive.model.File;
+
 /**
- * GFileId has ID string value for @see {@link com.google.api.services.drive.model.File} object
+ * Keeps and representing unique identifier of Google Drive file.
+ *
+ * @see File#getId()
  */
 public class GFileId {
 
     /**
-     * File id of a google entity.
+     * Raw unique identifier of Google Drive file.
      */
     private String id;
 
     /**
-     * Construct a new GFileId object from the given id
+     * Constructs a new {@code GFileId}.
      *
-     * @param id string value of Google file model
-     * @see com.google.api.services.drive.model.File
+     * @param id string value of Google Drive file ID.
      */
     public GFileId(String id) {
         this.id = id;
     }
 
     /**
-     * The Google file id.
+     * Gets Google Drive file ID.
      *
-     * @return id string value
+     * @return string with Google Drive file ID.
      */
     public String getId() {
         return id;
@@ -35,10 +38,10 @@ public class GFileId {
     }
 
     /**
-     * Convert file id into GFileId object.
+     * Convert string presentation of Google Drive file ID into {@code GFileId} object.
      *
-     * @param id string value of Google file model
-     * @return GFileId object with given id
+     * @param id string value of Google Drive file ID.
+     * @return {@code GFileId} object with given ID;
      */
     public static GFileId of(String id) {
         return new GFileId(id);

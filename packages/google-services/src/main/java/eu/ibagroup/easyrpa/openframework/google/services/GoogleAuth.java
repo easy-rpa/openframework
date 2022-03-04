@@ -23,30 +23,62 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
 
+/**
+ * Authentication and authorization helper for Google API services.
+ * <p>
+ * Helps to perform configuration and retrieving of necessary secret information, authentication on Google server and
+ * authorization to using some Google API service on behalf of specific Google account.
+ */
 public class GoogleAuth {
 
     private static final String DEFAULT_USER_ID = "user";
     private static final String DEFAULT_TOKEN_STORES_DIRECTORY_PATH = "tokens";
     private static final String DEFAULT_VERIFICATION_CODE_RECEIVER = "localhost:8888";
 
+    /**
+     * Reference to used HTTP Transport service.
+     */
     private final HttpTransport httpTransport;
 
+    /**
+     * Reference to used Json Factory.
+     */
     private final JsonFactory jsonFactory;
 
+    /**
+     * User unique identifier that is associated with secret information. This is used as key to store access token
+     * in StoredCredentials file.
+     */
     private String userId;
 
+    /**
+     * Secret information necessary to perform authentication on Google server.
+     */
     private String secret;
 
+    /**
+     * Path to directory where StoredCredentials file should be created and located.
+     */
     private String tokenStoresDir;
 
+    /**
+     * Host and port of authorization verification code receiver.
+     */
     private String verCodeReceiver;
 
+    /**
+     * Instance of function that defines specific behavior of authorization step.
+     */
     private AuthorizationPerformer authorizationPerformer;
 
+    /**
+     * Instance of RPA services accessor that allows to get configuration parameters and secret vault entries from
+     * RPA platform.
+     */
     private RPAServicesAccessor rpaServices;
 
     /**
-     * Construct instance of <code>GoogleAuth</code> class using HTTP trusted transport and json factory.
+     * Default constructor for {@code GoogleAuth}.
      */
     public GoogleAuth() {
         try {
@@ -58,9 +90,12 @@ public class GoogleAuth {
     }
 
     /**
-     * Construct instance of <code>GoogleAuth</code> using configuration parameters from accessor.
+     * Constructs {@code GoogleAuth} with provided {@link RPAServicesAccessor}.
+     * <p>
+     * This constructor is used in case of injecting of this GoogleAuth using {@link Inject} annotation.
      *
-     * @param rpaServices the service to provide parameters.
+     * @param rpaServices instance of {@link RPAServicesAccessor} that allows to use provided by RPA platform services
+     *                    like configuration, secret vault etc.
      */
     @Inject
     public GoogleAuth(RPAServicesAccessor rpaServices) {
@@ -69,21 +104,25 @@ public class GoogleAuth {
     }
 
     /**
-     * @return reference to HTTP Transport.
+     * @return reference to used HTTP Transport service.
      */
     public HttpTransport getHttpTransport() {
         return httpTransport;
     }
 
     /**
-     * @return reference to Json Factory.
+     * @return reference to used Json Factory.
      */
     public JsonFactory getJsonFactory() {
         return jsonFactory;
     }
 
     /**
-     * @return the user id from configuration parameters.
+     * Gets user unique identifier that is associated with secret information.
+     * <p>
+     * This is used as key to store access token in StoredCredentials file.
+     *
+     * @return the user id that is associated with secret information.
      */
     public String getUserId() {
         if (userId == null) {
@@ -96,16 +135,24 @@ public class GoogleAuth {
     }
 
     /**
-     * Set user id.
+     * Sets user unique identifier that should be associated with secret information.
      *
-     * @param userId new user id.
+     * @param userId the user id to set.
      */
     public void setUserId(String userId) {
         this.userId = userId;
     }
 
     /**
-     * @return the secret from configuration parameters.
+     * Gets secret OAuth 2.0 Client JSON that is used for authentication on the Google server.
+     * <p>
+     * If the secret is not specified explicitly then it will be looked up in configurations parameters of the
+     * RPA platform under the key <b>{@code "google.services.auth.secret"}</b>.
+     * <p>
+     * For information regarding how to configure OAuth 2.0 Client see
+     * <a href="https://developers.google.com/workspace/guides/create-credentials#oauth-client-id">OAuth client ID credentials</a>
+     *
+     * @return JSON string with used secret information.
      */
     public String getSecret() {
         if (secret == null) {
@@ -118,16 +165,24 @@ public class GoogleAuth {
     }
 
     /**
-     * Set new secret.
+     * Sets explicitly the secret OAuth 2.0 Client JSON that should be used for authentication on the Google server.
+     * <p>
+     * For information regarding how to configure OAuth 2.0 Client see
+     * <a href="https://developers.google.com/workspace/guides/create-credentials#oauth-client-id">OAuth client ID credentials</a>
      *
-     * @param secret new secret.
+     * @param secret the JSON string with secret information to use.
      */
     public void setSecret(String secret) {
         this.secret = secret;
     }
 
     /**
-     * @return the path to StoredCredential token from configuration parameters.
+     * Gets path to directory where StoredCredentials file will be created and located.
+     * <p>
+     * If the path is not specified explicitly then it will be looked up in configurations parameters of the
+     * RPA platform under the key <b>{@code "google.services.auth.token.stores.dir"}</b>.
+     *
+     * @return the path to directory where StoredCredentials file will be created and located.
      */
     public String getTokenStoresDir() {
         if (tokenStoresDir == null) {
@@ -140,18 +195,21 @@ public class GoogleAuth {
     }
 
     /**
-     * Set path to StoredCredential token.
+     * Sets explicitly the path to directory where StoredCredentials file should be created and located.
      *
-     * @param tokenStoresDir new path.
+     * @param tokenStoresDir the path to set.
      */
     public void setTokenStoresDir(String tokenStoresDir) {
         this.tokenStoresDir = tokenStoresDir;
     }
 
     /**
-     * Get host and port for local server receiver from configuration parameters.
+     * Gets host and port of authorization verification code receiver.
+     * <p>
+     * If the host and port are not specified explicitly then they will be looked up in configurations parameters of the
+     * RPA platform under the key <b>{@code "google.services.auth.verification.code.receiver"}</b>.
      *
-     * @return host:port string value.
+     * @return host and port of authorization verification code receiver.
      */
     public String getVerCodeReceiver() {
         if (verCodeReceiver == null) {
@@ -164,18 +222,29 @@ public class GoogleAuth {
     }
 
     /**
-     * Set new <code>host:port</code> string value as local server receiver.
+     * Sets explicitly host and port of authorization verification code receiver.
      *
-     * @param verCodeReceiver new <code>host:port</code> value
+     * @param verCodeReceiver the {@code host:port} string to set.
      */
     public void setVerCodeReceiver(String verCodeReceiver) {
         this.verCodeReceiver = verCodeReceiver;
     }
 
     /**
-     * Set authorization performer.
+     * Sets lambda expression or instance of {@link AuthorizationPerformer} that allows to override the way how this
+     * code informs the user that it wishes to act on his behalf and obtain corresponding access token from Google.
+     * <p>
+     * By default it opens a browser on machine where this code is running and locates to OAuth consent page where
+     * user should authorize performing of necessary operations. If this code is running on robot's machine performing
+     * of authorization by this way is not possible since user won't able to see the browser page.
+     * <p>
+     * Using this method is possible to overrides this behavior and specify, lets say, sending of notification email
+     * with link to OAuth consent page to administrator, who is able to perform authorization on behalf of robot's
+     * Google account. In this case robot will be able to access Google services on behalf of his account. Any time
+     * when access token is invalid administrator will get such email and let robot to continue his work.
      *
-     * @param authorizationPerformer new authorization performer.
+     * @param authorizationPerformer lambda expression or instance of {@link AuthorizationPerformer} that defines
+     *                               specific behavior of authorization step.
      */
     public void setAuthorizationPerformer(AuthorizationPerformer authorizationPerformer) {
         this.authorizationPerformer = authorizationPerformer;
@@ -188,8 +257,7 @@ public class GoogleAuth {
      * If scopes have been changed, or package is updated then human will be asked again.
      *
      * @param scopes list of requested scopes.
-     * @return Credential object
-     * @see com.google.api.services.drive.DriveScopes
+     * @return Google Credential object
      * @see <a href="https://developers.google.com/identity/protocols/oauth2#expiration">Refresh token expiration</a>
      */
     public Credential authorize(List<String> scopes) {

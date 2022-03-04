@@ -5,147 +5,148 @@ import com.google.api.services.drive.model.File;
 import java.util.List;
 
 /**
- * A GFileInfo object summarises info about @see {@link File}, like id, name, description, size, type and parent ids.
+ * Wraps Google Drive {@link File} object provides its parameters.
  */
-
 public class GFileInfo {
 
     /**
-     * Metadata of a file.
+     * Wrapped Google Drive file object.
      */
     protected File file;
 
     /**
-     * Construct a new Google File Info object from the given Google File model.
+     * Constructs a new {@code GFileInfo}.
      *
-     * @param file the File instance
-     * @see File
+     * @param file Google Drive {@link File} object.
      */
     public GFileInfo(File file) {
         this.file = file;
     }
 
     /**
-     * The ID of the file.
+     * Gets file ID of this file as string.
      *
-     * @return value or <code>null</code> for none
+     * @return string with file ID of this file.
      */
     public String getId() {
         return file.getId();
     }
 
     /**
-     * Return GField instance for the file
+     * Gets file ID of this file as {@link GFileId} object.
      *
-     * @return the GField instance of the file
+     * @return {@link GFileId} object with file ID of this file.
      */
     public GFileId getFileId() {
         return new GFileId(file.getId());
     }
 
     /**
-     * The name of the file.
+     * Gets the name of this file.
      * <p>
      * This is not necessarily unique within a folder. Note that for immutable
      * items such as the top level folders of Team Drives, My Drive root folder, and Application Data
      * folder the name is constant.
      *
-     * @return value or <code>null</code> for none
+     * @return string with name of this file.
      */
     public String getName() {
         return file.getName();
     }
 
     /**
-     * The name of the file.
+     * Sets new name for this file.
      * <p>
      * This is not necessarily unique within a folder. Note that for immutable
      * items such as the top level folders of Team Drives, My Drive root folder, and Application Data
      * folder the name is constant.
      *
-     * @param name name or <code>null</code> for none
+     * @param name new name to set.
      */
     public void setName(String name) {
         file.setName(name);
     }
 
     /**
-     * A short description of the file.
+     * Gets a short description of this file.
      *
-     * @return value or <code>null</code> for none
+     * @return string with short description of this file or {@code null} if it's absent.
      */
     public String getDescription() {
         return file.getDescription();
     }
 
     /**
-     * A short description of the file.
+     * Sets new short description of this file.
      *
-     * @param description description or <code>null</code> for none
+     * @param description string with new description to set.
      */
     public void setDescription(String description) {
         file.setDescription(description);
     }
 
     /**
-     * The IDs of the parent folders which contain the file.
+     * Gets file IDs of the parent folders which contain the file.
      * <p>
-     * If file is placed directly in the user's My Drive folder, then returns <code>null</code>
+     * If file is placed directly in the user's My Drive folder, then returns {@code null}
      *
-     * @return list of folder IDs.
+     * @return list with file IDs of parent folders.
      */
     public List<String> getParents() {
         return file.getParents();
     }
 
     /**
-     * The IDs of the parent folders which contain the file.
+     * Sets file IDs of the parent folders which contain the file.
      * <p>
-     * If not specified as part of a create request, the file will be placed directly in the user's My Drive folder.
+     * If not specified as part of a create request, the file will be placed directly in the user's My Drive root
+     * folder.
      *
-     * @param list list or <code>null</code> for none
+     * @param list list with file IDs to set.
      */
     public void setParents(List<String> list) {
         file.setParents(list);
     }
 
     /**
-     * The size of the file's content in bytes.
+     * Gets size of this file content in bytes.
      * <p>
      * This is only applicable to files with binary content in Drive.
      *
-     * @return value or <code>null</code> for none
+     * @return size of this file content in bytes.
      */
     public Long getSize() {
         return file.getSize();
     }
 
     /**
-     * Google File Type constant for the file MIME type.
+     * Gets the type of this file.
      * <p>
-     * Google Drive will attempt to automatically detect an appropriate value from uploaded content if no value is provided.
+     * Google Drive will attempt to automatically detect an appropriate value from uploaded content if
+     * no value is provided.
      *
-     * @return enum constant for the file MIME type,
-     * or <code>null</code> if GFileType enumeration has not the file MIME type.
-     * @see GFileType
+     * @return {@link GFileType} constant related to the type of this file.
      */
     public GFileType getFileType() {
         return GFileType.getValue(file.getMimeType());
     }
 
     /**
-     * Google File Type constant for the file MIME type.
+     * Sets a new type for this file.
      * <p>
-     * Google Drive will attempt to automatically detect an appropriate value from uploaded content if no value is provided
+     * Google Drive will attempt to automatically detect an appropriate value from uploaded content if
+     * no value is provided
      *
-     * @param type type or <code>null</code> for none
+     * @param type {@link GFileType} constant representing necessary type to set.
      */
     public void setType(GFileType type) {
         file.setMimeType(type.getMimeType());
     }
 
     /**
-     * @return the Google File model instance.
+     * Gets underlying Google Drive {@link File} object for advanced usage.
+     *
+     * @return underlying Google Drive {@link File} object for advanced usage.
      */
     public File getGoogleFile() {
         return file;

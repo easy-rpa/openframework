@@ -8,26 +8,25 @@ import java.io.InputStream;
 
 
 /**
- * A GFile object provides access to file and file info through @see {@link GFileInfo}, like id, name, description, size, type and parent ids.
+ * Representing Google Drive file and keeps and its content with meta information.
  */
 public class GFile extends GFileInfo {
 
     /**
-     * Input stream with content of a file.
+     * Input stream to read the content of this file.
      */
     private InputStream contentIS;
 
     /**
-     * Byte array content of a file.
+     * Cached content of this file.
      */
     private byte[] bytes;
 
     /**
-     * Construct GFile object with given file info and file contents.
+     * Construct {@code GFile} with given file info and content.
      *
-     * @param file      file info
-     * @param contentIS input stream contents
-     * @see GFileInfo
+     * @param file      {@link GFileInfo} with file's meta information.
+     * @param contentIS input stream to get content of this file.
      */
     public GFile(GFileInfo file, InputStream contentIS) {
         super(file.file);
@@ -35,9 +34,9 @@ public class GFile extends GFileInfo {
     }
 
     /**
-     * Gets the bytes if present, or reads the contents of input stream as a byte[].
+     * Gets cached content of this file if present, or reads it from input stream.
      *
-     * @return the requested array.
+     * @return the byte array with content of this file.
      */
     public byte[] getBytes() {
         if (bytes == null) {
@@ -65,18 +64,18 @@ public class GFile extends GFileInfo {
     }
 
     /**
-     * Byte array representation of file contents.
+     * Sets the content of this file as byte array.
      *
-     * @param bytes byte array.
+     * @param bytes byte array with file content to set.
      */
     public void setBytes(byte[] bytes) {
         this.bytes = bytes;
     }
 
     /**
-     * Converts the bytes to an input stream, encoded as bytes using the default character encoding of the platform.
+     * Gets the content of this file as input stream.
      *
-     * @return the input stream.
+     * @return the input stream with file content.
      */
     public InputStream getContent() {
         if (contentIS == null && bytes != null) {

@@ -7,74 +7,74 @@ package eu.ibagroup.easyrpa.openframework.google.drive.model;
 public enum GFileType {
 
     /**
-     * File type of uknown file
+     * Unknown file type.
      */
     FILE("", null),
 
     /**
-     * File type of Google Drive folder
+     * Google Drive folder.
      */
     FOLDER("application/vnd.google-apps.folder", null),
 
     /**
-     * File type of Google Docs
+     * Google Doc file.
      */
     DOCUMENT("application/vnd.google-apps.document", "text/plain"),
 
     /**
-     * File type of Google Sheets
+     * Google Spreadsheet file.
      */
     SPREADSHEET("application/vnd.google-apps.spreadsheet",
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
 
     /**
-     * File type of Google Slides
+     * Google Slides file.
      */
     PRESENTATION("application/vnd.google-apps.presentation",
             "application/vnd.openxmlformats-officedocument.presentationml.presentation"),
 
     /**
-     * File type of Google Drawing
+     * Google Drawing file.
      */
     DRAWING("application/vnd.google-apps.drawing", "image/png"),
 
     /**
-     * File type of Google Forms
+     * Google Forms file.
      */
     FORM("application/vnd.google-apps.form", null),
 
     /**
-     * File type of Google My Maps
+     * Google My Maps file.
      */
     MAP("application/vnd.google-apps.map", null),
 
     /**
-     * File type of audio file
+     * Audio file.
      */
     AUDIO("application/vnd.google-apps.audio", null),
 
     /**
-     * File type of video file
+     * Video file.
      */
     VIDEO("application/vnd.google-apps.video", null),
 
     /**
-     * File type of photo file
+     * Photo file.
      */
     PHOTO("application/vnd.google-apps.photo", null),
 
     /**
-     * File type of Google Fusion Tables
+     * Google Fusion Tables.
      */
     FUSIONTABLE("application/vnd.google-apps.fusiontable", null),
 
     /**
-     * File type of Google Apps Scripts
+     * Google Apps Script file.
      */
     SCRIPT("application/vnd.google-apps.script", null),
 
     /**
-     * File type of Google Sites
+     * Google Sites file.
      */
     SITE("application/vnd.google-apps.site", null);
 
@@ -83,10 +83,10 @@ public enum GFileType {
     private final String contentType;
 
     /**
-     * Construct a new Google File Type object from the given stings.
+     * Constructs a new {@code GFileType} object.
      *
-     * @param mimeType    MIME type string.
-     * @param contentType content type string.
+     * @param mimeType    string with name of related MIME type.
+     * @param contentType string with name of related content type.
      */
     GFileType(String mimeType, String contentType) {
         this.mimeType = mimeType;
@@ -94,25 +94,29 @@ public enum GFileType {
     }
 
     /**
-     * @return string value of MIME type.
+     * Gets related MIME type.
+     *
+     * @return string with related MIME type.
      */
     public String getMimeType() {
         return mimeType;
     }
 
     /**
-     * @return string value of content type.
+     * Gets related content type.
+     *
+     * @return string with related content type.
      */
     public String getContentType() {
         return contentType;
     }
 
     /**
-     * Return GFileType enum constant with specified string MIME value
+     * Gets the {@code GFileType} based on specified MIME
      *
-     * @param mimeType the string MIME value of the enum to be returned
-     * @return enum constant with specified string MIME value,
-     * or null if this enum has no constant for the specified string value
+     * @param mimeType the string with necessary MIME type to lookup.
+     * @return @code GFileType} constant related to specified MIME type or {@code null} if there are no related
+     * constants.
      */
     public static GFileType getValue(String mimeType) {
         for (GFileType fileType : values()) {

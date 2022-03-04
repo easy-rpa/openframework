@@ -71,7 +71,7 @@ public class GoogleSheets {
     }
 
     /**
-     * Allows to override the way how this service informs the user that it wishes to act on his behalf and obtain
+     * Allows to override the way how this code informs the user that it wishes to act on his behalf and obtain
      * corresponding access token from Google.
      * <p>
      * By default it opens a browser on machine where this code is running and locates to OAuth consent page where

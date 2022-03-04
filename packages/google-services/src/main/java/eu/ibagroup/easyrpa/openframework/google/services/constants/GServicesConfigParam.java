@@ -7,17 +7,18 @@ package eu.ibagroup.easyrpa.openframework.google.services.constants;
 public class GServicesConfigParam {
 
     /**
-     * Secret string.
+     * Name of configuration parameter with secret information necessary to perform authentication on Google server.
      */
     public static final String AUTH_SECRET = "google.services.auth.secret";
 
     /**
-     * Path to location of StoredCredential token.
+     * Name of configuration parameter with path to directory where StoredCredentials file should be created and
+     * located.
      */
     public static final String AUTH_TOKEN_STORES_DIR = "google.services.auth.token.stores.dir";
 
     /**
-     * <Host:port number> for local server receiver.
+     * Name of configuration parameter with {@code host:port_number} of authorization verification code receiver.
      */
     public static final String AUTH_VERIFICATION_CODE_RECEIVER = "google.services.auth.verification.code.receiver";
 

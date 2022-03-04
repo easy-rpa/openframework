@@ -24,44 +24,73 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Service that provides convenient way to work with Google Drive API.
+ */
 public class GoogleDrive {
 
     /**
-     * List of extra fields for query in API requests
+     * List of extra fields that should be present in responses of Drive API requests.
      */
     private List<String> extraFileFields;
 
     /**
-     * Enable support team drives in API requests
+     * Whether Google Drive API requests should also lookup files and folders in Shared Drives.
      */
     private Boolean supportsTeamDrives;
 
     /**
-     * Google Service Provider
+     * Helper to perform authorization for using of Google Drive API on behalf of specific user and instantiation
+     * of Google Drive service.
      */
     private GoogleServicesProvider googleServicesProvider;
 
     /**
-     * Google Drive Service
+     * Wrapped Google Drive service
      */
     private GoogleDriveService service;
 
     /**
-     * Access to configuration parameters
+     * Instance of RPA services accessor that allows to get configuration parameters and secret vault entries from
+     * RPA platform.
      */
     private RPAServicesAccessor rpaServices;
 
     /**
-     * Construct GoogleDrive without predefined configuration paramateres.
+     * Default constructor for GoogleDrive.
+     * <p>
+     * This constructor should be used in case of manual providing of secret information necessary for authorization
+     * and instantiation Google Drive service. E.g.:
+     * <pre>
+     *  String secretJson = new String(Files.readAllBytes(Paths.get("secret.json")), StandardCharsets.UTF_8);
+     *
+     *  GoogleDrive googleDrive = new GoogleDrive().secret("user1", secretJson);
+     * {@code List<GFileInfo> file = googleDrive.listFiles();}
+     *  ...
+     * </pre>
      */
     public GoogleDrive() {
         googleServicesProvider = new GoogleServicesProvider();
     }
 
     /**
-     * Construct GoogleDrive instance using accessor
+     * Constructs GoogleDrive with provided {@link RPAServicesAccessor}.
+     * <p>
+     * This constructor is used in case of injecting of this GoogleDrive using {@link Inject} annotation.
+     * This is preferable way of working with this class. E.g.:
+     * <pre>
+     * {@code @Inject}
+     *  private GoogleDrive googleDrive;
      *
-     * @param rpaServices instance of RPAServicesAccessor
+     *  public void execute() {
+     *      ...
+     *     {@code List<GFileInfo> file = googleDrive.listFiles();}
+     *      ...
+     *  }
+     * </pre>
+     *
+     * @param rpaServices instance of {@link RPAServicesAccessor} that allows to use provided by RPA platform services
+     *                    like configuration, secret vault etc.
      */
     @Inject
     public GoogleDrive(RPAServicesAccessor rpaServices) {
@@ -70,10 +99,32 @@ public class GoogleDrive {
     }
 
     /**
-     * Set authorization performer.
+     * Allows to override the way how this code informs the user that it wishes to act on his behalf and obtain
+     * corresponding access token from Google.
+     * <p>
+     * By default it opens a browser on machine where this code is running and locates to OAuth consent page where
+     * user should authorize performing of necessary operations. If this code is running on robot's machine performing
+     * of authorization by this way is not possible since user won't able to see the browser page.
+     * <p>
+     * Using this method is possible to overrides this behavior and specify, lets say, sending of notification email
+     * with link to OAuth consent page to administrator, who is able to perform authorization on behalf of robot's
+     * Google account. In this case robot will be able to access Google services on behalf of his account. Any time
+     * when access token is invalid administrator will get such email and let robot to continue his work. E.g.:
+     * <pre>
+     * {@code @Inject}
+     * SomeAuthorizationRequiredEmail authorizationRequiredEmail;
+     * ...
      *
-     * @param authorizationPerformer an authorization performer.
-     * @return a self reference.
+     * googleDrive.onAuthorization(url->{
+     *    authorizationRequiredEmail.setConsentPage(url).send();
+     * });
+     *
+     * ...
+     * </pre>
+     *
+     * @param authorizationPerformer lambda expression or instance of {@link AuthorizationPerformer} that defines
+     *                               specific behavior of authorization step.
+     * @return this object to allow joining of methods calls into chain.
      */
     public GoogleDrive onAuthorization(AuthorizationPerformer authorizationPerformer) {
         googleServicesProvider.onAuthorization(authorizationPerformer);
@@ -82,10 +133,14 @@ public class GoogleDrive {
     }
 
     /**
-     * Set secret vault alias.
+     * Sets explicitly the alias of secret vault entry with OAuth 2.0 Client JSON necessary for authentication on the
+     * Google server.
+     * <p>
+     * For information regarding how to configure OAuth 2.0 Client see
+     * <a href="https://developers.google.com/workspace/guides/create-credentials#oauth-client-id">OAuth client ID credentials</a>
      *
-     * @param vaultAlias new secret vault alias
-     * @return a self reference.
+     * @param vaultAlias the alias of secret vault entry with OAuth 2.0 Client JSON to use.
+     * @return this object to allow joining of methods calls into chain.
      */
     public GoogleDrive secret(String vaultAlias) {
         googleServicesProvider.secret(vaultAlias);
@@ -93,11 +148,32 @@ public class GoogleDrive {
     }
 
     /**
-     * Set secret by given user id and secret.
+     * Sets explicitly the secret OAuth 2.0 Client JSON necessary for authentication on the Google server.
+     * <p>
+     * The OAuth 2.0 Client JSON look like the following:
+     * <pre>
+     * {
+     *     "installed": {
+     *       "client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
+     *       "project_id": "XXXXXXX-XXXXXX",
+     *       "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+     *       "token_uri": "https://oauth2.googleapis.com/token",
+     *       "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+     *       "client_secret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+     *       "redirect_uris": [
+     *           "urn:ietf:wg:oauth:2.0:oob",
+     *           "http://localhost"
+     *       ]
+     *     }
+     * }
+     * </pre>
+     * For information regarding how to configure OAuth 2.0 Client see
+     * <a href="https://developers.google.com/workspace/guides/create-credentials#oauth-client-id">OAuth client ID credentials</a><br>
      *
-     * @param userId new user id.
-     * @param secret new secret.
-     * @return a self reference.
+     * @param userId user unique identifier that will be associated with secret information. This is is used as key
+     *               to store access token in StoredCredentials file.
+     * @param secret JSON string with secret information to use.
+     * @return this object to allow joining of methods calls into chain.
      */
     public GoogleDrive secret(String userId, String secret) {
         googleServicesProvider.secret(userId, secret);
@@ -106,7 +182,14 @@ public class GoogleDrive {
     }
 
     /**
-     * Return list of extra fields if present or take from configuration parameter split by ";" delimiter.
+     * Gets the list of extra fields that should be present in responses of Google Drive API requests.
+     * <p>
+     * If the list is not specified explicitly then it will be looked up in configurations parameters of the
+     * RPA platform under the key <b>{@code "google.drive.extra.file.fields"}</b>. Fields in value of this
+     * configuration parameter should be split by {@code ";"} delimiter.
+     *
+     * @return the list of field names that should also be present in responses of Google Drive API requests or empty
+     * if such fields are not specified.
      */
     public List<String> getExtraFileFields() {
         if (extraFileFields == null) {
@@ -121,9 +204,12 @@ public class GoogleDrive {
     }
 
     /**
-     * Add extra fields for Google Service to include in results.
+     * Adds extra fields that should be present in responses of Google Drive API requests.
+     * <p>
+     * See <a href="https://developers.google.com/drive/api/v3/reference/files">Drive API reference files</a> for
+     * the full list of possible fields.
      *
-     * @param extraFileFields list of fields, see <a href="https://developers.google.com/drive/api/v3/reference/files">Drive API reference files</a>
+     * @param extraFileFields list of fields that should be present in responses of Google Drive API requests.
      */
     public void setExtraFileFields(List<String> extraFileFields) {
         this.extraFileFields = extraFileFields;
@@ -133,10 +219,13 @@ public class GoogleDrive {
     }
 
     /**
-     * Add extra fields for Google Service to include in results.
+     * Adds extra fields that should be present in responses of Google Drive API requests.
+     * <p>
+     * See <a href="https://developers.google.com/drive/api/v3/reference/files">Drive API reference files</a> for
+     * the full list of possible fields.
      *
-     * @param fields array of fields.
-     * @return a self reference, see <a href="https://developers.google.com/drive/api/v3/reference/files">Drive API reference files</a>
+     * @param fields name of fields that should be present in responses of Google Drive API requests.
+     * @return this object to allow joining of methods calls into chain.
      */
     public GoogleDrive extraFields(String... fields) {
         setExtraFileFields(Arrays.stream(fields).collect(Collectors.toList()));
@@ -144,7 +233,12 @@ public class GoogleDrive {
     }
 
     /**
-     * @return true if <code>supportsTeamDrives</code> is enabled, otherwise false.
+     * Gets whether Google Drive API requests should also lookup files and folders in Shared Drives.
+     * <p>
+     * If this parameter is not specified explicitly then it will be looked up in configurations parameters of the
+     * RPA platform under the key <b>{@code "google.drive.support.team.drives"}</b>.
+     *
+     * @return {@code true} if Shared Drives also be looked up and {@code false} otherwise.
      */
     public boolean isSupportsTeamDrives() {
         if (supportsTeamDrives == null) {
@@ -155,9 +249,10 @@ public class GoogleDrive {
     }
 
     /**
-     * Set <code>supportsTeamDrives</code> value.
+     * Sets whether Google Drive API requests should also lookup files and folders in Shared Drives.
      *
-     * @param supportsTeamDrives set true if files / folders located on Shared Drives, otherwise false.
+     * @param supportsTeamDrives set {@code true} to looked up file and folders in Shared Drives
+     *                           and {@code false} otherwise.
      */
     public void setSupportsTeamDrives(boolean supportsTeamDrives) {
         this.supportsTeamDrives = supportsTeamDrives;
@@ -167,10 +262,11 @@ public class GoogleDrive {
     }
 
     /**
-     * Set <code>supportsTeamDrives</code> value.
+     * Sets whether Google Drive API requests should also lookup files and folders in Shared Drives.
      *
-     * @param supportsTeamDrives set true if files / folders located on Shared Drives, otherwise false.
-     * @return a self reference
+     * @param supportsTeamDrives set {@code true} to looked up file and folders in Shared Drives
+     *                           and {@code false} otherwise.
+     * @return this object to allow joining of methods calls into chain.
      */
     public GoogleDrive supportsTeamDrives(boolean supportsTeamDrives) {
         setSupportsTeamDrives(supportsTeamDrives);
@@ -178,12 +274,14 @@ public class GoogleDrive {
     }
 
     /**
-     * Send request to get list of all files.
+     * Gets the list of all files available in Google Drive.
      * <p>
-     * In order to get files from Shared Drives, set correspondent flag <code>setSupportsTeamDrives(true)</code>
+     * In order to get files from Shared Drives, set correspondent flag {@code setSupportsTeamDrives(true)}.
      *
-     * @return list of GFileInfo objects.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     * @return list of {@link GFileInfo} objects representing files present in Google Drive.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public List<GFileInfo> listFiles() {
         initService();
@@ -191,13 +289,15 @@ public class GoogleDrive {
     }
 
     /**
-     * Send request to get list of files matching by given file type.
+     * Gets the list of files matching by given file type.
      * <p>
-     * In order to get files from Shared Drives, set correspondent flag <code>setSupportsTeamDrives(true)</code>
+     * In order to get files from Shared Drives, set correspondent flag {@code setSupportsTeamDrives(true)}
      *
-     * @param fileType the file's file type
-     * @return list of found files.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     * @param fileType the file type to match.
+     * @return list of {@link GFileInfo} objects representing found files.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public List<GFileInfo> listFiles(GFileType fileType) {
         initService();
@@ -205,13 +305,15 @@ public class GoogleDrive {
     }
 
     /**
-     * Send request to get list of files under by given folder id.
+     * Gets the list of files under by given folder ID.
      * <p>
-     * In order to get files from Shared Drives, set correspondent flag <code>setSupportsTeamDrives(true)</code>
+     * In order to get files from Shared Drives, set correspondent flag {@code setSupportsTeamDrives(true)}
      *
-     * @param parentId the folder's id
-     * @return list of found files.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     * @param parentId the parent folder ID to lookup.
+     * @return list of {@link GFileInfo} objects representing found files.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public List<GFileInfo> listFiles(GFileId parentId) {
         initService();
@@ -221,14 +323,16 @@ public class GoogleDrive {
     }
 
     /**
-     * Send request to get list of files of given type under the given folder id.
+     * Gets the list of files of given type under the given folder ID.
      * <p>
-     * In order to get files from Shared Drives, set correspondent flag <code>setSupportsTeamDrives(true)</code>
+     * In order to get files from Shared Drives, set correspondent flag {@code setSupportsTeamDrives(true)}
      *
-     * @param parentId the folder's id
-     * @param fileType the file's file type
-     * @return list of found files.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     * @param parentId the parent folder ID to lookup.
+     * @param fileType the file type to match.
+     * @return list of {@link GFileInfo} objects representing found files.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public List<GFileInfo> listFiles(GFileId parentId, GFileType fileType) {
         initService();
@@ -238,41 +342,61 @@ public class GoogleDrive {
     }
 
     /**
-     * Send request to get list of files matching the given query.
+     * Gets the list of files matching the given query.
      * <p>
-     * In order to get files from Shared Drives, set correspondent flag <code>setSupportsTeamDrives(true)</code>
-     * <b>NOTICE:</b> <code>query</code> parameter should contain same list of fields as <code>fileFields</code> property.
+     * In order to get files from Shared Drives, set correspondent flag {@code setSupportsTeamDrives(true)}
+     * <p>
+     * <b>NOTICE:</b> {@code query} parameter should contain same fields that are mentioned in {@code fileFields}
+     * property. To add some extra fields into this property use the method {@link #extraFields(String...)}.
+     * <p>
      * Query examples:
      * <pre>
-     *     <code>query = "mimeType='image/jpeg'"</code>> // list "jpeg" files only
-     *     <code>query = "name contains 'hello' and name contains 'goodbye'"</code>// list files with a name containing the words "hello" and "goodbye"
-     * </pre>
-     * See Drive API for more query details <a href="https://developers.google.com/drive/api/v3/search-files#query_string_examples">Query string examples</a>
+     *      // list "jpeg" files only
+     *     "mimeType='image/jpeg'"
      *
-     * @param query string query
-     * @return list of found files.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *     // list files with a name containing the words "hello" and "world"
+     *     "name contains 'hello' and name contains 'world'"
+     * </pre>
+     * <p>
+     * See Drive API for more query details
+     * <a href="https://developers.google.com/drive/api/v3/search-files#query_string_examples">Query string examples</a>
+     *
+     * @param query query string to match.
+     * @return list of {@link GFileInfo} objects representing found files.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public List<GFileInfo> listFiles(String query) {
         return listFiles(query, null);
     }
 
     /**
-     * Send request to get list of files matching the given query.
+     * Gets the list of files matching the given query.
      * <p>
-     * In order to get files from Shared Drives, set correspondent flag <code>setSupportsTeamDrives(true)</code>
-     * <b>NOTICE:</b> <code>query</code> parameter should contain same list of fields as <code>fileFields</code> property.
+     * In order to get files from Shared Drives, set correspondent flag {@code setSupportsTeamDrives(true)}
+     * <p>
+     * <b>NOTICE:</b> {@code query} parameter should contain same fields that are mentioned in {@code fileFields}
+     * property. To add some extra fields into this property use the method {@link #extraFields(String...)}.
+     * <p>
      * Query examples:
      * <pre>
-     *     <code>query = "mimeType='image/jpeg'"</code>> // list "jpeg" files only
-     *     <code>query = "name contains 'hello' and name contains 'goodbye'"</code>// list files with a name containing the words "hello" and "goodbye"
-     * </pre>
-     * See Drive API for more query details <a href="https://developers.google.com/drive/api/v3/search-files#query_string_examples">Query string examples</a>
+     *      // list "jpeg" files only
+     *     "mimeType='image/jpeg'"
      *
-     * @param query    string query
-     * @param pageSize Integer page size for single request, default value is <code>100</code>
-     * @return list of found files.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *     // list files with a name containing the words "hello" and "world"
+     *     "name contains 'hello' and name contains 'world'"
+     * </pre>
+     * <p>
+     * See Drive API for more query details
+     * <a href="https://developers.google.com/drive/api/v3/search-files#query_string_examples">Query string examples</a>
+     *
+     * @param query    query string to match.
+     * @param pageSize the page size for single request, default value is {@code 100}.
+     * @return list of {@link GFileInfo} objects representing found files.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public List<GFileInfo> listFiles(String query, Integer pageSize) {
         initService();
@@ -280,13 +404,15 @@ public class GoogleDrive {
     }
 
     /**
-     * Send request to get file @see {@link GFile} of given file name.
+     * Gets Google Drive file and it's content by given file name.
      * <p>
      * <b>NOTICE:</b> Please note that the exported content is limited to 10MB.
-     * If <code>fileName</code> is not specified or file not found, then returns <code>Optional.empty()</code>.
      *
-     * @return wrapper <code>Optional.of(GFile))</code> for found file.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     * @param fileName the file name to get.
+     * @return {@link GFile} object wrapped with {@link Optional} and representing requested file with it's content.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public Optional<GFile> getFile(String fileName) {
         initService();
@@ -294,14 +420,15 @@ public class GoogleDrive {
     }
 
     /**
-     * Send request to get file of given file id.
+     * Gets Google Drive file and it's content by given file ID.
      * <p>
      * <b>NOTICE:</b> Please note that the exported content is limited to 10MB.
-     * If <code>fileId</code> is not specified or file not found, then returns <code>Optional.empty()</code>.
      *
-     * @param fileId the file's id object <code>GFileId</code> to get.
-     * @return wrapper <code>Optional.of(GFile))</code> for found file.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     * @param fileId {@link GFileId} with file ID of file to get.
+     * @return {@link GFile} object wrapped with {@link Optional} and representing requested file with it's content.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public Optional<GFile> getFile(GFileId fileId) {
         initService();
@@ -309,13 +436,14 @@ public class GoogleDrive {
     }
 
     /**
-     * Send request to get folder info of given folder name.
-     * <p>
-     * If <code>folderName</code> is not specified or folder not found, then returns <code>Optional.empty()</code>.
+     * Gets info of folder with given folder name.
      *
-     * @param folderName the folder's name to get.
-     * @return wrapper <code>Optional.of(GFileInfo))</code> for found folder.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     * @param folderName the name of folder to get.
+     * @return {@link Optional} object with {@link GFileInfo} representing found folder or empty if such folder
+     * is not found.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public Optional<GFileInfo> getFolder(String folderName) {
         initService();
@@ -323,13 +451,14 @@ public class GoogleDrive {
     }
 
     /**
-     * Send request to get folder info of given folder id.
-     * <p>
-     * If <code>folderId</code> is not specified or folder not found, then returns <code>Optional.empty()</code>.
+     * Gets info of folder with given folder ID.
      *
-     * @param folderId the folder's id to get.
-     * @return wrapper <code>Optional.of(GFileInfo))</code> for found folder.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     * @param folderId {@link GFileId} with file ID of folder to get.
+     * @return {@link Optional} object with {@link GFileInfo} representing found folder info or empty if such folder
+     * is not found.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public Optional<GFileInfo> getFolder(GFileId folderId) {
         initService();
@@ -337,14 +466,14 @@ public class GoogleDrive {
     }
 
     /**
-     * Send request to get file info of given fileId.
-     * <p>
-     * If <code>fileId</code> is not specified or file not found, then returns <code>Optional.empty()</code>.
-     * Otherwise returns {@code Optional.of(GFileInfo)} if file is found.
+     * Gets info of file with given file ID.
      *
-     * @param fileId GFileId object of the file.
-     * @return wrapper <code>Optional.of(GFileInfo)</code> for found file.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     * @param fileId {@link GFileId} with file ID of file to get.
+     * @return {@link Optional} object with {@link GFileInfo} representing found file info or empty if such file
+     * is not found.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public Optional<GFileInfo> getFileInfo(GFileId fileId) {
         initService();
@@ -352,14 +481,14 @@ public class GoogleDrive {
     }
 
     /**
-     * Send request to get file info of given file name.
-     * <p>
-     * If <code>fileName</code> is not specified or file not found, then returns <code>Optional.empty()</code>.
-     * Otherwise returns <code>Optional.of(GFileInfo)</code> if file is found.
+     * Gets info of file with given file name.
      *
-     * @param fileName the file's name to get.
-     * @return wrapper <code>Optional.of(GFileInfo)</code> for found file.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     * @param fileName the name of file name to get.
+     * @return {@link Optional} object with {@link GFileInfo} representing found file info or empty if such file
+     * is not found.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public Optional<GFileInfo> getFileInfo(String fileName) {
         initService();
@@ -367,56 +496,60 @@ public class GoogleDrive {
     }
 
     /**
-     * Create a blank file with given name and type under root directory My Drive.
+     * Creates a blank file with given name and type under root folder.
      * <p>
      * <b>Usage Examples:</b>
-     * Create file with name README.txt:
+     * Create file with name "README.txt":
      * <pre>
-     * this.createFile("README.txt" GFileType.FILE);
+     * googleDrive.createFile("README.txt", GFileType.FILE);
      * </pre>
      * Create folder with name "Documents":
      * <pre>
-     * this.createFile(Documents", GFileType.FOLDER);
+     * googleDrive.createFile(Documents", GFileType.FOLDER);
      * </pre>
+     * <p>
+     * See Google Drive <a href="https://developers.google.com/drive/api/v3/create-file">Create files</a> article
+     * for more details.
      *
-     * @param name The name of the file. This is not necessarily unique within a folder.
-     *             Note that for immutable items such as the top level folders of shared drives,
-     *             My Drive root folder, and Application Data folder the name is constant.
-     * @param type The MIME type of the file.
-     *             Google Drive will attempt to automatically detect an appropriate value from uploaded content if no value is provided.
-     * @return wrapper <code>Optional.of(GFileInfo))</code> for created file.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
-     * See Drive API reference <a href="https://developers.google.com/drive/api/v3/create-file">Create file</a> for more details.
+     * @param name the name of Google Drive file to create. This is not necessarily unique within a folder.
+     * @param type the type of Google Drive file to create.
+     * @return {@link Optional} object with {@link GFileInfo} representing created file.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public Optional<GFileInfo> create(String name, GFileType type) {
         return this.create(name, type, null);
     }
 
     /**
-     * Create a blank file with given name and type under specified folder id.
+     * Creates a blank file with given name and type under specified folder.
      * <p>
-     * In order to create file under My Drive root directory set <code>folderId</code> to <code>null</code>.
-     * <code>supportsTeamDrives</code> must be <code>true</code> to create file under Shared Drives.
+     * In order to create file under My Drive root directory set {@code folderId} to {@code null}.
+     * <p>
+     * {@code supportsTeamDrives} must be {@code true} to create file under Shared Drives.
      * <p>
      * <b>Usage Examples:</b>
-     * Create file with name README.txt under some folder "folderId":
+     * Create file with name "README.txt" under some folder with ID "folderId":
      * <pre>
-     * this.createFile("README.txt" GFileType.FILE, folderId);
+     * googleDrive.createFile("README.txt", GFileType.FILE, folderId);
      * </pre>
      * Create folder with name "Documents" in root location of My Drive:
      * <pre>
-     * this.createFile(Documents", GFileType.FOLDER, null);
+     * googleDrive.createFile("Documents", GFileType.FOLDER, null);
      * </pre>
+     * <p>
+     * See Google Drive <a href="https://developers.google.com/drive/api/v3/create-file">Create files</a> article
+     * for more details.
      *
-     * @param name     The name of the file. This is not necessarily unique within a folder.
-     *                 Note that for immutable items such as the top level folders of shared drives,
-     *                 My Drive root folder, and Application Data folder the name is constant.
-     * @param type     The MIME type of the file.
-     *                 Google Drive will attempt to automatically detect an appropriate value from uploaded content if no value is provided.
-     * @param folderId the id of parent folder, or null then the file will be placed directly in the user's My Drive folder
-     * @return wrapper <code>Optional.of(GFileInfo))</code> for created file.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
-     * See Drive API reference <a href="https://developers.google.com/drive/api/v3/create-file">Create file</a> for more details.
+     * @param name     the name of Google Drive file to create. This is not necessarily unique within a folder.
+     * @param type     {@link GFileType} value representing the type of Google Drive file to create.
+     * @param folderId the id of parent folder, or {@code null} then the file will be placed directly
+     *                 in the user's My Drive folder
+     * @return {@link Optional} object with {@link GFileInfo} representing created file.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public Optional<GFileInfo> create(String name, GFileType type, GFileId folderId) {
         if (name != null) {
@@ -427,15 +560,16 @@ public class GoogleDrive {
     }
 
     /**
-     * Creates a copy of a file.
+     * Creates a copy of Google Drive file.
      * <p>
-     * <code>supportsTeamDrives</code> must be <code>true</code> to create file under Shared Drives.
+     * {@code supportsTeamDrives} must be {@code true} to create file under Shared Drives.
      *
      * @param source     the source file info.
      * @param nameOfCopy the name of copied file.
-     * @return wrapper <code>Optional.of(GFileInfo))</code> for created file.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
-     * See Drive API reference <a href="https://developers.google.com/drive/api/v3/create-file">Create file</a> for more details.
+     * @return {@link Optional} object with {@link GFileInfo} representing copied file.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public Optional<GFileInfo> copy(GFileInfo source, String nameOfCopy) {
         if (source != null && nameOfCopy != null) {
@@ -446,28 +580,37 @@ public class GoogleDrive {
     }
 
     /**
-     * Upload given file to My Drive.
+     * Uploads given file to the root folder.
+     * <p>
+     * See Google Drive <a href="https://developers.google.com/drive/api/v3/create-file">Create files</a> article
+     * for more details.
      *
-     * @param file the abstract pathname for the named file.
-     * @return wrapper <code>Optional.of(GFile))</code> for created file.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
-     * See Drive API reference <a href="https://developers.google.com/drive/api/v3/create-file">Create file</a> for more details.
+     * @param file the {@link File} object representing file to upload.
+     * @return {@link Optional} object with {@link GFile} representing uploaded file.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public Optional<GFile> createFile(File file) {
         return createFile(file, null);
     }
 
     /**
-     * Upload given file to given folder.
+     * Uploads given file to given folder.
      * <p>
-     * In order to create file under My Drive root directory set <code>folderId</code> to <code>null</code>.
-     * <code>supportsTeamDrives</code> must be <code>true</code> to create file under Shared Drives.
+     * In order to create file under My Drive root folder set {@code folderId} to {@code null}.
+     * <p>
+     * {@code supportsTeamDrives} must be {@code true} to create file under Shared Drives.
+     * <p>
+     * See Google Drive <a href="https://developers.google.com/drive/api/v3/create-file">Create files</a> article
+     * for more details.
      *
-     * @param file     the abstract pathname for the named file.
-     * @param folderId the folder's id to upload under.
-     * @return wrapper <code>Optional.of(GFile))</code> for created file.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
-     * See Drive API reference <a href="https://developers.google.com/drive/api/v3/create-file">Create file</a> for more details.
+     * @param file     the {@link File} object representing file to upload.
+     * @param folderId {@link GFileId} with file ID of destination folder where the file should be uploaded.
+     * @return {@link Optional} object with {@link GFile} representing uploaded file.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public Optional<GFile> createFile(File file, GFileId folderId) {
         if (file != null) {
@@ -489,60 +632,54 @@ public class GoogleDrive {
     }
 
     /**
-     * Create a file with given name and content under My Drive directory.
+     * Creates a file with given name and content under the root folder.
      * <p>
-     * <b>Usage Examples:</b>
-     * Create file with name README.txt:
-     * <pre>
-     *     try (FileInputStream fis = new FileInputStream(file)) {
-     *          this.createFile("README.txt", fis);
-     *     }
-     * </pre>
-     * Create folder with name "Documents" in root location of My Drive:
-     * <pre>
-     * this.createFile(Documents", GFileType.FOLDER, null);
-     * </pre>
+     * See Google Drive <a href="https://developers.google.com/drive/api/v3/create-file">Create files</a> article
+     * for more details.
      *
-     * @param fileName The name of the file. This is not necessarily unique within a folder.
-     *                 Note that for immutable items such as the top level folders of shared drives,
-     *                 My Drive root folder, and Application Data folder the name is constant.
-     * @param content  the input stream to read from.
-     * @return wrapper <code>Optional.of(GFile))</code> for created file.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
-     * See Drive API reference <a href="https://developers.google.com/drive/api/v3/create-file">Create file</a> for more details.
+     * @param fileName the name of file to create. This is not necessarily unique within a folder.
+     * @param content  the input stream to read the content of creating file.
+     * @return {@link Optional} object with {@link GFile} representing created file.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public Optional<GFile> createFile(String fileName, InputStream content) {
         return createFile(fileName, content, null);
     }
 
     /**
-     * Create a file with given name and content under specified folder id.
+     * Creates a file with given name and content under specified folder id.
      * <p>
-     * In order to create file under My Drive root directory set <code>folderId</code> to <code>null</code>.
-     * <code>supportsTeamDrives</code> must be <code>true</code> to create file under Shared Drives.
+     * In order to create file under My Drive root folder set {@code folderId} to {@code null}.
+     * <p>
+     * {@code supportsTeamDrives} must be {@code true} to create file under Shared Drives.
+     * <p>
      * <b>Usage Examples:</b>
-     * Create file with name README.txt under My Drive:
+     * Create file with name "README.txt" under the root folder:
      * <pre>
-     *     try (FileInputStream fis = new FileInputStream(file)) {
-     *          this.createFile("README.txt", fis, null);
-     *     }
+     * try (FileInputStream fis = new FileInputStream(file)) {
+     *   googleDrive.createFile("README.txt", fis, null);
+     * }
      * </pre>
      * Create file with name "README.txt" under folder "folderId":
      * <pre>
-     *     this.supportsTeamDrives(true)
-     *     try (FileInputStream fis = new FileInputStream(file)) {
-     *          this.createFile("README.txt", fis, folderId);
-     *     }
+     * googleDrive.supportsTeamDrives(true)
+     * try (FileInputStream fis = new FileInputStream(file)) {
+     *   googleDrive.createFile("README.txt", fis, folderId);
+     * }
      * </pre>
+     * <p>
+     * See Google Drive <a href="https://developers.google.com/drive/api/v3/create-file">Create files</a> article
+     * for more details.
      *
-     * @param fileName the name of the file. This is not necessarily unique within a folder.
-     *                 Note that for immutable items such as the top level folders of shared drives,
-     *                 My Drive root folder, and Application Data folder the name is constant.
-     * @param content  the input stream to read from.
-     * @param folderId folderId the folder's id to upload under.
-     * @return wrapper <code>Optional.of(GFile))</code> for created file.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
-     * See Drive API reference <a href="https://developers.google.com/drive/api/v3/create-file">Create file</a> for more details.
+     * @param fileName the name of file to create. This is not necessarily unique within a folder.
+     * @param content  the input stream to read the content of creating file.
+     * @param folderId {@link GFileId} with file ID of target folder where the file should be created.
+     * @return {@link Optional} object with {@link GFile} representing created file.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public Optional<GFile> createFile(String fileName, InputStream content, GFileId folderId) {
         if (fileName != null && content != null) {
@@ -557,28 +694,32 @@ public class GoogleDrive {
     }
 
     /**
-     * Create a folder with given name under My Drive directory.
+     * Creates a folder with given name under the root folder.
+     * <p>
+     * See Google Drive <a href="https://developers.google.com/drive/api/v3/create-file">Create files</a> article
+     * for more details.
      *
-     * @param folderName the name of the folder. This is not necessarily unique within a folder.
-     *                   Note that for immutable items such as the top level folders of shared drives,
-     *                   My Drive root folder, and Application Data folder the name is constant.
-     * @return wrapper <code>Optional.of(GFileInfo))</code> for created file.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
-     * See Drive API reference <a href="https://developers.google.com/drive/api/v3/create-file">Create file</a> for more details.
+     * @param folderName the name of folder to create. This is not necessarily unique within a folder.
+     * @return {@link Optional} object with {@link GFileInfo} representing created folder.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public Optional<GFileInfo> createFolder(String folderName) {
         return createFolder(folderName, null);
     }
 
     /**
-     * Create a folder with given name under My Drive directory if it is absent.
+     * Creates a folder with given name under the root folder if it is absent.
+     * <p>
+     * See Google Drive <a href="https://developers.google.com/drive/api/v3/create-file">Create files</a> article
+     * for more details.
      *
-     * @param folderName the name of the folder. This is not necessarily unique within a folder.
-     *                   Note that for immutable items such as the top level folders of shared drives,
-     *                   My Drive root folder, and Application Data folder the name is constant.
-     * @return created folder info, or <code>null</code> if folder with such <code>folderName</code> is present.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
-     * See Drive API reference <a href="https://developers.google.com/drive/api/v3/create-file">Create file</a> for more details.
+     * @param folderName the name of folder to create. This is not necessarily unique within a folder.
+     * @return {@link GFileInfo} representing created or existed folder.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public GFileInfo createFolderIfAbsent(String folderName) {
         Optional<GFileInfo> folder = getFolder(folderName);
@@ -586,18 +727,21 @@ public class GoogleDrive {
     }
 
     /**
-     * Create a folder with given name under specified folder.
+     * Creates a folder with given name under specified folder.
      * <p>
-     * In order to create folder under My Drive root directory use <code>this.createFolderIfAbsent(folderName)</code>.
-     * <code>supportsTeamDrives</code> must be <code>true</code> to create folder under Shared Drives.
+     * In order to create folder under the root folder use {@link #createFolderIfAbsent(String)}.
+     * <p>
+     * {@code supportsTeamDrives} must be {@code true} to create folder under Shared Drives.
+     * <p>
+     * See Google Drive <a href="https://developers.google.com/drive/api/v3/create-file">Create files</a> article
+     * for more details.
      *
-     * @param folderName the name of the folder. This is not necessarily unique within a folder.
-     *                   Note that for immutable items such as the top level folders of shared drives,
-     *                   My Drive root folder, and Application Data folder the name is constant.
-     * @param parentId   the folder's ID of parent.
-     * @return wrapper <code>Optional.of(GFileInfo)</code> of created folder info.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
-     * See Drive API reference <a href="https://developers.google.com/drive/api/v3/create-file">Create file</a> for more details.
+     * @param folderName the name of folder to create. This is not necessarily unique within a folder.
+     * @param parentId   {@link GFileId} with file ID of target folder where the folder should be created.
+     * @return {@link Optional} object with {@link GFileInfo} representing created folder.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public Optional<GFileInfo> createFolder(String folderName, GFileId parentId) {
         if (folderName != null) {
@@ -608,18 +752,21 @@ public class GoogleDrive {
     }
 
     /**
-     * Create a folder with given name under specified folder if it is absent.
+     * Creates a folder with given name under specified folder if it is absent.
      * <p>
-     * In order to create folder under My Drive root directory use <code>this.createFolderIfAbsent(folderName)</code>.
-     * <code>supportsTeamDrives</code> must be <code>true</code> to create folder under Shared Drives.
+     * In order to create folder under the root folder use {@link #createFolderIfAbsent(String)}.
+     * <p>
+     * {@code supportsTeamDrives} must be {@code true} to create folder under Shared Drives.
+     * <p>
+     * See Google Drive <a href="https://developers.google.com/drive/api/v3/create-file">Create files</a> article
+     * for more details.
      *
-     * @param folderName the name of the folder. This is not necessarily unique within a folder.
-     *                   Note that for immutable items such as the top level folders of shared drives,
-     *                   My Drive root folder, and Application Data folder the name is constant.
-     * @param parentId   the folder's ID of parent.
-     * @return created folder info, or <code>null</code> if folder with such <code>folderName</code> is present.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
-     * See Drive API reference <a href="https://developers.google.com/drive/api/v3/create-file">Create file</a> for more details.
+     * @param folderName the name of folder to create. This is not necessarily unique within a folder.
+     * @param parentId   {@link GFileId} with file ID of target folder where the folder should be created.
+     * @return {@link GFileInfo} representing created or existed folder.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public GFileInfo createFolderIfAbsent(String folderName, GFileId parentId) {
         Optional<GFileInfo> folder = getFolder(folderName);
@@ -627,17 +774,15 @@ public class GoogleDrive {
     }
 
     /**
-     * Change name of the folder to given one.
+     * Renames the folder.
      * <p>
-     * <code>supportsTeamDrives</code> must be <code>true</code> to rename folder under Shared Drive.
-     * If original <code>folderName</code> is absent, than nothing changes.
+     * {@code supportsTeamDrives} must be {@code true} to create folder under Shared Drives.
      *
-     * @param folderName    the name of the folder. This is not necessarily unique within a folder.
-     *                      Note that for immutable items such as the top level folders of shared drives,
-     *                      My Drive root folder, and Application Data folder the name is constant.
-     * @param newFolderName the folder's name change to.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
-     * See Drive API reference <a href="https://developers.google.com/drive/api/v3/reference/files/update">Files: update</a> for more details.
+     * @param folderName    the name of target folder that should be renamed.
+     * @param newFolderName new name of folder.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public void renameFolder(String folderName, String newFolderName) {
         Optional<GFileInfo> folder = getFolder(folderName);
@@ -645,28 +790,30 @@ public class GoogleDrive {
     }
 
     /**
-     * Change name of the folder to given one.
+     * Renames the folder.
      * <p>
-     * <code>supportsTeamDrives</code> must be <code>true</code> to rename folder under Shared Drive.
+     * {@code supportsTeamDrives} must be {@code true} to rename folder under Shared Drive.
      *
-     * @param folder        the folder's info.
-     * @param newFolderName the folder's name change to.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
-     * See Drive API reference <a href="https://developers.google.com/drive/api/v3/reference/files/update">Files: update</a> for more details.
+     * @param folder        the name of target folder that should be renamed.
+     * @param newFolderName new name of folder.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public void renameFolder(GFileInfo folder, String newFolderName) {
         renameFile(folder, newFolderName);
     }
 
     /**
-     * Change name of the file to given one.
+     * Renames the file.
      * <p>
-     * <code>supportsTeamDrives</code> must be <code>true</code> to rename file under Shared Drive.
+     * {@code supportsTeamDrives} must be {@code true} to rename file under Shared Drive.
      *
-     * @param file        the file's info.
-     * @param newFileName the file's name change to.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
-     * See Drive API reference <a href="https://developers.google.com/drive/api/v3/reference/files/update">Files: update</a> for more details.
+     * @param file        {@link GFileInfo} representing file to rename.
+     * @param newFileName new name of file.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public void renameFile(GFileInfo file, String newFileName) {
         initService();
@@ -674,12 +821,14 @@ public class GoogleDrive {
     }
 
     /**
-     * Updates a file's content.
+     * Updates a file's info.
      * <p>
-     * <code>supportsTeamDrives</code> must be <code>true</code> if file is located under Shared Drives.
+     * {@code supportsTeamDrives} must be {@code true} if file is located under Shared Drives.
      *
-     * @param file object <code>GFileInfo</code> of file with specified file id.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     * @param file {@link GFileInfo} to update on Google server.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public void updateFile(GFileInfo file) {
         initService();
@@ -687,14 +836,17 @@ public class GoogleDrive {
     }
 
     /**
-     * Move folder by given name  to a target folder.
+     * Moves folder with given name to another folder.
      * <p>
-     * In order to move file to My Drive root directory set <code>targetFolderName</code> to <code>null</code>.
-     * <code>supportsTeamDrives</code> must be <code>true</code> to move folder under Shared Drives.
+     * In order to move folder to the root folder set {@code targetFolderName} to {@code null}.
+     * <p>
+     * {@code supportsTeamDrives} must be {@code true} to move folder under Shared Drives.
      *
-     * @param folderName       the folder's name of source.
-     * @param targetFolderName the folder's name of target.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     * @param folderName       the name of folder to move.
+     * @param targetFolderName the name of destination folder.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public void moveFolder(String folderName, String targetFolderName) {
         Optional<GFileInfo> targetFolder = getFolder(targetFolderName);
@@ -702,14 +854,17 @@ public class GoogleDrive {
     }
 
     /**
-     * Move folder by given name  to a target folder.
+     * Moves folder with given name to another folder.
      * <p>
-     * In order to move file to My Drive root directory set <code>targetFolderId</code> to <code>null</code>.
-     * <code>supportsTeamDrives</code> must be <code>true</code> to move folder under Shared Drives.
+     * In order to move folder to the root folder set {@code targetFolderId} to {@code null}.
+     * <p>
+     * {@code supportsTeamDrives} must be {@code true} to move folder under Shared Drives.
      *
-     * @param folderName     the folder's name of source.
-     * @param targetFolderId the folder's ID of target.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     * @param folderName     the name of folder to move.
+     * @param targetFolderId {@link GFileId} with file ID of destination folder.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public void moveFolder(String folderName, GFileId targetFolderId) {
         Optional<GFileInfo> folder = getFolder(folderName);
@@ -717,14 +872,17 @@ public class GoogleDrive {
     }
 
     /**
-     * Move file to a target folder.
+     * Moves file to another folder.
      * <p>
-     * In order to move file to My Drive root directory set <code>targetFolderId</code> to <code>null</code>.
-     * <code>supportsTeamDrives</code> must be <code>true</code> to move file under Shared Drives.
+     * In order to move file to the root folder set {@code targetFolderId} to {@code null}.
+     * <p>
+     * {@code supportsTeamDrives} must be {@code true} to move file under Shared Drives.
      *
-     * @param file           object <code>GFileInfo</code> of file with specified file id.
-     * @param targetFolderId object <code>GFileId</code> of target folder, or null for none.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     * @param file           {@link GFileInfo} representing file to move.
+     * @param targetFolderId {@link GFileId} with file ID of destination folder.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public void moveFile(GFileInfo file, GFileId targetFolderId) {
         initService();
@@ -734,11 +892,15 @@ public class GoogleDrive {
     /**
      * Permanently deletes a file owned by the user without moving it to the trash.
      * <p>
-     * If the file belongs to a Team Drive the user must be an organizer on the parent and <code>supportsTeamDrives</code> must be <code>true</code>.
+     * If the file belongs to a Shared Drive the user must be an organizer on the parent and {@code supportsTeamDrives}
+     * must be {@code true}.
+     * <p>
      * If the target is a folder, all descendants owned by the user are also deleted.
      *
-     * @param fileId GFileId object of the file.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     * @param fileId {@link GFileId} with file ID of file to delete.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public void deleteFile(GFileId fileId) {
         initService();
@@ -748,11 +910,15 @@ public class GoogleDrive {
     /**
      * Permanently deletes a file owned by the user without moving it to the trash.
      * <p>
-     * If the file belongs to a Team Drive the user must be an organizer on the parent and <code>supportsTeamDrives</code> must be <code>true</code>.
+     * If the file belongs to a Shared Drive the user must be an organizer on the parent and {@code supportsTeamDrives}
+     * must be {@code true}.
+     * <p>
      * If the target is a folder, all descendants owned by the user are also deleted.
      *
-     * @param file the file's info object.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     * @param file {@link GFileInfo} representing file to delete.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public void deleteFile(GFileInfo file) {
         initService();
@@ -762,11 +928,15 @@ public class GoogleDrive {
     /**
      * Permanently deletes a folder and all descendants owned by the user are also deleted without moving it to the trash.
      * <p>
-     * If the file belongs to a Team Drive the user must be an organizer on the parent and <code>supportsTeamDrives</code> must be <code>true</code>.
+     * If the file belongs to a Shared Drive the user must be an organizer on the parent and {@code supportsTeamDrives}
+     * must be {@code true}.
+     * <p>
      * If the target is a folder, all descendants owned by the user are also deleted.
      *
-     * @param folderId the folder's ID object.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     * @param folderId {@link GFileId} with file ID of folder to delete.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public void deleteFolder(GFileId folderId) {
         initService();
@@ -776,11 +946,15 @@ public class GoogleDrive {
     /**
      * Permanently deletes a folder and all descendants owned by the user are also deleted without moving it to the trash.
      * <p>
-     * If the file belongs to a Team Drive the user must be an organizer on the parent and <code>supportsTeamDrives</code> must be <code>true</code>.
+     * If the file belongs to a Shared Drive the user must be an organizer on the parent and {@code supportsTeamDrives}
+     * must be {@code true}.
+     * <p>
      * If the target is a folder, all descendants owned by the user are also deleted.
      *
-     * @param folderName the folder's name.
-     * @throws GoogleDriveException in case of any error occurs in request, see Drive API reference <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     * @param folderName the name of folder to delete.
+     * @throws GoogleDriveException in case of any error occurs in request. See
+     *                              <a href="https://developers.google.com/drive/api/v3/handle-errors">Resolve errors</a>
+     *                              for more details.
      */
     public void deleteFolder(String folderName) {
         Optional<GFileInfo> folder = getFolder(folderName);
@@ -788,6 +962,8 @@ public class GoogleDrive {
     }
 
     /**
+     * Gets underlie Google Drive service for advanced usage.
+     *
      * @return Google Drive service for advanced usage.
      */
     public Drive getDrive() {
@@ -799,7 +975,7 @@ public class GoogleDrive {
      * Gets value of configuration parameter specified in the RPA platform by the given key.
      *
      * @param key the key of configuration parameter that need to lookup.
-     * @return string value of configuration parameter with the given key. Returns <code>null</code> if parameter is
+     * @return string value of configuration parameter with the given key. Returns {@code null} if parameter is
      * not found or accessor is not defined.
      */
     protected String getConfigParam(String key) {
