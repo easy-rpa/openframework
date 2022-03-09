@@ -6,12 +6,39 @@ import java.lang.reflect.Method;
 
 import static java.util.Locale.ENGLISH;
 
+/**
+ * Provides set of convenient methods to work with Java Reflection API.
+ */
 public class TypeUtils {
 
+    /**
+     * Gets the value of field {@code fieldName} of given Java object {@code obj}.
+     * <p>
+     * At first this method is tried to find corresponding to necessary field getter. If such getter is exist calls it
+     * and returns its result. Otherwise looks up the necessary field in class of given {@code obj} or it's superclasses.
+     *
+     * @param obj       the source object with necessary field value.
+     * @param fieldName the name of necessary field.
+     * @param <T>       expected type of the field.
+     * @return the value of specified field.
+     */
     public static <T> T getFieldValue(Object obj, String fieldName) {
         return getFieldValue(obj, fieldName, true);
     }
 
+    /**
+     * Gets the value of field {@code fieldName} of given Java object {@code obj}.
+     * <p>
+     * At first this method is tried to find corresponding to necessary field getter if flag {@code useGetMethod} is
+     * {@code true}. If such getter is exist calls it and returns its result. Otherwise looks up the necessary field
+     * in class of given {@code obj} or it's superclasses.
+     *
+     * @param obj          the source object with necessary field value.
+     * @param fieldName    the name of necessary field.
+     * @param useGetMethod whether corresponding getter method should be looked up and used first.
+     * @param <T>          expected type of the field.
+     * @return the value of specified field.
+     */
     @SuppressWarnings("unchecked")
     public static <T> T getFieldValue(Object obj, String fieldName, boolean useGetMethod) {
         try {
@@ -40,10 +67,37 @@ public class TypeUtils {
         }
     }
 
+    /**
+     * Sets the value {@code value} of field {@code fieldName} for given Java object {@code obj}.
+     * <p>
+     * At first this method is tried to find corresponding to necessary field setter if flag {@code useSetMethod} is
+     * {@code true}. If such setter is exist uses it to set the field value. Otherwise looks up the necessary field
+     * in class of given {@code obj} or it's superclasses.
+     * <p>
+     * Tries to automatically cast given value {@code value} to the type of field {@code fieldName}.
+     *
+     * @param obj       the target object where the value of necessary field should be set.
+     * @param fieldName the name of necessary field.
+     * @param value     the value to set.
+     */
     public static void setFieldValue(Object obj, String fieldName, Object value) {
         setFieldValue(obj, fieldName, value, true);
     }
 
+    /**
+     * Sets the value {@code value} of field {@code fieldName} for given Java object {@code obj}.
+     * <p>
+     * At first this method is tried to find corresponding to necessary field setter if flag {@code useSetMethod} is
+     * {@code true}. If such setter is exist uses it to set the field value. Otherwise looks up the necessary field
+     * in class of given {@code obj} or it's superclasses.
+     * <p>
+     * Tries to automatically cast given value {@code value} to the type of field {@code fieldName}.
+     *
+     * @param obj          the target object where the value of necessary field should be set.
+     * @param fieldName    the name of necessary field.
+     * @param value        the value to set.
+     * @param useSetMethod whether corresponding setter method should be looked up and used first.
+     */
     public static void setFieldValue(Object obj, String fieldName, Object value, boolean useSetMethod) {
         try {
             Class<?> objClass = obj.getClass();
@@ -73,6 +127,23 @@ public class TypeUtils {
         }
     }
 
+    /**
+     * Searches method with name {@code methodName} and argument types the same as types of {@code args} and calls it
+     * for object {@code obj} with arguments {@code args}.
+     * <p>
+     * Searches the method in class/interfaces of {@code obj} and it's superclasses/ superinterfaces.
+     * <p>
+     * <b>IMPORTANT:</b> If it's necessary to pass the value of method argument as {@code null} use the instance of
+     * {@link NullValue} class instead to let properly detect the type of argument.
+     *
+     * @param obj        the target object where the method should be called.
+     * @param methodName the name of necessary method.
+     * @param args       the sequence of arguments that should be passed to the method. Also they determine signature of
+     *                   necessary method.
+     * @param <T>        the type of value returned by the method.
+     * @return result of method calling.
+     * @throws RuntimeException if the method is not found or other errors.
+     */
     @SuppressWarnings("unchecked")
     public static <T> T callMethod(Object obj, String methodName, Object... args) {
         try {
@@ -89,6 +160,19 @@ public class TypeUtils {
         }
     }
 
+    /**
+     * Instantiate the class {@code instClass} using constructor with argument types the same as types of {@code args}.
+     * <p>
+     * <b>IMPORTANT:</b> If it's necessary to pass the value of constructor argument as {@code null} use the instance of
+     * {@link NullValue} class instead to let properly detect the type of argument.
+     *
+     * @param instClass the class to instantiate.
+     * @param args      the sequence of arguments that should be passed to constructor. Also they determine signature of
+     *                  necessary constructor.
+     * @param <T>       the type of class to instantiate.
+     * @return the new instance of specified class.
+     * @throws RuntimeException if the method is not found or other errors.
+     */
     public static <T> T newInstance(Class<T> instClass, Object... args) {
         try {
             Class<?>[] types = getTypesOf(args);
@@ -104,6 +188,16 @@ public class TypeUtils {
         }
     }
 
+    /**
+     * Searches method with name {@code methodName} and argument types {@code argTypes} for object {@code obj}.
+     * <p>
+     * Searches the method in class/interfaces of {@code obj} and it's superclasses/superinterfaces.
+     *
+     * @param objClass   the target class to search.
+     * @param methodName the name of method to search.
+     * @param argTypes   the sequence of argument types that determine signature of necessary method.
+     * @return the {@link Method} object representing found method or {@code null} is such method is not found.
+     */
     public static Method findMethod(Class<?> objClass, String methodName, Class<?>... argTypes) {
         try {
             Method method = objClass.getDeclaredMethod(methodName, argTypes);
@@ -139,6 +233,15 @@ public class TypeUtils {
         }
     }
 
+    /**
+     * Searches constructor of class {@code instClass} with argument types {@code argTypes}.
+     *
+     * @param instClass the target class.
+     * @param argTypes  the sequence of argument types that determine signature of necessary constructor.
+     * @param <T>       the type of target class.
+     * @return the {@link Constructor} object representing found constructor or {@code null} is such constructor
+     * is not found.
+     */
     public static <T> Constructor<T> findConstructor(Class<T> instClass, Class<?>... argTypes) {
         try {
             Constructor<T> constructor = instClass.getDeclaredConstructor(argTypes);
@@ -244,6 +347,9 @@ public class TypeUtils {
         return types;
     }
 
+    /**
+     * Helps properly specify the type of method argument in case of passing its value as {@code null}.
+     */
     public static class NullValue {
         private Class<?> type;
 

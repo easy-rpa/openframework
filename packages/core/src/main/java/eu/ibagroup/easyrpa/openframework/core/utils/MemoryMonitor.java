@@ -1,10 +1,18 @@
 package eu.ibagroup.easyrpa.openframework.core.utils;
 
+/**
+ * Java heap memory monitor.
+ */
 public class MemoryMonitor {
 
     private static Thread monitor;
     private static boolean stopMonitor = false;
 
+    /**
+     * Starts monitoring of Java heap memory and output it's size into console each {@code refreshIntervalSec} seconds.
+     *
+     * @param refreshIntervalSec time interval in seconds to output the size of java heap into console.
+     */
     public static void run(int refreshIntervalSec) {
         if (monitor == null) {
             monitor = new Thread(() -> {
@@ -33,6 +41,9 @@ public class MemoryMonitor {
         }
     }
 
+    /**
+     * Stops monitoring of Java heap memory.
+     */
     public static void stop() {
         stopMonitor = monitor != null;
     }

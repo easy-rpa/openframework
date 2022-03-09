@@ -16,6 +16,6 @@ public class AdditionConfigurationModule implements ConfigurationModule {
     @Provides
     @Singleton
     public RPAServicesAccessor createRPAServicesProvider(Feather injector) {
-        return (RPAServicesAccessor) InstantiationUtils.getInstance(injector, EasyRPAServicesAccessor.class, true, true);
+        return InstantiationUtils.getInstance(injector, EasyRPAServicesAccessor.class, true, true);
     }
 }

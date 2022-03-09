@@ -19,7 +19,7 @@
         </dependency>
         <dependency>
             <groupId>eu.ibagroup</groupId>
-            <artifactId>easy-rpa-engine-ext</artifactId>
+            <artifactId>easy-rpa-adapter-for-openframework</artifactId>
             <version>2.2.0</version>
         </dependency>
         <dependency>

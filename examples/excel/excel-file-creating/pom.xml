@@ -26,7 +26,7 @@
         </dependency>
         <dependency>
             <groupId>eu.ibagroup</groupId>
-            <artifactId>easy-rpa-engine-ext</artifactId>
+            <artifactId>easy-rpa-adapter-for-openframework</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
