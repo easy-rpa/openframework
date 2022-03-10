@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 **Related library**
-The name and version of library where the issue is experiencing.
+The name and version of library where the issue is experienced.
 
 **Description**
 Describe the issue you are experiencing. Try to provide clear and detailed description inclusive:
