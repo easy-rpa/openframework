@@ -7,25 +7,20 @@ assignees: ''
 
 ---
 
-**The problem**
-Briefly describe the issue you are experiencing.
+**Related library**
+The name and version of library where the issue is experiencing.
 
-**Describe the problem**
-If necessary, describe the problem you have been experiencing in more detail.
-
-**Environment**
-Specify details about type, version, parameters of application that depends on execution of certain package, for example:
-- "Database" package - database type, jdbc version, connection parameters.
-- "Email" package - transport protocol, mail server, message template.
-- "Excel" package - excel template, vbs script example if applicable
-- "Google Drive" package - file type, permissions, shared drive or private storage.
-- "Google Sheets" package - google sheet link. 
-
-**Code To Reproduce**
-Full code example or snippet how to reproduce the issue.
+**Description**
+Describe the issue you are experiencing. Try to provide clear and detailed description inclusive:
+- description of situation when the issue is appeared
+- code example or snippet how to reproduce the issue
+- values of not secret configuration parameters that were applied
+- logs or stacktrace of errors
+- input files or data if applicable and not secret
+- screenshots if applicable
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
-**Additional context**
-Add any other context about the problem here.
+**Additional information**
+Add any other information or resources that can be useful for investigation of issue.

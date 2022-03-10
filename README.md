@@ -8,7 +8,6 @@
 * [Usage](#usage)
 * [Libraries](#libraries)
 * [Examples](#examples)
-* [Links](#links)
 * [Contributing](#contributing)
 * [License](#license)
 
@@ -77,19 +76,19 @@ The EasyRPA Open Framework includes following libraries:
 
 <table>
     <tr><th align="left">Name</th><th align="left">Description</th></tr>
-    <tr><td valign="top"><a href="/packages/database">Database</a></td><td>
+    <tr><td valign="top"><a href="/libraries/database">Database</a></td><td>
         Functionality to work with remote databases (MySQL, PostgreSQL, Oracle, DB2, MS SQL Server). 
     </td></tr>
-    <tr><td valign="top"><a href="/packages/email">Email</a></td><td>
+    <tr><td valign="top"><a href="/libraries/email">Email</a></td><td>
         Functionality to work with mailboxes and email messages. 
     </td></tr>
-    <tr><td valign="top"><a href="/packages/excel">Excel</a></td><td>
+    <tr><td valign="top"><a href="/libraries/excel">Excel</a></td><td>
         Functionality to work with Excel documents. 
     </td></tr>   
-    <tr><td valign="top"><a href="/packages/google-drive">GoogleDrive</a></td><td>
+    <tr><td valign="top"><a href="/libraries/google-drive">GoogleDrive</a></td><td>
         Functionality to work with Google Drive files and folders. 
     </td></tr>
-    <tr><td valign="top"><a href="/packages/google-sheets">GoogleSheets</a></td><td>
+    <tr><td valign="top"><a href="/libraries/google-sheets">GoogleSheets</a></td><td>
         Functionality to work with Google Sheets. 
     </td></tr>
 </table> 
@@ -99,16 +98,10 @@ The EasyRPA Open Framework includes following libraries:
 Please refer to [Examples page](examples) to see the full list of examples of using EasyRPA Open Framework 
 libraries.
 
-## Links
-
-Here is you can find useful links to other resources:
-
-* [StackOverFlow](https://ru.stackoverflow.com/search?q=openframework)
-
 ## Contributing
 
 Found a bug and it is necessary to make a fast fix? Wants to add a critical feature? Interested in contributing? Head 
-over to the [Contribution guide](./CONTRIBUTING.md) to see where to get started.
+over to the [Contribution guide](.github/CONTRIBUTING.md) to see where to get started.
 
 ## License
 This project is open-source and licensed under the terms of the [Apache License 2.0](https://apache.org/licenses/LICENSE-2.0).
