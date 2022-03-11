@@ -2,7 +2,7 @@ package eu.ibagroup.easyrpa.engine.service.impl;
 
 import eu.ibagroup.easyrpa.engine.service.ConfigurationService;
 import eu.ibagroup.easyrpa.engine.service.VaultService;
-import eu.ibagroup.easyrpa.openframework.core.sevices.RPAServicesAccessor;
+import eu.easyrpa.openframework.core.sevices.RPAServicesAccessor;
 
 import javax.inject.Inject;
 

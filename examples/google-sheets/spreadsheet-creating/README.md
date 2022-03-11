@@ -23,7 +23,7 @@ public void execute() {
 > The `insertTable()` inserts a new table where rows contains data of passed Java objects into it. The specification of 
 table header and its cells styling are specified using `@GSheetColumn` annotations within Java class of passed objects.
 See the full definition of 
-[Passenger](src/main/java/eu/ibagroup/easyrpa/examples/google/sheets/spreadsheet_creating/entities/Passenger.java)
+[Passenger](src/main/java/eu/easyrpa/examples/google/sheets/spreadsheet_creating/entities/Passenger.java)
 class for all details.
 >
 See the full source of this example for more details or check following instructions to run it.

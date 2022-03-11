@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>eu.ibagroup</groupId>
+        <groupId>eu.easyrpa</groupId>
         <artifactId>easy-rpa-openframework-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -15,7 +15,7 @@
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
-            <groupId>eu.ibagroup</groupId>
+            <groupId>eu.easyrpa</groupId>
             <artifactId>easy-rpa-openframework-google-services</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -32,8 +32,8 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
                     <excludePackageNames>
-                        eu.ibagroup.easyrpa.openframework.google.sheets.internal;
-                        eu.ibagroup.easyrpa.openframework.google.sheets.internal.*
+                        eu.easyrpa.openframework.google.sheets.internal;
+                        eu.easyrpa.openframework.google.sheets.internal.*
                     </excludePackageNames>
                 </configuration>
             </plugin>

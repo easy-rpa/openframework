@@ -15,11 +15,11 @@ Component which provides functionality related to Google Sheets.
 
 To start use the library first you need to add corresponding Maven dependency to your project:
 
-![mavenVersion](https://img.shields.io/maven-central/v/eu.ibagroup/easy-rpa-openframework-google-sheets)
+![mavenVersion](https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-google-sheets)
 
 ```java
 <dependency>
-    <groupId>eu.ibagroup</groupId>
+    <groupId>eu.easyrpa</groupId>
     <artifactId>easy-rpa-openframework-google-sheets</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
