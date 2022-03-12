@@ -151,4 +151,4 @@ Finally using function 'updateValues' we update Google sheet with data loaded fr
 
 ## Example
 
-For more code examples please refer to corresponding [article](https://github.com/easyrpa/openframework/tree/main/examples#google-sheets). 
+For more code examples please refer to corresponding [article](https://github.com/easy-rpa/openframework/tree/main/examples#google-sheets). 

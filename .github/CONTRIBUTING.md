@@ -3,10 +3,10 @@
 #### **Did you find a bug?**
 
 * **Ensure the bug was not already reported** by searching on GitHub under
- [Issues](https://github.com/easyrpa/openframework/issues).
+ [Issues](https://github.com/easy-rpa/openframework/issues).
   
 * If you're unable to find an open issue addressing the problem,
- [raise a new one](https://github.com/easyrpa/openframework/issues/new?assignees=&labels=bug&template=bug_report.md&title=). 
+ [raise a new one](https://github.com/easy-rpa/openframework/issues/new?assignees=&labels=bug&template=bug_report.md&title=). 
  Be sure to include a **title** and **description** according to provided instructions. 
 
 #### **Do you want to write a patch that fixes a bug?**
@@ -21,9 +21,9 @@
 
 #### **Do you need a new feature?**
 
-* **Ensure the feature was not already raised** by searching on [Issues](https://github.com/easyrpa/openframework/issues) page.
+* **Ensure the feature was not already raised** by searching on [Issues](https://github.com/easy-rpa/openframework/issues) page.
   
-* If you're unable to find open request, raise a new feature request by correspondent issue template [Feature Request](https://github.com/easyrpa/openframework/issues/new?assignees=&labels=enhancement&template=feature_request.md&title=). 
+* If you're unable to find open request, raise a new feature request by correspondent issue template [Feature Request](https://github.com/easy-rpa/openframework/issues/new?assignees=&labels=enhancement&template=feature_request.md&title=). 
  Be sure to include a **title** and **description** according to provided instructions.
 
 #### **Do you intend to implement a new feature yourselves?**

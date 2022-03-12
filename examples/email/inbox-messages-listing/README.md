@@ -48,7 +48,7 @@ Its a fully workable process. To play around with it and run do the following:
 5. Build it using `mvn clean install` command. This command should be run within directory of this example.
 6. Run `main()` method of `InboxMessagesListingModule` class.
 
-[down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/email/inbox-messages-listing
+[down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easy-rpa/openframework/tree/main/examples/email/inbox-messages-listing
 
 ### Configuration
 

@@ -3,5 +3,5 @@
 ### Description
 
 The common lightweight library of EasyRPA Open Framework. It shares some code between all 
-[EasyRPA Open Framework](https://github.com/easyrpa/openframework) libraries.
+[EasyRPA Open Framework](https://github.com/easy-rpa/openframework) libraries.
   

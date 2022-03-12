@@ -91,7 +91,7 @@ EasyRPA Control Server:
 5. Build it using `mvn clean install` command. This command should be run within directory of this example.
 6. Run `main()` method of `SpreadsheetReadingModule` class.
 
-[down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easyrpa/openframework/tree/main/examples/google/sheets/spreadsheet-reading
+[down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easy-rpa/openframework/tree/main/examples/google/sheets/spreadsheet-reading
 
 ### Configuration
 
