@@ -12,6 +12,13 @@
     <artifactId>easy-rpa-openframework-excel</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
+
+    <name>EasyRPA Open Framework - Excel</name>
+    <description>
+        Excel library of EasyRPA Open Framework. Provides functionality for working with Excel files within RPA
+        processes.
+    </description>
+
     <dependencies>
         <dependency>
             <groupId>eu.easyrpa</groupId>
@@ -51,18 +58,23 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <excludePackageNames>
-                        eu.easyrpa.openframework.excel.internal;
-                        eu.easyrpa.openframework.excel.internal.*
-                    </excludePackageNames>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+    <profiles>
+        <profile>
+            <id>maven-central-release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <excludePackageNames>
+                                eu.easyrpa.openframework.excel.internal;
+                                eu.easyrpa.openframework.excel.internal.*
+                            </excludePackageNames>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

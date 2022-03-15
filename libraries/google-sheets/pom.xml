@@ -13,6 +13,13 @@
     <artifactId>easy-rpa-openframework-google-sheets</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
+
+    <name>EasyRPA Open Framework - Google Sheets</name>
+    <description>
+        Google Sheets library of EasyRPA Open Framework. Provides functionality for working with Google spreadsheets
+        within RPA processes via Google Sheets API.
+    </description>
+
     <dependencies>
         <dependency>
             <groupId>eu.easyrpa</groupId>
@@ -25,18 +32,23 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <excludePackageNames>
-                        eu.easyrpa.openframework.google.sheets.internal;
-                        eu.easyrpa.openframework.google.sheets.internal.*
-                    </excludePackageNames>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+    <profiles>
+        <profile>
+            <id>maven-central-release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <excludePackageNames>
+                                eu.easyrpa.openframework.google.sheets.internal;
+                                eu.easyrpa.openframework.google.sheets.internal.*
+                            </excludePackageNames>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

@@ -13,6 +13,12 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
+    <name>EasyRPA Open Framework - Google Drive</name>
+    <description>
+        Google Drive library of EasyRPA Open Framework. Provides functionality for working with Google Drive API within
+        RPA processes.
+    </description>
+
     <dependencies>
         <dependency>
             <groupId>eu.easyrpa</groupId>
@@ -25,12 +31,4 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
 </project>
