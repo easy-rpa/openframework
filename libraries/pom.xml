@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>eu.easyrpa</groupId>
     <artifactId>easy-rpa-openframework-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
 
     <name>EasyRPA Open Framework</name>
@@ -25,7 +24,8 @@
         <connection>scm:git:git://github.com/easy-rpa/openframework.git</connection>
         <developerConnection>scm:git:ssh://github.com/easy-rpa/openframework.git</developerConnection>
         <url>https://github.com/easy-rpa/openframework/tree/main/</url>
-    </scm>
+      <tag>1.0.0-RELEASE</tag>
+  </scm>
 
     <issueManagement>
         <system>GitHub</system>
