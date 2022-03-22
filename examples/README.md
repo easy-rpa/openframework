@@ -103,9 +103,9 @@
 
 ## Google Services
 
- - [TODO Google API Service authorization and instantiation]
+ - [Google API service authorization and instantiation](google-services/google-api-service-instantiation)
 
- - [TODO Custom Google API Service authorization]
+ - [Passing of Google authorization without side help](google-services/passing-authorization-by-robot)
 
 ## Google Drive
 
