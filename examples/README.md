@@ -167,9 +167,7 @@
      
  - [Changing cells style (fonts, colors etc.)](google-sheets/cells-style-changing)   
 
- - [TODO export to XLSX]
- 
- - [TODO export to PDF]
+ - [Export Spreadsheet as XLSX file](google-sheets/export-spreadsheet-to-xlsx) 
  
 ## Database
   

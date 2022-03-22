@@ -7,7 +7,6 @@ import eu.easyrpa.openframework.google.services.AuthorizationPerformer;
 import eu.easyrpa.openframework.google.services.GoogleServicesProvider;
 
 import javax.inject.Inject;
-import java.io.InputStream;
 
 /**
  * Service that provides convenient way to work with Google Sheets API.
@@ -162,34 +161,6 @@ public class GoogleSheets {
     public SpreadsheetDocument getSpreadsheet(String spreadsheetId) {
         initService();
         return new SpreadsheetDocument(sheetsService, spreadsheetId);
-    }
-
-    /**
-     * Gets content of Google spreadsheet file as XLSX file.
-     *
-     * @param spreadsheetId the Google file ID of necessary Google spreadsheet to get.
-     * @return the input stream with content of Google spreadsheet file in XLSX format.
-     */
-    public InputStream getSpreadsheetAsXLSX(String spreadsheetId) {
-        //TODO Implement this.
-        // Use service.getRequestFactory().buildGetRequest().execute() to let this service to provide  Oauth token automatically
-        // on background via interceptor
-//        try {
-//            HttpResponse response = service.getRequestFactory().buildGetRequest(new GenericUrl("asas")).execute();
-//        }catch (Exception e){
-//            //
-//        }
-//        var formattedDate = Utilities.formatDate(new Date(), "CET", "yyyy-MM-dd' 'HH:mm");
-//        var name = "Backup Copy " + formattedDate;
-//        var destination = DriveApp.getFolderById("1vFL98cgKdMHLNLSc542pUt4FMRTthUvL");
-//
-//        // Added
-//        var sheetId = "2SqIXLiic6-gjI2KwQ6OIgb-erbl3xqzohRgE06bfj2c";
-//        var url = "https://docs.google.com/spreadsheets/d/" + sheetId + "/export?format=xlsx&access_token=" + ScriptApp.getOAuthToken();
-//        var blob = UrlFetchApp.fetch(url).getBlob().setName(name + ".xlsx"); // Modified
-//        var res = UrlFetchApp.fetch(url, {headers: {Authorization: "Bearer " + ScriptApp.getOAuthToken()}});
-//        destination.createFile(blob);
-        throw new UnsupportedOperationException();
     }
 
     /**

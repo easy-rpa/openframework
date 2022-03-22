@@ -1,62 +1,21 @@
-# Reading data from Spreadsheet
+# Export Spreadsheet as XLSX file
 
-This example demonstrates different ways of reading data from Google Spreadsheet using GoogleSheets library.  
+This example demonstrates using of GoogleSheets library functionality to export specific Google spreadsheet as XLSX 
+file.
 
-* #### Read values of specific cells    
-```Java
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
-    Sheet sheet = doc.getActiveSheet();
+```java
+@Inject
+private GoogleSheets googleSheets;
+
+@Override
+public void execute() throws IOException {
     
-    Object d8Value = sheet.getValue("D8");
-    
+    String sourceSpreadsheetFileId = ...;
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
+    InputStream xlsxContent = doc.exportAsXLSX();
     ...
-```
-     
-* #### Read values of cell range    
-```Java
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
-    Sheet sheet = doc.getActiveSheet();
-
-    List<List<Object>> data = sheet.getRange("C4", "M200");
-    
-    ...
-```
-
-* #### Read the list of sheet table records
-
-Using `@ExcelColumn` annotation it's possible to tie Java class fields with values in specific columns of table 
-from Excel file.             
- ```Java
-@Data
-public class Passenger {
-
-    @ExcelColumn(name = "Passenger Id")
-    private Integer passengerId;
-
-    @ExcelColumn(name = "Name")
-    private String name;
-
-    @ExcelColumn(name = "Sex")
-    private String sex;
-
-    @ExcelColumn(name = "Age")
-    private Integer age;
-
-    ...
-}     
-```
-
-After annotating of necessary fields the reading of data from Excel file looks as follows:    
-```Java
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
-    Sheet sheet = doc.getActiveSheet();
-
-    String topLeftCellOfTable = "C3";
-    Table<Passenger> passengersTable = sheet.getTable(topLeftCellOfTable, Passenger.class);
-
-    for (Passenger p : passengersTable) {
-        ...
-    }
+}  
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -89,9 +48,9 @@ EasyRPA Control Server:
     ```
  
 5. Build it using `mvn clean install` command. This command should be run within directory of this example.
-6. Run `main()` method of `SpreadsheetReadingModule` class.
+6. Run `main()` method of `ExportSpreadsheetToXlsxModule` class.
 
-[down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easy-rpa/openframework/tree/main/examples/google-sheets/spreadsheet-reading
+[down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easy-rpa/openframework/tree/main/examples/google-sheets/export-spreadsheet-to-xlsx
 
 ### Configuration
 
@@ -129,10 +88,13 @@ All necessary configuration files can be found in `src/main/resources` directory
          </pre>    
     </td></tr>      
     <tr><td valign="top"><code>source.spreadsheet.file.id</code></td><td>
-         File ID of source Google Spreadsheet file that has to be read.<br>
+         File ID of source Google Spreadsheet file that has to be exported.<br>
          <br>
          Expected content of the source spreadsheet can be found in <code>'source.xlsx'</code> file located at 
          <code>src/main/resources</code> directory. This file can be used for creation of necessary source Google 
          Spreadsheet in Google Drive.   
     </td></tr>
+    <tr><td valign="top"><code>output.files.dir</code></td><td>
+        Path to directory on local file system where robot will save exported XLSX file. 
+    </td></tr>    
 </table>

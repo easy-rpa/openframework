@@ -75,7 +75,7 @@ Its a fully workable process. To play around with it and run do the following:
 5. Build it using `mvn clean install` command. This command should be run within directory of this example.
 6. Run `main()` method of `WorkingWithCellFormulasModule` class.
 
-[down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easy-rpa/openframework/tree/main/examples/excel/working-with-formulas
+[down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easy-rpa/openframework/tree/main/examples/google-sheets/working-with-cell-formulas
 
 ### Configuration
 
