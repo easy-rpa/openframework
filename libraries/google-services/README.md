@@ -6,7 +6,7 @@
 
 ### Description
 
-Component which provides functionality related to Google Drive.
+Component which creates java services to operate Google API for Drive, Sheets, Mail.
 
 ### Usage
 
@@ -16,7 +16,7 @@ To start use the library first you need to add corresponding Maven dependency to
 ```xml
 <dependency>
     <groupId>eu.easyrpa</groupId>
-    <artifactId>easy-rpa-openframework-google-drive</artifactId>
+    <artifactId>easy-rpa-openframework-google-services</artifactId>
     <version>1.0</version>
 </dependency>
 ```
@@ -33,9 +33,42 @@ is added also.
 </dependency>
 ```
 
-All requests to the Drive API must be authorized by an authenticated user.
+All requests to the Google API must be authorized by an authenticated user.
 
-https://developers.google.com/drive/api/v3/about-auth
+### Client registration
+
+Before using the component, you probably need to register your application with an authorization server to receive a client ID and client secret.
+
+### Create a Google Cloud project
+1. Open the [Google Cloud Console] (https://console.cloud.google.com/)
+2. At the top-left, click **Menu > IAM & Admin > Create a Project**.
+3. In the **Project Name** field, enter a descriptive name for your project.
+4. In the **Location** field, click **Browse** to display potential locations for your project. Then, click **Select**.
+5. Click **Create**. The console navigates to the Dashboard page and your project is created within a few minutes.
+
+[Reference guide] https://developers.google.com/workspace/guides/create-project
+
+### Create access credentials
+Credentials are used to obtain an access token from Google's authorization servers, so your app can call Google Workspace APIs.
+1. Open the [Google Cloud Console] (https://console.cloud.google.com/)
+2. At the top-left, click **Menu > APIs & Services > Credentials**.
+3. Click **Create Credentials > OAuth client ID**.
+4. Click **Application type > Desktop app**.
+5. In the "Name" field, type a name for the credential. This name is only shown in the Cloud Console.
+6. Click **Create**. The OAuth client created screen appears, showing your new Client ID and Client secret.
+7. Click **OK**. The newly created credential appears under "OAuth 2.0 Client IDs."
+
+### Add test user
+In order to use your project while it is not in production state, you should add test users.
+1. 1. Open the [Google Cloud Console] (https://console.cloud.google.com/)
+2. At the top-left, click **Menu > APIs & Services > OAuth consent screen **.
+3. Scroll to **Test users** section and click **+Add Users**.
+4. Specify email address under and click **Save** button.
+
+### Choose auth scopes
+Auth scopes express the permissions you request users to authorize for your app.
+[Mail Scopes](https://developers.google.com/gmail/api/auth/scopes)
+[Drive Scopes](https://developers.google.com/resources/api-libraries/documentation/drive/v2/java/latest/com/google/api/services/drive/DriveScopes.html)
 
 ### Creating of file
 
