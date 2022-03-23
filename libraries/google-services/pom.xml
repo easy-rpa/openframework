@@ -13,6 +13,12 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
+    <name>EasyRPA Open Framework - Google Services</name>
+    <description>
+        Google Services library of EasyRPA Open Framework. Provides functionality to perform authorization and
+        instantiation of Google API services using parameters configured within RPA platform.
+    </description>
+
     <dependencies>
         <dependency>
             <groupId>eu.easyrpa</groupId>
@@ -32,12 +38,4 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
 </project>

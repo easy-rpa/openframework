@@ -1,61 +1,11 @@
-# Reading data from Spreadsheet
+# Passing of Google authorization without side help 
 
-This example demonstrates different ways of reading data from Google Spreadsheet using GoogleSheets library.  
+Example of process that shows how the robot can authorize himself to perform some actions within his Google account.  
 
-* #### Read values of specific cells    
 ```Java
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
-    Sheet sheet = doc.getActiveSheet();
-    
-    Object d8Value = sheet.getValue("D8");
-    
-    ...
-```
-     
-* #### Read values of cell range    
-```Java
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
-    Sheet sheet = doc.getActiveSheet();
+         //TODO
 
-    List<List<Object>> data = sheet.getRange("C4", "M200");
-    
-    ...
-```
-
-* #### Read the list of sheet table records
-
-Using `@ExcelColumn` annotation it's possible to tie Java class fields with values in specific columns of table 
-from Excel file.             
- ```Java
-@Data
-public class Passenger {
-
-    @ExcelColumn(name = "Passenger Id")
-    private Integer passengerId;
-
-    @ExcelColumn(name = "Name")
-    private String name;
-
-    @ExcelColumn(name = "Sex")
-    private String sex;
-
-    @ExcelColumn(name = "Age")
-    private Integer age;
-
-    ...
-}     
-```
-
-After annotating of necessary fields the reading of data from Excel file looks as follows:    
-```Java
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
-    Sheet sheet = doc.getActiveSheet();
-
-    String topLeftCellOfTable = "C3";
-    Table<Passenger> passengersTable = sheet.getTable(topLeftCellOfTable, Passenger.class);
-
-    for (Passenger p : passengersTable) {
-        ...
+    public void execute() {
     }
 ```
 
@@ -64,10 +14,10 @@ See the full source of this example for more details or check following instruct
 ### Running
 
 > :warning: **To be able to build and run this example it's necessary to have an access
->to some instance of EasyRPA Control Server.**   
+>to some instance of EasyRPA Control Server.**
 
 Its a fully workable process. To play around with it and run do the following:
-1. Download this example using [link][down_git_link].  
+1. Download this example using [link][down_git_link].
 2. Unpack it somewhere on local file system.
 3. Specify URL to the available instance of EasyRPA Control Server in the `pom.xml` of this example:
     ```xml
@@ -78,8 +28,8 @@ Its a fully workable process. To play around with it and run do the following:
         </repository>
     </repositories>
     ```
-4. If necessary, change version of `easy-rpa-engine-parent` in the same `pom.xml` to corresponding version of 
-EasyRPA Control Server:
+4. If necessary, change version of `easy-rpa-engine-parent` in the same `pom.xml` to corresponding version of
+   EasyRPA Control Server:
     ```xml
     <parent>
         <groupId>eu.ibagroup</groupId>
@@ -87,11 +37,11 @@ EasyRPA Control Server:
         <version>[Replace with version of EasyRPA Control Server]</version>
     </parent>
     ```
- 
-5. Build it using `mvn clean install` command. This command should be run within directory of this example.
-6. Run `main()` method of `SpreadsheetReadingModule` class.
 
-[down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easy-rpa/openframework/tree/main/examples/google-sheets/spreadsheet-reading
+5. Build it using `mvn clean install` command. This command should be run within directory of this example.
+6. Run `main()` method of `PassingAuthorizationByRobotModule` class.
+
+[down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easy-rpa/openframework/tree/main/examples/google-services/passing-authorization-by-robot
 
 ### Configuration
 
@@ -127,12 +77,5 @@ All necessary configuration files can be found in `src/main/resources` directory
     }
 }
          </pre>    
-    </td></tr>      
-    <tr><td valign="top"><code>source.spreadsheet.file.id</code></td><td>
-         File ID of source Google Spreadsheet file that has to be read.<br>
-         <br>
-         Expected content of the source spreadsheet can be found in <code>'source.xlsx'</code> file located at 
-         <code>src/main/resources</code> directory. This file can be used for creation of necessary source Google 
-         Spreadsheet in Google Drive.   
-    </td></tr>
+    </td></tr>    
 </table>

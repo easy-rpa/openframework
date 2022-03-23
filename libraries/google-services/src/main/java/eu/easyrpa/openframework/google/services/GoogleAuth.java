@@ -3,18 +3,23 @@ package eu.easyrpa.openframework.google.services;
 import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.api.client.auth.oauth2.AuthorizationCodeRequestUrl;
 import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.auth.oauth2.TokenResponseException;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.java6.auth.oauth2.VerificationCodeReceiver;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpExecuteInterceptor;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.DataStoreFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import eu.easyrpa.openframework.core.sevices.RPAServicesAccessor;
+import eu.easyrpa.openframework.core.utils.TypeUtils;
 import eu.easyrpa.openframework.google.services.constants.GServicesConfigParam;
 import eu.easyrpa.openframework.google.services.exceptions.GoogleAuthException;
 
@@ -22,6 +27,7 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 /**
  * Authentication and authorization helper for Google API services.
@@ -251,18 +257,20 @@ public class GoogleAuth {
     }
 
     /**
-     * Attempts to create StoredCredential token with given scopes.
+     * Authorizes the code to do actions from given scopes on user behalf.
      * <p>
-     * If StoredCredential token is not present, human will be asked to approve requested access by given scopes.
-     * If scopes have been changed, or package is updated then human will be asked again.
+     * At first it tries to check StoredCredential file. If it contains a valid access token that was granted before
+     * then it continues the work with this access token. Otherwise, user will be asked to approve requested access
+     * by given scopes.
      *
      * @param scopes list of requested scopes.
-     * @return Google Credential object
+     * @return a new instance of Google requests initializer that is responsible for providing of valid access token
+     * for each request to Google server within given scopes.
      * @see <a href="https://developers.google.com/identity/protocols/oauth2#expiration">Refresh token expiration</a>
      */
-    public Credential authorize(List<String> scopes) {
+    public HttpRequestInitializer authorize(List<String> scopes) {
         try {
-            return createAuthorizationFlow(getSecret(), scopes).authorize(getUserId());
+            return new GoogleRequestInitializer(getUserId(), createAuthorizationFlow(getSecret(), scopes));
         } catch (Exception e) {
             throw new GoogleAuthException("Google authorization has failed.", e);
         }
@@ -309,6 +317,45 @@ public class GoogleAuth {
         }
 
         return result;
+    }
+
+    private static class GoogleRequestInitializer implements HttpRequestInitializer, HttpExecuteInterceptor {
+
+        private String userId;
+        private GoogleAuthorizationFlow authorizationFlow;
+        private Credential credential;
+
+        public GoogleRequestInitializer(String userId, GoogleAuthorizationFlow authorizationFlow) throws IOException {
+            this.userId = userId;
+            this.authorizationFlow = authorizationFlow;
+            this.credential = authorizationFlow.authorize(userId);
+        }
+
+        @Override
+        public void initialize(HttpRequest request) {
+            request.setInterceptor(this);
+            request.setUnsuccessfulResponseHandler(credential);
+        }
+
+        @Override
+        public void intercept(HttpRequest request) throws IOException {
+            try {
+                credential.intercept(request);
+            } catch (TokenResponseException e) {
+                if (e.getDetails().containsValue("invalid_grant")) {
+                    authorizationFlow.getFlow().getCredentialDataStore().delete(userId);
+                    try {
+                        Semaphore semaphore = TypeUtils.getFieldValue(authorizationFlow.getReceiver(), "waitUnlessSignaled");
+                        semaphore.acquire();
+                    } catch (InterruptedException ignore) {
+                    }
+                    credential = authorizationFlow.authorize(userId);
+                    credential.intercept(request);
+                } else {
+                    throw e;
+                }
+            }
+        }
     }
 
     private class GoogleAuthorizationFlow extends AuthorizationCodeInstalledApp {

@@ -12,12 +12,9 @@
     <artifactId>easy-rpa-openframework-core</artifactId>
     <packaging>jar</packaging>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
+    <name>EasyRPA Open Framework - Core</name>
+    <description>
+        The common lightweight library of EasyRPA Open Framework.
+    </description>
+
 </project>

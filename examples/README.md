@@ -103,9 +103,9 @@
 
 ## Google Services
 
- - [TODO Google API Service authorization and instantiation]
+ - [Google API service authorization and instantiation](google-services/google-api-service-instantiation)
 
- - [TODO Custom Google API Service authorization]
+ - [Passing of Google authorization without side help](google-services/passing-authorization-by-robot)
 
 ## Google Drive
 
@@ -167,9 +167,7 @@
      
  - [Changing cells style (fonts, colors etc.)](google-sheets/cells-style-changing)   
 
- - [TODO export to XLSX]
- 
- - [TODO export to PDF]
+ - [Export Spreadsheet as XLSX file](google-sheets/export-spreadsheet-to-xlsx) 
  
 ## Database
   

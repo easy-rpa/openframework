@@ -1,5 +1,7 @@
 package eu.easyrpa.openframework.google.sheets;
 
+import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpResponse;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetResponse;
 import com.google.api.services.sheets.v4.model.SheetProperties;
@@ -9,6 +11,7 @@ import eu.easyrpa.openframework.google.sheets.exceptions.SpreadsheetException;
 import eu.easyrpa.openframework.google.sheets.internal.SpreadsheetUpdateRequestsBatch;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -86,6 +89,21 @@ public class SpreadsheetDocument implements Iterable<Sheet> {
         if (name != null && !name.equals(spreadsheet.getProperties().getTitle())) {
             spreadsheet.getProperties().setTitle(name);
             batchUpdate(request -> request.addUpdateSpreadsheetPropertiesRequest(spreadsheet, "Title"));
+        }
+    }
+
+    /**
+     * Gets content of this Spreadsheet document as XLSX file.
+     *
+     * @return the input stream with content of Google spreadsheet file in XLSX format.
+     */
+    public InputStream exportAsXLSX() {
+        try {
+            GenericUrl url = new GenericUrl(spreadsheet.getSpreadsheetUrl().replace("edit", "export?format=xlsx"));
+            HttpResponse response = sheetsService.getRequestFactory().buildGetRequest(url).execute();
+            return response.getContent();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
