@@ -8,11 +8,11 @@ file.
 private GoogleSheets googleSheets;
 
 @Override
-public void execute() throws IOException {
-    
-    String sourceSpreadsheetFileId = ...;
+public void execute(){
 
     SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
+
+    //Export the spreadsheet document content as XLSX file
     InputStream xlsxContent = doc.exportAsXLSX();
     ...
 }  

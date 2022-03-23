@@ -6,57 +6,71 @@ library.
 * #### Read column cells
 
 ```java
-//TODO
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
     Sheet activeSheet = doc.getActiveSheet();
 
     Column columnD = activeSheet.getColumn("D");
     for (Cell cell : columnD) {
         ...
     }
+}
 ```
 
 * #### Add/insert new columns
 
 ```java
-//TODO
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+    String insertAfterColumn = "C";
     String startWithRow = "C3";        
     List<String> columnData = Arrays.asList("Value 1", "Value 2");
-    
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
     Sheet activeSheet = doc.getActiveSheet();
 
     activeSheet.addColumn(startWithRow, columnData);
 
-    activeSheet.insertColumn(InsertMethod.AFTER, "C", startWithRow, columnData);
-
-    doc.save();
+    activeSheet.insertColumn(InsertMethod.AFTER, insertAfterColumn, startWithRow, columnData);
+}
 ```
 
 * #### Move columns
 
 ```java
-//TODO
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
     Sheet activeSheet = doc.getActiveSheet();
-    
+
     String columnToMove = "D";
     String moveBeforeColumn = "F";
     activeSheet.moveColumn(columnToMove, InsertMethod.BEFORE, moveBeforeColumn);
-
-    doc.save();
+}
 ```
 
 * #### Delete columns
 
 ```java
-//TODO
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
     Sheet activeSheet = doc.getActiveSheet();
 
     activeSheet.removeColumn("D");
-
-    doc.save();
+}
 ```
 
 See the full source of this example for more details or check following instructions to run it.

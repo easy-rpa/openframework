@@ -1,48 +1,47 @@
 # Google Drive folders manipulating
 
-This process example show how it's possible to perform different actions with Google Drive folders using Google Drive package
-functionality.
-
+This example demonstrates performing of different actions with Google Drive folders using GoogleDrive library.
 
 * ### Create folder
 
 ```Java
-    public void execute() {
-        GoogleDrive drive = new GoogleDrive();
-        
-        String folderName = "creationTestFolder";
-        
-        log.info("Creating folder with the name '{}'", folderName);
-        Optional<GoogleFolderInfo> file = drive.createFolder(folderName);
-    }
+@Inject
+private GoogleDrive googleDrive;
+
+public void execute() {
+    
+     Optional<GFileInfo> folder = googleDrive.createFolder("Test Folder");
+    ...
+}
 ```
 
 * ### Rename folder
 
 ```Java
-    public void execute() {
-        GoogleDrive drive = new GoogleDrive();
+@Inject
+private GoogleDrive googleDrive;
 
-        String folderName = "creationTestFolder";
-
-        Optional<GoogleFolderInfo> file = drive.getFolder(folderName);
-        drive.renameFolder(file.get(), "RenamedFolder");
+public void execute() {
+    
+    Optional<GFileInfo> folder = googleDrive.getFolder(sourceFolderId);
+   
+    if (folder.isPresent()) {
+    
+        googleDrive.renameFolder(folder.get(), "New Folder Name");
     }
+}
 ```
 
 * ### Delete folder
 
 ```Java
-    public void execute() {
-        GoogleDrive drive = new GoogleDrive();
+@Inject
+private GoogleDrive googleDrive;
 
-        String folderName = "RenamedFolder";
-
-        log.info("Getting Folder from Google Drive");
-        Optional<GoogleFolderInfo> file = drive.getFolder(folderName);
-
-        drive.deleteFolder(file.getId());
-    }
+public void execute() {
+    
+    googleDrive.deleteFolder(folderIdToDelete);
+}
 ```
 
 See the full source of this example for more details or check following instructions to run it.
@@ -75,19 +74,43 @@ Its a fully workable process. To play around with it and run do the following:
     ```
 
 5. Build it using `mvn clean install` command. This command should be run within directory of this example.
-6. Run `main()` method of `FoldersManipulationsModule` class.
+6. Run `main()` method of `DriveFoldersManipulatingModule` class.
 
-[down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easy-rpa/openframework/tree/main/examples/google-drive/folders-manipulations
+[down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easy-rpa/openframework/tree/main/examples/google-drive/drive-folders-manipulating
 
-## Configuration
-All necessary configuration files can be found in <code>src/main/resources</code> directory.
+### Configuration
 
-**vault.properties**
+All necessary configuration files can be found in `src/main/resources` directory.
 
-| Alias     | Value         |
-| ------------- |---------------|
-| `google.credentials` | Json with credentials in encoded with Base64.<br> |
+**apm_run.properties**
 
-## Running
-
-Run `main()` method of `LocalRunner` class.
+<table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td valign="top"><code>google.services.auth.secret</code></td><td>
+        The alias of secret vault entry with OAuth 2.0 Client JSON necessary for authentication on the Google 
+        server.<br>
+        <br>
+        For information regarding how to configure OAuth 2.0 Client see 
+        <a href="https://developers.google.com/workspace/guides/create-credentials#oauth-client-id">OAuth client ID credentials</a><br>
+        <br>         
+        In case of running of this example without EasyRPA Control Server, secret vault entries can be specified in the 
+        <code>vault.properties</code> file. The value of secret vault entry in this case should be a JSON string with 
+        following structure encoded with Base64:<br>
+        <pre>
+{
+    "installed": {
+      "client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
+      "project_id": "XXXXXXX-XXXXXX",
+      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+      "token_uri": "https://oauth2.googleapis.com/token",
+      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+      "client_secret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "redirect_uris": [
+          "urn:ietf:wg:oauth:2.0:oob",
+          "http://localhost"
+      ]
+    }
+}
+         </pre>    
+    </td></tr>      
+</table>

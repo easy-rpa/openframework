@@ -4,48 +4,60 @@ This example demonstrates different ways of editing existing Google Spreadsheet 
 
 * #### Edit specific cells on the sheet     
 ```Java
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
 
     Sheet dataSheet = doc.selectSheet("Data");
     dataSheet.setValue("B2", "Some text");
     dataSheet.setValue("C3", 120);
     dataSheet.setValue("D4", DateTime.now());
-
-    doc.save();
+}
 ```
 
 * #### Edit specific cell range of the sheet     
 ```Java
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
 
     List<List<String>> sampleData = getSampleData(20, 100);
 
     //Put range of sample data on sheet
     Sheet dataSheet = doc.selectSheet("Data");
     dataSheet.putRange("D11", sampleData);
-
-    doc.save();
+}
 ```
 
 * #### Edit sheet table records     
 ```Java
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
     Sheet activeSheet = doc.getActiveSheet();
-    
+
     //Lookup Passengers table on sheet
     Table<Passenger> passengersTable = activeSheet.findTable(Passenger.class, "Passenger Id", "Name");
- 
+
     //Lookup record by specific condition in the table
     String passengerName = "Wheadon, Mr. Edward H";
     Passenger record = passengersTable.findRecord(r -> passengerName.equals(r.getName()));
-    
+
     //Edit Age of the record
     record.setAge(110);
 
     //Update corresponding record on sheet.
     passengersTable.updateRecord(record);
-
-    doc.save();
+}
 ```
 
 See the full source of this example for more details or check following instructions to run it.

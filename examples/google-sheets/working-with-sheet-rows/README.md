@@ -5,21 +5,28 @@ This example demonstrates what is possible to do with sheet rows of Google Sprea
 * #### Lookup and edit rows
 
 ```java
-//TODO
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
     Sheet sheet = doc.selectSheet("Editing");
 
     Row row = sheet.findRow("Moran, Mr. James");
     row.setValue("F", 99999);
-
-    doc.save();
+}
 ```
 
 * #### Insert new rows
 
 ```java
-//TODO
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
     Sheet sheet = doc.selectSheet("Inserting");
 
     List<List<String>> data = Arrays.asList(
@@ -28,20 +35,22 @@ This example demonstrates what is possible to do with sheet rows of Google Sprea
     );
 
     sheet.insertRows(InsertMethod.AFTER, "D10", data);
-
-    doc.save();
+}
 ```
 
 * #### Delete rows
 
 ```java
-//TODO
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
     Sheet sheet = doc.selectSheet("Deleting");
 
     sheet.removeRow(8);
-
-    doc.save();
+}
 ```
 
 See the full source of this example for more details or check following instructions to run it.

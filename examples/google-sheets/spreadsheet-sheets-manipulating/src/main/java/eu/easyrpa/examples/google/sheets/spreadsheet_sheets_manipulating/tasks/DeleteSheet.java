@@ -1,10 +1,10 @@
 package eu.easyrpa.examples.google.sheets.spreadsheet_sheets_manipulating.tasks;
 
+import eu.easyrpa.openframework.google.sheets.GoogleSheets;
+import eu.easyrpa.openframework.google.sheets.SpreadsheetDocument;
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
-import eu.easyrpa.openframework.google.sheets.GoogleSheets;
-import eu.easyrpa.openframework.google.sheets.SpreadsheetDocument;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;

@@ -4,59 +4,75 @@ This example demonstrates different ways of reading data from Google Spreadsheet
 
 * #### Read values of specific cells    
 ```Java
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
     Sheet sheet = doc.getActiveSheet();
     
     Object d8Value = sheet.getValue("D8");
-    
     ...
+}
 ```
      
 * #### Read values of cell range    
 ```Java
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
-    Sheet sheet = doc.getActiveSheet();
+@Inject
+private GoogleSheets googleSheets;
 
-    List<List<Object>> data = sheet.getRange("C4", "M200");
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
+    Sheet sheet = doc.getActiveSheet();
     
-    ...
+   List<List<Object>> data = sheet.getRange("C4", "M200");
+   ...
+}
 ```
 
 * #### Read the list of sheet table records
 
-Using `@ExcelColumn` annotation it's possible to tie Java class fields with values in specific columns of table 
-from Excel file.             
+Using `@GSheetColumn` annotation it's possible to tie Java class fields with values in specific columns of table 
+from Google Spreadsheet file.             
  ```Java
 @Data
 public class Passenger {
 
-    @ExcelColumn(name = "Passenger Id")
+    @GSheetColumn(name = "Passenger Id")
     private Integer passengerId;
 
-    @ExcelColumn(name = "Name")
+    @GSheetColumn(name = "Name")
     private String name;
 
-    @ExcelColumn(name = "Sex")
+    @GSheetColumn(name = "Sex")
     private String sex;
 
-    @ExcelColumn(name = "Age")
+    @GSheetColumn(name = "Age")
     private Integer age;
 
     ...
 }     
 ```
 
-After annotating of necessary fields the reading of data from Excel file looks as follows:    
+After annotating of necessary fields the reading of data from Google Spreadsheet looks as follows:    
 ```Java
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
-    Sheet sheet = doc.getActiveSheet();
+@Inject
+private GoogleSheets googleSheets;
 
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
+    Sheet sheet = doc.getActiveSheet();
+    
     String topLeftCellOfTable = "C3";
     Table<Passenger> passengersTable = sheet.getTable(topLeftCellOfTable, Passenger.class);
 
     for (Passenger p : passengersTable) {
         ...
     }
+}
 ```
 
 See the full source of this example for more details or check following instructions to run it.

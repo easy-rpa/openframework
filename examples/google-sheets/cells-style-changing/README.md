@@ -3,13 +3,17 @@
 This example demonstrates using of GoogleSheets library functionality to specify fonts, colors and borders for cells.
 
 ```java
-//TODO
-    ExcelDocument doc = new ExcelDocument("test.xlsx");
-    Cell cell = doc.getActiveSheet().getCell("C3");
-    
-    cell.getStyle().italic(true).color(ExcelColors.BLUE.get()).apply();
+@Inject
+private GoogleSheets googleSheets;
 
-    doc.save();
+@Override
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
+    Cell cell = doc.getActiveSheet().getCell("C3");
+
+    cell.getStyle().italic(true).color(Color.BLUE).apply();
+}
 ```
 
 See the full source of this example for more details or check following instructions to run it.

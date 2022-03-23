@@ -6,8 +6,12 @@ and read/edit its values.
 * #### Read value from merged cells
 
 ```java
-//TODO
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
     Sheet activeSheet = doc.getActiveSheet();
 
     Cell cell = activeSheet.getCell("L7");
@@ -19,22 +23,24 @@ and read/edit its values.
     ...
 
     cell.setValue("Value of merged cell is changed.");
-
-    doc.save();
+}
 ```
 
 * #### Merge/unmerge cells
 
 ```java
-//TODO
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
     Sheet activeSheet = doc.getActiveSheet();
 
     Cell topLeftCellOfMergedRegion = activeSheet.mergeCells("B2:D2");
 
     activeSheet.unmergeCells("I6:L11");
-
-    doc.save();
+}
 ```
 
 See the full source of this example for more details or check following instructions to run it.

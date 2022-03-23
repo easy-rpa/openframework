@@ -1,13 +1,12 @@
 package eu.easyrpa.examples.google.sheets.working_with_merges.tasks;
 
+import eu.easyrpa.openframework.google.drive.GoogleDrive;
+import eu.easyrpa.openframework.google.drive.model.GFileId;
+import eu.easyrpa.openframework.google.drive.model.GFileInfo;
 import eu.easyrpa.openframework.google.sheets.*;
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
-import eu.easyrpa.openframework.google.drive.GoogleDrive;
-import eu.easyrpa.openframework.google.drive.model.GFileId;
-import eu.easyrpa.openframework.google.drive.model.GFileInfo;
-import eu.ibagroup.easyrpa.openframework.google.sheets.*;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;

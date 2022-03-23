@@ -10,10 +10,10 @@ private GoogleDrive googleDrive;
 private GoogleSheets googleSheets;
 
 public void execute() {
-    log.info("Create new spreadsheet file.");
+    //Create new spreadsheet file
     Optional<GFileInfo> spreadsheetFile = googleDrive.create("Passengers Book", GFileType.SPREADSHEET);
 
-    log.info("Get spreadsheet document related to created file.");
+    //Get spreadsheet document related to created file
     SpreadsheetDocument doc = googleSheets.getSpreadsheet(spreadsheetFile.get().getId());
 
     List<Passenger> data = loadSampleData("passengers.json");

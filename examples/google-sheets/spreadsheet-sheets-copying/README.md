@@ -4,16 +4,16 @@ This example demonstrates copying of sheet from one Google Spreadsheet file to a
 styles.  
 
 ```Java
-    //TODO
+@Inject
+private GoogleSheets googleSheets;
 
-    ExcelDocument src = new ExcelDocument("source.xlsx");
-    ExcelDocument target = new ExcelDocument("sheet_copy_target.xlsx");
+public void execute() {
 
-    Sheet targetSheet = target.createSheet("Passengers");
-
-    src.selectSheet("Passengers").copy(targetSheet);
-
-    target.save();
+    SpreadsheetDocument src = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
+    SpreadsheetDocument target = googleSheets.getSpreadsheet(targetSpreadsheetFileId);
+    
+    Sheet copiedSheet = src.selectSheet(sourceSheetName).copyTo(target);
+    ...
 }
 ```
 

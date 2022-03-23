@@ -6,41 +6,35 @@ Google Spreadsheet files cells that contains formulas.
 * #### Edit cell's formulas
 
 ```java
-//TODO
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
     Sheet activeSheet = doc.getActiveSheet();
 
     Cell cell = activeSheet.getCell("C5");
     cell.setFormula("C10 + C11 + 100");
-
-    doc.save();
+}
 ```
 
 * #### Evaluating of cell's formulas
 
 ```java
-//TODO
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
     Sheet activeSheet = doc.getActiveSheet();
 
     Cell cell = activeSheet.getCell("C5");
 
     String cellFormula = cell.getFormula();
     Object evaluatedValue = cell.getValue();
-```
-
-* #### Evaluating of cell's formulas with links to external Excel files
-
-```java
-//TODO
-    ExcelDocument doc = new ExcelDocument("test.xlsx");
-    doc.linkExternalDocument(new ExcelDocument("sharred.xlsx"));
-
-    Cell cell = doc.getActiveSheet().getCell("C7");
-    cell.setFormula("C5 + [sharred.xlsx]Data!B6");
-    
-    Object evaluatedValue = cell.getValue();
-    ...
+}
 ```
 
 See the full source of this example for more details or check following instructions to run it.

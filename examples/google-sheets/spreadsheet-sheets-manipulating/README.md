@@ -6,19 +6,27 @@ of Spreadsheet.
 * #### List existing sheets
 
 ```java
-//TODO
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+@Inject
+private GoogleSheets googleSheets;
 
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
+     
     List<String> sheetNames = doc.getSheetNames();
-    
     ...
+}
 ```
 
 * #### Activate sheet
 
 ```java
-//TODO
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
 
     //Get currrent active sheet
     Sheet activeSheet = doc.getActiveSheet();
@@ -28,60 +36,73 @@ of Spreadsheet.
 
     //Activate another sheet by index
     activeSheet = doc.selectSheet(1);
+}
 ```
 
 * #### Rename sheet
 
 ```java
-//TODO
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
     Sheet activeSheet = doc.getActiveSheet();
     
     String newSheetName = "Renamed Sheet";
     activeSheet.rename(newSheetName);
-    
-    doc.save();
+}
 ```
 
 * #### Move sheet
 
 ```java
-//TODO
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
     Sheet activeSheet = doc.getActiveSheet();
 
     int newPosition = doc.getSheetNames().size() - 1;
     activeSheet.moveTo(newPosition);
-
-    doc.save();
+}
 ```
 
 * #### Clone sheet
 
 ```java
-//TODO
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
     Sheet activeSheet = doc.getActiveSheet();
-    
+
     String clonedSheetName = "Cloned Sheet";
     Sheet clonedSheet = activeSheet.cloneAs(clonedSheetName);
-    ...               
-
-    doc.save();
+    ... 
+}
 ```
 
 * #### Delete sheet
 
 ```java
-//TODO
-    ExcelDocument doc = new ExcelDocument("source.xlsx");
+@Inject
+private GoogleSheets googleSheets;
+
+public void execute() {
+
+    SpreadsheetDocument doc = googleSheets.getSpreadsheet(sourceSpreadsheetFileId);
 
     List<String> sheetNames = doc.getSheetNames();
     String lastSheetName = sheetNames.get(sheetNames.size() - 1);
 
     doc.removeSheet(lastSheetName);
-
-    doc.save();
+}
 ```
 
 See the full source of this example for more details or check following instructions to run it.
