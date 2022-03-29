@@ -32,7 +32,7 @@ The project is:
 - Optimized for EasyRPA platform
 - Accepting external contributions
 
-![License](https://img.shields.io/github/license/easyrpa/openframework?color=blue)
+![License](https://img.shields.io/github/license/easy-rpa/openframework?color=blue)
 
 ## Usage
 

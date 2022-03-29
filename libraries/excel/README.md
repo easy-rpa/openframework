@@ -9,9 +9,9 @@
 
 ### Description
 
-Excel package is a library for working with spreadsheet documents. It wraps [Apache POI](https://poi.apache.org/) 
-library and provides more easy to use interface that is adapted to work within EasyRPA platform or any other RPA 
-platform where processes are built using Java program language.
+EasyRPA Open Framework Excel library is intended for working with Excel spreadsheet documents. It wraps
+[Apache POI](https://poi.apache.org/) library and provides more easy to use interface that is adapted to work within 
+EasyRPA platform or any other RPA platform where processes are built using Java program language.
 
 ### Usage
 

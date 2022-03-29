@@ -39,7 +39,7 @@ public class GoogleAuth {
 
     private static final String DEFAULT_USER_ID = "user";
     private static final String DEFAULT_TOKEN_STORES_DIRECTORY_PATH = "tokens";
-    private static final String DEFAULT_VERIFICATION_CODE_RECEIVER = "localhost:8888";
+    private static final String DEFAULT_AUTH_CODE_RECEIVER = "localhost:8888";
 
     /**
      * Reference to used HTTP Transport service.
@@ -68,9 +68,9 @@ public class GoogleAuth {
     private String tokenStoresDir;
 
     /**
-     * Host and port of authorization verification code receiver.
+     * Host and port of authorization code receiver.
      */
-    private String verCodeReceiver;
+    private String authCodeReceiver;
 
     /**
      * Instance of function that defines specific behavior of authorization step.
@@ -210,30 +210,30 @@ public class GoogleAuth {
     }
 
     /**
-     * Gets host and port of authorization verification code receiver.
+     * Gets host and port of authorization code receiver.
      * <p>
      * If the host and port are not specified explicitly then they will be looked up in configurations parameters of the
-     * RPA platform under the key <b>{@code "google.services.auth.verification.code.receiver"}</b>.
+     * RPA platform under the key <b>{@code "google.services.auth.code.receiver"}</b>.
      *
-     * @return host and port of authorization verification code receiver.
+     * @return host and port of authorization code receiver.
      */
-    public String getVerCodeReceiver() {
-        if (verCodeReceiver == null) {
-            verCodeReceiver = getConfigParam(GServicesConfigParam.AUTH_VERIFICATION_CODE_RECEIVER);
-            if (verCodeReceiver == null) {
-                verCodeReceiver = DEFAULT_VERIFICATION_CODE_RECEIVER;
+    public String getAuthCodeReceiver() {
+        if (authCodeReceiver == null) {
+            authCodeReceiver = getConfigParam(GServicesConfigParam.AUTH_CODE_RECEIVER);
+            if (authCodeReceiver == null) {
+                authCodeReceiver = DEFAULT_AUTH_CODE_RECEIVER;
             }
         }
-        return verCodeReceiver;
+        return authCodeReceiver;
     }
 
     /**
-     * Sets explicitly host and port of authorization verification code receiver.
+     * Sets explicitly host and port of authorization code receiver.
      *
-     * @param verCodeReceiver the {@code host:port} string to set.
+     * @param authCodeReceiver the {@code host:port} string to set.
      */
-    public void setVerCodeReceiver(String verCodeReceiver) {
-        this.verCodeReceiver = verCodeReceiver;
+    public void setAuthCodeReceiver(String authCodeReceiver) {
+        this.authCodeReceiver = authCodeReceiver;
     }
 
     /**
@@ -286,7 +286,7 @@ public class GoogleAuth {
                 .setAccessType("offline")
                 .build();
 
-        String[] receiverHostAndPort = getVerCodeReceiver().split(":");
+        String[] receiverHostAndPort = getAuthCodeReceiver().split(":");
         String receiverHost = receiverHostAndPort[0];
         int receiverPort = receiverHostAndPort.length > 1 ? Integer.parseInt(receiverHostAndPort[1]) : 8888;
 

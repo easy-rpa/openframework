@@ -18,9 +18,9 @@ public class GServicesConfigParam {
     public static final String AUTH_TOKEN_STORES_DIR = "google.services.auth.token.stores.dir";
 
     /**
-     * Name of configuration parameter with {@code host:port_number} of authorization verification code receiver.
+     * Name of configuration parameter with {@code host:port_number} of authorization code receiver.
      */
-    public static final String AUTH_VERIFICATION_CODE_RECEIVER = "google.services.auth.verification.code.receiver";
+    public static final String AUTH_CODE_RECEIVER = "google.services.auth.code.receiver";
 
     private GServicesConfigParam() {
     }
