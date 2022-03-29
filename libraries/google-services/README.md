@@ -133,21 +133,23 @@ RPA process.
       For information regarding how to configure OAuth client see 
       <a href="https://developers.google.com/workspace/guides/create-credentials#oauth-client-id">OAuth client ID credentials</a><br>
       <br>        
-      The value of secret vault entry should be a JSON with following structure:
-      <pre>{
-    "installed": {
-        "client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
-        "project_id": "XXXXXXX-XXXXXX",
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-        "client_secret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        "redirect_uris": [
-            "urn:ietf:wg:oauth:2.0:oob",
-            "http://localhost"
-        ]
-    }}
-       </pre>    
+      The value of secret vault entry should be a JSON with following structure:      
+      <pre>
+{
+"installed":{
+  "client_id":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
+  "project_id":"XXXXXXX-XXXXXX",
+  "auth_uri":"https://accounts.google.com/o/oauth2/auth",
+  "token_uri":"https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs",
+  "client_secret":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "redirect_uris":[
+      "urn:ietf:wg:oauth:2.0:oob",
+      "http://localhost"
+  ]
+}
+}
+    </pre>    
     </td></tr>  
     <tr><td valign="top"><code>google.services.auth.token.stores.dir</code></td><td>
         Path to directory where StoredCredentials file should be created and located. The StoredCredentials file is 
