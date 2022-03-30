@@ -75,7 +75,7 @@ EasyRPA platform is implemented and supported.
 The EasyRPA Open Framework includes following libraries:
 
 <table>
-    <tr><th align="left" width="300px">Name</th><th align="left">Description</th></tr>
+    <tr><th align="left" width="150px">Name</th><th align="left">Description</th></tr>
     <tr><td valign="top"><a href="/libraries/database">Database</a></td><td>
         Functionality to work with remote databases (MySQL, PostgreSQL, Oracle, DB2, MS SQL Server). 
     </td></tr>
