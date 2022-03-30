@@ -3,13 +3,16 @@
 ### Table of Contents
 * [Description](#description)
 * [Usage](#usage)
-* [Creating of file](#creating-of-file)
-* [Moving file to a specific location](#creating-of-file)
-* [Other Example](#other-examples)
+* [Getting of file from Drive](#getting-of-file-from-drive)
+* [Other Examples](#other-examples)
+* [Configuration parameters](#configuration-parameters)
 
 ### Description
 
-Component which provides functionality related to Google Drive.
+The **Google Drive** library provides functionality to work with files and folders located on Google Drive. It wraps 
+the client service `Drive` of Google Drive API and works via extended objects model representing files and folders.
+Using this library the work with Google Drive becomes easy and requires a few code to implement all necessary actions 
+within RPA.
 
 ### Usage
 
@@ -36,68 +39,81 @@ is added also.
 </dependency>
 ```
 
-All requests to the Drive API must be authorized by an authenticated user.
+### Getting of file from Drive
 
-https://developers.google.com/drive/api/v3/about-auth
+The Google Drive library has really easy to use and perceive functionality. It separates necessary configuration steps 
+from actual code that allows to keep it clear. Lets consider the case of getting specific file from Google Drive by 
+its name.    
+```Java
+@Inject
+private GoogleDrive googleDrive;
 
-### Creating of file
+public void execute() {
+    
+    Optional<GFile> summaryReportFile = googleDrive.getFile("Summary Report");
 
-In this example we will create a file in Google Drive, and after we'll move it to a specific location.
-
-First step - we need to configure Google Drive credentials in order to connect:
-
-**vault.properties**
-
-| Alias     | Value         |
-| ------------- |---------------|
-| `google.credentials` | Json with credentials in encoded with Base64. Example of json:<br>`{ "user": "sender@gmail.com", "password": "passphrase" }` |
-
-Note: All necessary configuration files can be found in `src/main/resources` directory.
-
-Next step - inside the main program we inject object of 'GoogleDrive':
-
-```java
-    @Inject
-    private GoogleDrive drive;
+    if (summaryReportFile.isPresent()) {
+       InputStream is = summaryReportFile.get().getContent();
+       ...
+   }
+}
 ```
 
-And simply use a command to create a new file:
+The `GoogleDrive` is a main class of Google Drive library. It provides all necessary to work with Google Drive
+functions. But before calling of any its function the underlay service `Drive` of Google Drive API should be authorized
+and created. To do it the `GoogleDrive` should be provided with **OAuth client JSON** necessary for authentication on 
+Google Cloud. This JSON can be provided explicitly via `secret()` method but implicit way via `@Inject` annotation 
+as in example above is recommended. In case of injection of `GoogleDrive` using `@Inject` annotation the OAuth client 
+JSON is expected to be defined via configuration parameter of the RPA process with key **`google.services.auth.secret`**. 
+The value of this parameter is an alias of secret vault entry with necessary JSON. 
+ ```properties
+ google.services.auth.secret=robot.google.account
+ ``` 
 
-```java
-Optional<GoogleFile> file = drive.createFile("test");
-```
+ ```properties
+ robot.google.account=<secret OAuth client JSON>
+ ``` 
 
-Now new file is available on Google Drive.
+How to get this OAuth client JSON? In order to work with Google Drive API it's necessary to have Google Cloud 
+project with configured authentication and authorization for using this API. Follow next steps to do everything 
+properly.
 
-### Moving file to a specific location
+1. [Create a Google Cloud project][create_project_link] if it doesn't exist yet. 
+2. [Enable Google Drive API][enable_apis_link] in the Google Cloud project.
+3. [Configure OAuth consent screen][configure_oauth_consent_link] to let robot requests the access to Google Drive.
+4. [Create OAuth client ID credentials][create_credentials_link] to authenticate the robot on Google Cloud.
 
-In this section we will continue previous case and move previously created file to a specific folder.
-To achieve this we simply use a command called 'moveFile':
+Read [how Google Workspace APIs authentication and authorization works][auth_overview_link] and
+[Authentication Best Practices][best_practices_link] for some more useful information.
 
-```java
-public class MoveFile extends ApTask {
+[create_project_link]: https://developers.google.com/workspace/guides/create-project
+[enable_apis_link]: https://developers.google.com/workspace/guides/enable-apis
+[auth_overview_link]: https://developers.google.com/workspace/guides/auth-overview
+[configure_oauth_consent_link]: https://developers.google.com/workspace/guides/configure-oauth-consent
+[create_credentials_link]: https://developers.google.com/workspace/guides/create-credentials#oauth-client-id
+[best_practices_link]: https://www.google.com/support/enterprise/static/gapps/docs/admin/en/gapps_workspace/Google%20Workspace%20APIs%20-%20Authentication%20Best%20Practices.pdf
 
-    private final String newFolderName = "newDirectory";
+After creating of OAuth client ID the corresponding OAuth client JSON can be downloaded by the following way:
+1. Open the [Google Cloud Console](https://console.cloud.google.com)
+2. At the top-left, click **Menu > APIs & Services > Credentials**.
+3. Lookup a record with created previously **OAuth client ID**.
+5. In the end of row choose **Download OAuth client** action.
+6. Click **DOWNLOAD JSON** button in the opened window.
 
-    @Inject
-    private GoogleDrive drive;
-
-    public void execute() {
-
-        log.info("Creating file");
-        Optional<GoogleFile> file = drive.createFile(fileName);
-
-        Optional<GoogleFolderInfo> folder = drive.getFolder(newFolderName);
-
-        if (file.isPresent() && folder.isPresent()) {
-            log.info("File created in root directory ");
-
-            drive.moveFile(file.get(), folder.get());
-
-            log.info("Now file in directory '{}'", newFolderName);
-        } else {
-            log.info("File wasn't created or directory not found");
-        }
+The downloaded JSON should looks as follows:
+```json
+{
+    "installed": {
+        "client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
+        "project_id": "XXXXXXX-XXXXXX",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_secret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "redirect_uris": [
+            "urn:ietf:wg:oauth:2.0:oob",
+            "http://localhost"
+        ]
     }
 }
 ```
@@ -105,3 +121,10 @@ public class MoveFile extends ApTask {
 ### Other Examples
 
 Please refer to [Google Drive Examples](../../examples#google-drive) to see more examples of using this library.
+
+### Configuration parameters
+
+This library uses **Google Services** library for authorization and creation of underlying `Drive` class of 
+Google Drive API and hence its configuration parameters are actual for this library too. Please refer to 
+[Google Services configuration parameters section](../google-services#configuration-parameters) to see their 
+descriptions.  
