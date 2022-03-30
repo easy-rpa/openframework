@@ -12,9 +12,10 @@
 
 ### Description
 
-The Email library provides convenient and easy to use functionality for working with email messages within RPA 
-processes. The functionality is adapted for RPA processes. It hides lots of implementation details and configuration 
-steps behind and focuses on actual actions that are easy to read and perceive when looking at the code. 
+EasyRPA Open Framework **Email** library provides convenient and easy to use functionality for working with email 
+messages within RPA processes. The functionality is adapted for RPA processes. It hides lots of implementation 
+details and configuration steps behind and focuses on actual actions that are easy to read and perceive when 
+looking at the code. 
   
 ### Usage
 

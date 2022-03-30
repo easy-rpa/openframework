@@ -9,11 +9,11 @@
 
 ### Description
 
-The **Google Services** library provides functionality to perform authentication, authorization and instantiation of 
-[Google Workspace API client services](https://developers.google.com/workspace/products) like Drive, Sheets,
-Calendar etc. It hides lots of implementation and configuration details behind that is very important in case of using
- it within RPA process. When the business logic of the process should be easy to read and perceive and implementation 
-details should not interfere to do it.  
+EasyRPA Open Framework **Google Services** library provides functionality to perform authentication, authorization and
+instantiation of [Google Workspace API client services](https://developers.google.com/workspace/products) like Drive, 
+Sheets, Calendar etc. It hides lots of implementation and configuration details behind that is very important in case of
+using it within RPA process. When the business logic of the process should be easy to read and perceive and 
+implementation details should not interfere to do it.  
 
 ### Usage
 

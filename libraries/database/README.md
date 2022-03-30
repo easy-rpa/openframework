@@ -10,11 +10,11 @@
 
 ### Description
 
-The Database library provides convenient and easy to use functionality for working with remote databases within RPA
-processes. Actually this library wraps functionality of [ORMLite](https://ormlite.com) library and organize the process 
-of initialization and establishing of database connection in more clear way with less amount of code. As ORMLite it 
-supports most popular types of databases (like MySQL, Postgres etc.). But the functionality does not depends of 
-database type which makes the process of switching between different databases very simple and fast.
+EasyRPA Open Framework **Database** library provides convenient and easy to use functionality for working with remote 
+databases within RPA processes. Actually this library wraps functionality of [ORMLite](https://ormlite.com) library 
+and organize the process of initialization and establishing of database connection in more clear way with less amount 
+of code. As ORMLite it supports most popular types of databases (like MySQL, Postgres etc.). But the functionality 
+does not depends of database type which makes the process of switching between different databases very simple and fast.
 
 ### Usage
 

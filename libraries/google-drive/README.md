@@ -4,15 +4,15 @@
 * [Description](#description)
 * [Usage](#usage)
 * [Getting of file from Drive](#getting-of-file-from-drive)
-* [Other Examples](#other-examples)
+* [Other examples](#other-examples)
 * [Configuration parameters](#configuration-parameters)
 
 ### Description
 
-The **Google Drive** library provides functionality to work with files and folders located on Google Drive. It wraps 
-the client service `Drive` of Google Drive API and works via extended objects model representing files and folders.
-Using this library the work with Google Drive becomes easy and requires a few code to implement all necessary actions 
-within RPA.
+EasyRPA Open Framework **Google Drive** library provides functionality to work with files and folders located on 
+Google Drive. It wraps the client service `Drive` of Google Drive API and works via extended objects model representing 
+files and folders. Using this library the work with Google Drive becomes easy and requires a few code to implement 
+all necessary actions within RPA.
 
 ### Usage
 
@@ -118,7 +118,7 @@ The downloaded JSON should looks as follows:
 }
 ```
 
-### Other Examples
+### Other examples
 
 Please refer to [Google Drive Examples](../../examples#google-drive) to see more examples of using this library.
 
