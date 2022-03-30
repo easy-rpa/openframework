@@ -27,5 +27,11 @@
             <artifactId>easy-rpa-openframework-google-drive</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
+
+        <dependency>
+            <groupId>de.taimos</groupId>
+            <artifactId>totp</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 </project>
