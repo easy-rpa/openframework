@@ -75,7 +75,7 @@ EasyRPA platform is implemented and supported.
 The EasyRPA Open Framework includes following libraries:
 
 <table>
-    <tr><th align="left">Name</th><th align="left">Description</th></tr>
+    <tr><th align="left" width="300px">Name</th><th align="left">Description</th></tr>
     <tr><td valign="top"><a href="/libraries/database">Database</a></td><td>
         Functionality to work with remote databases (MySQL, PostgreSQL, Oracle, DB2, MS SQL Server). 
     </td></tr>
@@ -84,11 +84,15 @@ The EasyRPA Open Framework includes following libraries:
     </td></tr>
     <tr><td valign="top"><a href="/libraries/excel">Excel</a></td><td>
         Functionality to work with Excel documents. 
+    </td></tr>
+    <tr><td valign="top"><a href="/libraries/google-services">Google Services</a></td><td>
+        Functionality to perform authentication, authorization and instantiation of Google Workspace API client 
+        services like Drive, Sheets, Calendar etc.
     </td></tr>   
-    <tr><td valign="top"><a href="/libraries/google-drive">GoogleDrive</a></td><td>
+    <tr><td valign="top"><a href="/libraries/google-drive">Google Drive</a></td><td>
         Functionality to work with Google Drive files and folders. 
     </td></tr>
-    <tr><td valign="top"><a href="/libraries/google-sheets">GoogleSheets</a></td><td>
+    <tr><td valign="top"><a href="/libraries/google-sheets">Google Sheets</a></td><td>
         Functionality to work with Google Sheets. 
     </td></tr>
 </table> 
