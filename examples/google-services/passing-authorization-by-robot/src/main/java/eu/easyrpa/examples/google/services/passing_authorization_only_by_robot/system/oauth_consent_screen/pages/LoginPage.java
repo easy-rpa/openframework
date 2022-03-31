@@ -10,47 +10,33 @@ import org.openqa.selenium.support.FindBy;
 @Slf4j
 public class LoginPage extends WebPage implements AutoCloseable {
 
-    @FindBy(id = "identifierId")
+    @FindBy(xpath = "//input[contains(@id, 'identifierId')]")
     @Wait(waitFunc = Wait.WaitFunc.CLICKABLE)
     private WebElement email;
 
-    @FindBy(className = "VfPpkd-vQzf8d")
+    @FindBy(xpath = "//button[contains(@type, 'button')]/child::span")
     @Wait(waitFunc = Wait.WaitFunc.CLICKABLE)
     private WebElement submitButton;
 
-    @FindBy(name = "password")
-    @Wait(waitFunc = Wait.WaitFunc.CLICKABLE)
-    private WebElement password;
+    @FindBy(xpath = "//div[contains(@id, 'view_container')]/descendant::ul/descendant::li[last()-1]")
+    @Wait(waitFunc = Wait.WaitFunc.PRESENCE)
+    private WebElement chooseAccount;
 
-    @FindBy(xpath = "//div[contains(@id,'selectionc4')]")
-    @Wait(waitFunc = Wait.WaitFunc.CLICKABLE)
-    private WebElement notAgreeButton;
-
-    @FindBy(xpath = "//*[@id=\"totpPin\"]")
-    @Wait(waitFunc = Wait.WaitFunc.CLICKABLE)
-    private WebElement oneTimeCode;
-
-    @FindBy(xpath = "//body[contains(text(),'Received verification code. You may now close this window.')]")
-    @Wait(waitFunc = Wait.WaitFunc.CLICKABLE)
-    private WebElement oathConsentScreenResult;
-
-    public void login(SecretCredentials googleAccountCredentials, String code) {
+    public PasswordPage openPasswordPage(String userCred) {
+        try {
+            chooseAccount.click();
+        } catch (Exception e) {
+            log.info("Cannot switch account, authorization in default window");
+        }
         email.click();
-        email.sendKeys(googleAccountCredentials.getUser());
+        email.sendKeys(userCred);
         submitButton.click();
-        password.click();
-        password.sendKeys(googleAccountCredentials.getPassword());
-        submitButton.click();
-        notAgreeButton.click();
-        oneTimeCode.click();
-        oneTimeCode.sendKeys(code);
-        submitButton.click();
-        oathConsentScreenResult.click();
+        return createPage(PasswordPage.class);
     }
 
     @Override
     public void close() throws Exception {
-        this.getDriver().close();
-        log.info("Driver has been closed");
+        getDriver().close();
+        log.info("Login page is closed");
     }
 }

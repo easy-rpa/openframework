@@ -14,15 +14,14 @@ public class OAuthConsentScreenApplication extends Application<BrowserDriver, Ui
     }
 
     @Override
-    public LoginPage open(String... args) {
-        String googleAuthUrl = args[0];
+    public LoginPage open(String[] args)  {
         try {
+            String googleAuthUrl = args[0];
             getDriver().get(googleAuthUrl);
             log.info("Open window with url : '{}'", googleAuthUrl);
         } catch (Exception e) {
-            log.info("Cannot open browser window with this url : '{}' , cause : '{}'", googleAuthUrl, e.getMessage());
+            log.info("Cannot open browser window : '{}'", e.getMessage());
         }
-        LoginPage loginPage = createPage(LoginPage.class);
-        return loginPage;
+        return createPage(LoginPage.class);
     }
 }

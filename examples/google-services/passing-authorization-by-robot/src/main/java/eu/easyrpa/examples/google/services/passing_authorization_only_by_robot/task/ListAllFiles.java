@@ -3,6 +3,7 @@ package eu.easyrpa.examples.google.services.passing_authorization_only_by_robot.
 import de.taimos.totp.TOTP;
 import eu.easyrpa.examples.google.services.passing_authorization_only_by_robot.system.oauth_consent_screen.OAuthConsentScreenApplication;
 import eu.easyrpa.examples.google.services.passing_authorization_only_by_robot.system.oauth_consent_screen.pages.LoginPage;
+import eu.easyrpa.examples.google.services.passing_authorization_only_by_robot.system.oauth_consent_screen.pages.PasswordPage;
 import eu.easyrpa.openframework.google.drive.GoogleDrive;
 import eu.easyrpa.openframework.google.drive.model.GFileInfo;
 import eu.ibagroup.easyrpa.engine.annotation.*;
@@ -16,6 +17,8 @@ import org.apache.commons.codec.binary.Base32;
 import org.apache.commons.codec.binary.Hex;
 
 import javax.inject.Inject;
+import java.io.InputStream;
+import java.util.Base64;
 import java.util.List;
 
 @Slf4j
@@ -27,11 +30,14 @@ public class ListAllFiles extends ApTask {
                     initializer = BrowserDriver.DefaultChromeOptions.class)})
     private BrowserDriver browserDriver;
 
-    @Configuration(value = "robots.google.creds")
-    private SecretCredentials oauthConsentScreenCredentials;
+    @Configuration(value = "google.services.auth.creds")
+    private String oauthConsentScreenCredentials;
 
-    @Configuration(value = "robots.google.secret.code")
-    private SecretCredentials secretKey;
+    @Configuration(value = "google.services.secret.code")
+    private String secretKey;
+
+    @Inject
+    private VaultService vaultService;
 
     @Inject
     private GoogleDrive drive;
@@ -39,12 +45,14 @@ public class ListAllFiles extends ApTask {
     @AfterInit
     public void init() {
         drive.onAuthorization(url -> {
-            try(LoginPage loginPage = new OAuthConsentScreenApplication(browserDriver).open(url)) {
-                log.info("Login page has been created '{}'", loginPage);
-                loginPage.login(oauthConsentScreenCredentials, getTOTPCode(secretKey.getUser().toUpperCase()));
-                log.info("Automation login has been successfully done");
+            try(LoginPage loginPage = new OAuthConsentScreenApplication(browserDriver).open(new String[]{url})) {
+                log.info("Authorization is started");
+                PasswordPage passwordPage = loginPage.openPasswordPage(vaultService.getSecret(oauthConsentScreenCredentials).getUser());
+                passwordPage.openTOTPPage(vaultService.getSecret(oauthConsentScreenCredentials).getPassword())
+                        .enterTOTPCode(getTOTPCode(vaultService.getSecret(secretKey).getUser().toUpperCase()));
+                log.info("Authorization is finished");
             } catch (Exception e) {
-                log.info("Cannot log in google account '{}'", e.getMessage());
+                log.info("Authorization has failed '{}'", e.getMessage());
             }
         });
     }
@@ -59,8 +67,6 @@ public class ListAllFiles extends ApTask {
         Base32 base32 = new Base32();
         byte[] bytes = base32.decode(googleAccountSecretKey);
         String hexKey = Hex.encodeHexString(bytes);
-        String oneTimeCode = TOTP.getOTP(hexKey);
-        log.info("Obtained one time 6-digits code '{}'", oneTimeCode);
-        return oneTimeCode;
+        return TOTP.getOTP(hexKey);
     }
 }
