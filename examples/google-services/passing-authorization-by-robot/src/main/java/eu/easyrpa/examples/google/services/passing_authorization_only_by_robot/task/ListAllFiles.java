@@ -36,9 +36,6 @@ public class ListAllFiles extends ApTask {
     @Inject
     private GoogleDrive drive;
 
-    @Inject
-    private VaultService vaultService;
-
     @AfterInit
     public void init() {
         drive.onAuthorization(url -> {
