@@ -38,6 +38,23 @@ is added also.
     <version>1.0</version>
 </dependency>
 ```
+In order to work with Google Drive API it's necessary to have Google Cloud project with configured authentication 
+and authorization for using this API. Follow next steps to do everything properly.
+
+1. [Create a Google Cloud project][create_project_link] if it doesn't exist yet. 
+2. [Enable Google Drive API][enable_apis_link] in the Google Cloud project.
+3. [Configure OAuth consent screen][configure_oauth_consent_link] to let robot requests the access to Google Drive.
+4. [Create OAuth client ID credentials][create_credentials_link] to authenticate the robot on Google Cloud.
+
+Read [how Google Workspace APIs authentication and authorization works][auth_overview_link] and
+[Authentication Best Practices][best_practices_link] for some more useful information.
+
+[create_project_link]: https://developers.google.com/workspace/guides/create-project
+[enable_apis_link]: https://developers.google.com/workspace/guides/enable-apis
+[auth_overview_link]: https://developers.google.com/workspace/guides/auth-overview
+[configure_oauth_consent_link]: https://developers.google.com/workspace/guides/configure-oauth-consent
+[create_credentials_link]: https://developers.google.com/workspace/guides/create-credentials#oauth-client-id
+[best_practices_link]: https://www.google.com/support/enterprise/static/gapps/docs/admin/en/gapps_workspace/Google%20Workspace%20APIs%20-%20Authentication%20Best%20Practices.pdf
 
 ### Getting of file from Drive
 
@@ -74,29 +91,11 @@ The value of this parameter is an alias of secret vault entry with necessary JSO
  robot.google.account=<secret OAuth client JSON>
  ``` 
 
-How to get this OAuth client JSON? In order to work with Google Drive API it's necessary to have Google Cloud 
-project with configured authentication and authorization for using this API. Follow next steps to do everything 
-properly.
-
-1. [Create a Google Cloud project][create_project_link] if it doesn't exist yet. 
-2. [Enable Google Drive API][enable_apis_link] in the Google Cloud project.
-3. [Configure OAuth consent screen][configure_oauth_consent_link] to let robot requests the access to Google Drive.
-4. [Create OAuth client ID credentials][create_credentials_link] to authenticate the robot on Google Cloud.
-
-Read [how Google Workspace APIs authentication and authorization works][auth_overview_link] and
-[Authentication Best Practices][best_practices_link] for some more useful information.
-
-[create_project_link]: https://developers.google.com/workspace/guides/create-project
-[enable_apis_link]: https://developers.google.com/workspace/guides/enable-apis
-[auth_overview_link]: https://developers.google.com/workspace/guides/auth-overview
-[configure_oauth_consent_link]: https://developers.google.com/workspace/guides/configure-oauth-consent
-[create_credentials_link]: https://developers.google.com/workspace/guides/create-credentials#oauth-client-id
-[best_practices_link]: https://www.google.com/support/enterprise/static/gapps/docs/admin/en/gapps_workspace/Google%20Workspace%20APIs%20-%20Authentication%20Best%20Practices.pdf
-
-After creating of OAuth client ID the corresponding OAuth client JSON can be downloaded by the following way:
+The **OAuth client JSON** can be downloaded from Google Cloud Console by the following way:
 1. Open the [Google Cloud Console](https://console.cloud.google.com)
 2. At the top-left, click **Menu > APIs & Services > Credentials**.
-3. Lookup a record with created previously **OAuth client ID**.
+3. Lookup a record with corresponding **OAuth client ID** that is created for working with Google Drive. 
+See instructions above how to do it.
 5. In the end of row choose **Download OAuth client** action.
 6. Click **DOWNLOAD JSON** button in the opened window.
 
