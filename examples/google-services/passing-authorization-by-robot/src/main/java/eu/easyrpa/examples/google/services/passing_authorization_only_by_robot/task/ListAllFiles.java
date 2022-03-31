@@ -1,14 +1,11 @@
 package eu.easyrpa.examples.google.services.passing_authorization_only_by_robot.task;
 
 import de.taimos.totp.TOTP;
-import eu.easyrpa.examples.google.services.passing_authorization_only_by_robot.system.iba.OAuth_consert_screen.OAuthConsentScreenApplication;
-import eu.easyrpa.examples.google.services.passing_authorization_only_by_robot.system.iba.OAuth_consert_screen.pages.LoginPage;
+import eu.easyrpa.examples.google.services.passing_authorization_only_by_robot.system.oauth_consent_screen.OAuthConsentScreenApplication;
+import eu.easyrpa.examples.google.services.passing_authorization_only_by_robot.system.oauth_consent_screen.pages.LoginPage;
 import eu.easyrpa.openframework.google.drive.GoogleDrive;
 import eu.easyrpa.openframework.google.drive.model.GFileInfo;
-import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
-import eu.ibagroup.easyrpa.engine.annotation.Configuration;
-import eu.ibagroup.easyrpa.engine.annotation.Driver;
-import eu.ibagroup.easyrpa.engine.annotation.DriverParameter;
+import eu.ibagroup.easyrpa.engine.annotation.*;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import eu.ibagroup.easyrpa.engine.model.SecretCredentials;
 import eu.ibagroup.easyrpa.engine.rpa.driver.BrowserDriver;
@@ -19,7 +16,6 @@ import org.apache.commons.codec.binary.Base32;
 import org.apache.commons.codec.binary.Hex;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -35,26 +31,31 @@ public class ListAllFiles extends ApTask {
     private SecretCredentials oauthConsentScreenCredentials;
 
     @Configuration(value = "robots.google.secret.code")
-    private String secretKey;
+    private SecretCredentials secretKey;
 
     @Inject
     private GoogleDrive drive;
 
-    public void execute() {
+    @Inject
+    private VaultService vaultService;
+
+    @AfterInit
+    public void init() {
         drive.onAuthorization(url -> {
-            try {
-                LoginPage loginPage = new OAuthConsentScreenApplication(browserDriver).open(url);
+            try(LoginPage loginPage = new OAuthConsentScreenApplication(browserDriver).open(url)) {
                 log.info("Login page has been created '{}'", loginPage);
-                loginPage.login(oauthConsentScreenCredentials, getTOTPCode(secretKey.toUpperCase()));
+                loginPage.login(oauthConsentScreenCredentials, getTOTPCode(secretKey.getUser().toUpperCase()));
                 log.info("Automation login has been successfully done");
             } catch (Exception e) {
                 log.info("Cannot log in google account '{}'", e.getMessage());
             }
         });
+    }
+
+    public void execute() {
         List<GFileInfo> files = drive.listFiles();
         log.info("Getting the list of all files");
         files.forEach(file -> log.info("Name: '{}' id: '{}'", file.getName(), file.getId()));
-        browserDriver.close();
     }
 
     private String getTOTPCode(String googleAccountSecretKey) {
