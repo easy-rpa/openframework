@@ -15,6 +15,8 @@ jobs:
   release:    
     runs-on: ubuntu-latest
 
+#TODO checkout only libraries folder
+#TODO run mvn for specific pom.xml. Each flow for each pom.xml
     steps:
       - name: Checkout project
       - uses: actions/checkout@v3
