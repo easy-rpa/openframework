@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 
@@ -27,7 +27,7 @@ public class CreateGoogleCalendarService extends ApTask {
     private Calendar calendar;
 
     @Configuration(value = "google.primary.calendar.id")
-    private String belarusianHolidayCalendarId;
+    private String holidayCalendarId;
 
     @AfterInit
     public void init() {
@@ -35,21 +35,20 @@ public class CreateGoogleCalendarService extends ApTask {
     }
 
     public void execute() throws IOException {
-        LocalDateTime currentDate = LocalDateTime.now();
-        if(isHaveNationalHoliday(currentDate)) {
+        if (isNationalHoliday(LocalDate.now())) {
             log.info("Today is holiday");
         } else {
             log.info("Today is ordinary day");
         }
     }
 
-    private boolean isHaveNationalHoliday(LocalDateTime currentDate) throws IOException {
+    private boolean isNationalHoliday(LocalDate date) throws IOException {
         boolean isNationalHoliday = false;
-        Events events = calendar.events().list(belarusianHolidayCalendarId).execute();
+        Events events = calendar.events().list(holidayCalendarId).execute();
         List<Event> eventList = events.getItems();
         for (Event event : eventList) {
-            if (event.getStart().getDate().getValue() == currentDate.toLocalDate()
-                    .atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()) {
+            if (event.getStart().getDate().getValue() == date
+                    .atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()) {
                 isNationalHoliday = true;
             }
         }

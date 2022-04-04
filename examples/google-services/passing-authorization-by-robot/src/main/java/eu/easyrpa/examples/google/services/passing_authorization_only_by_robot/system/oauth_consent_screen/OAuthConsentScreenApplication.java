@@ -17,7 +17,7 @@ public class OAuthConsentScreenApplication extends Application<BrowserDriver, Ui
     public LoginPage open(String... args) {
         try {
             if (args[0] == null) {
-                log.info("Incorrect url");
+                throw new Exception("Invalid URL");
             }
             String googleAuthUrl = args[0];
             getDriver().get(googleAuthUrl);

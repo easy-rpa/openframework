@@ -34,7 +34,7 @@ public class LoginPage extends WebPage implements AutoCloseable {
     @Wait(waitFunc = Wait.WaitFunc.CLICKABLE)
     private WebElement oneTimeCode;
 
-    public OAuthConsentScreenPage confirmLogin(SecretCredentials credentials, String code) {
+    public ConsentScreenPage confirmLogin(SecretCredentials credentials, String code) {
         try {
             email.click();
         } catch (Exception e) {
@@ -50,7 +50,7 @@ public class LoginPage extends WebPage implements AutoCloseable {
         oneTimeCode.click();
         oneTimeCode.sendKeys(code);
         submitButton.click();
-        return createPage(OAuthConsentScreenPage.class);
+        return createPage(ConsentScreenPage.class);
     }
 
     @Override

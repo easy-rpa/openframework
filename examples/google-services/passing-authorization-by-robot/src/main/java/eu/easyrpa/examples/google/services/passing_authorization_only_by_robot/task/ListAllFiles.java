@@ -3,7 +3,7 @@ package eu.easyrpa.examples.google.services.passing_authorization_only_by_robot.
 import de.taimos.totp.TOTP;
 import eu.easyrpa.examples.google.services.passing_authorization_only_by_robot.system.oauth_consent_screen.OAuthConsentScreenApplication;
 import eu.easyrpa.examples.google.services.passing_authorization_only_by_robot.system.oauth_consent_screen.pages.LoginPage;
-import eu.easyrpa.examples.google.services.passing_authorization_only_by_robot.system.oauth_consent_screen.pages.OAuthConsentScreenPage;
+import eu.easyrpa.examples.google.services.passing_authorization_only_by_robot.system.oauth_consent_screen.pages.ConsentScreenPage;
 import eu.easyrpa.openframework.google.drive.GoogleDrive;
 import eu.easyrpa.openframework.google.drive.model.GFileInfo;
 import eu.ibagroup.easyrpa.engine.annotation.*;
@@ -42,13 +42,13 @@ public class ListAllFiles extends ApTask {
 
     @AfterInit
     public void init() {
-        SecretCredentials secretCredentials = vaultService.getSecret(oauthConsentScreenCredentials);
-        String oneTimeCode = getOneTimeCode(vaultService.getSecret(secretKey).getUser().toUpperCase());
         drive.onAuthorization(url -> {
+            SecretCredentials secretCredentials = vaultService.getSecret(oauthConsentScreenCredentials);
+            String oneTimeCode = getOneTimeCode(vaultService.getSecret(secretKey).getUser().toUpperCase());
             try (LoginPage loginPage = new OAuthConsentScreenApplication(browserDriver).open(url)) {
                 log.info("Authorization is started");
-                OAuthConsentScreenPage oAuthConsentScreenPage = loginPage.confirmLogin(secretCredentials, oneTimeCode);
-                oAuthConsentScreenPage.grantAccessToApplication(false);
+                ConsentScreenPage consentScreenPage = loginPage.confirmLogin(secretCredentials, oneTimeCode);
+                consentScreenPage.grantAccessToApplication(false);
                 log.info("Authorization is finished");
             } catch (Exception e) {
                 log.info("Authorization has failed '{}'", e.getMessage());
