@@ -32,10 +32,6 @@ jobs:
           git config user.name "GitHub Actions"
 
       - name: Prepare Maven Release
-        run: mvn release:prepare -B \
-          -P maven-central-release \
-          -f 'libraries/core/pox.xml' \
-          -DreleaseVersion=${{ github.event.inputs.releaseVersion }} \
-          -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
+        run: mvn release:prepare -B -P maven-central-release -f 'libraries/core/pox.xml'-DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
         env:
           GPG_PASSPHRASE: ${{ secrets.EASYRPA_GPG_PASSPHRASE }}
