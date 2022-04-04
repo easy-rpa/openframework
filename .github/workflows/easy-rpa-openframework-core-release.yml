@@ -20,6 +20,7 @@ jobs:
       - name: Setup Java JDK
         uses: actions/setup-java@v2
         with:
+          distribution: 'temurin'
           java-version: 8
           gpg-private-key: ${{ secrets.EASYRPA_GPG_SECRET_KEY }}
           gpg-passphrase: GPG_PASSPHRASE
