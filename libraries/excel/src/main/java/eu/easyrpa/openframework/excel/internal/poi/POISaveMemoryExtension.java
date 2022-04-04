@@ -2,9 +2,12 @@ package eu.easyrpa.openframework.excel.internal.poi;
 
 import eu.easyrpa.openframework.core.utils.TypeUtils;
 import org.apache.poi.ooxml.POIXMLRelation;
+import org.apache.poi.util.IOUtils;
 import org.apache.poi.xssf.usermodel.XSSFRelation;
 
 public class POISaveMemoryExtension {
+
+    private static final int BYTE_ARRAY_MAX_SIZE_FOR_POI = Integer.MAX_VALUE;
 
     private static boolean initialized;
 
@@ -13,6 +16,7 @@ public class POISaveMemoryExtension {
     public static void init() {
         if (!initialized) {
             try {
+                IOUtils.setByteArrayMaxOverride(BYTE_ARRAY_MAX_SIZE_FOR_POI);
                 TypeUtils.setFieldValue(XSSFRelation.WORKSHEET,
                         "noArgConstructor", (POIXMLRelation.NoArgConstructor) XSSFSheetExt::new);
                 TypeUtils.setFieldValue(XSSFRelation.WORKSHEET,
