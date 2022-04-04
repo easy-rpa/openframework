@@ -37,5 +37,5 @@ jobs:
       - name: Prepare Maven Release
         run: mvn release:prepare -B -P maven-central-release -f 'libraries/core/pom.xml' -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_PASSPHRASE: ${{ secrets.EASYRPA_GPG_PASSPHRASE }}
