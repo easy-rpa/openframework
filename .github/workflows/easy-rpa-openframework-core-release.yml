@@ -33,9 +33,9 @@ jobs:
 
       - name: Prepare Maven Release
         run: mvn release:prepare -B \
-        -Pmaven-central-release \
-        -f 'libraries/core/pox.xml' \
-        -DreleaseVersion=${{ github.event.inputs.releaseVersion }} \
-        -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
+          -P maven-central-release \
+          -f 'libraries/core/pox.xml' \
+          -DreleaseVersion=${{ github.event.inputs.releaseVersion }} \
+          -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
         env:
           GPG_PASSPHRASE: ${{ secrets.EASYRPA_GPG_PASSPHRASE }}
