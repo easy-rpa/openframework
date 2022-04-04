@@ -1,4 +1,4 @@
-name: Release-EasyRPA-Openframework-Core
+name: Release EasyRPA Openframework Core
 on:
   workflow_dispatch:
     inputs:
@@ -15,7 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout project
-      - uses: actions/checkout@v3
+        uses: actions/checkout@v3
+        
       - name: Setup Java JDK
         uses: actions/setup-java@v2
         with:
@@ -23,10 +24,12 @@ jobs:
           gpg-private-key: ${{ secrets.EASYRPA_GPG_SECRET_KEY }}
           gpg-passphrase: GPG_PASSPHRASE
           cache: 'maven'
+          
       - name: Configure Git User
         run: |
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
+          
       - name: Prepare Maven Release
         run: mvn release:prepare -B -P maven-central-release -f 'libraries/core/pox.xml'-DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
         env:
