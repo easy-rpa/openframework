@@ -15,15 +15,15 @@ public class OAuthConsentScreenApplication extends Application<BrowserDriver, Ui
 
     @Override
     public LoginPage open(String... args) {
+        if (args[0] == null) {
+            throw new IllegalArgumentException("Consent screen url not defined or missing");
+        }
         try {
-            if (args[0] == null) {
-                throw new Exception("Invalid URL");
-            }
             String googleAuthUrl = args[0];
             getDriver().get(googleAuthUrl);
+            return createPage(LoginPage.class);
         } catch (Exception e) {
-            log.info("Cannot open browser window : '{}'", e.getMessage());
+            throw new RuntimeException(e);
         }
-        return createPage(LoginPage.class);
     }
 }

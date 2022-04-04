@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
+import java.util.NoSuchElementException;
+
 @Slf4j
 public class LoginPage extends WebPage implements AutoCloseable {
 
@@ -37,7 +39,7 @@ public class LoginPage extends WebPage implements AutoCloseable {
     public ConsentScreenPage confirmLogin(SecretCredentials credentials, String code) {
         try {
             email.click();
-        } catch (Exception e) {
+        } catch (NoSuchElementException e) {
             chooseAccount.click();
             email.click();
         }

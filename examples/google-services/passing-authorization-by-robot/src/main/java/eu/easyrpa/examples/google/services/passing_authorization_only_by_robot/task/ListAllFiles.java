@@ -50,8 +50,6 @@ public class ListAllFiles extends ApTask {
                 ConsentScreenPage consentScreenPage = loginPage.confirmLogin(secretCredentials, oneTimeCode);
                 consentScreenPage.grantAccess(false);
                 log.info("Authorization is finished");
-            } catch (Exception e) {
-                log.info("Authorization has failed '{}'", e.getMessage());
             }
         });
     }
