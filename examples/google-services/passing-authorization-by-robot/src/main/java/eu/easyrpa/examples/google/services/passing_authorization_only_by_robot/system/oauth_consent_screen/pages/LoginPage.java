@@ -18,25 +18,43 @@ public class LoginPage extends WebPage implements AutoCloseable {
     @Wait(waitFunc = Wait.WaitFunc.CLICKABLE)
     private WebElement submitButton;
 
-    @FindBy(xpath = "//div[contains(@id, 'view_container')]/descendant::ul/descendant::li[last()-1]")
+    @FindBy(xpath = "//input[contains(@name, 'password')]")
+    @Wait(waitFunc = Wait.WaitFunc.CLICKABLE)
+    private WebElement password;
+
+    @FindBy(xpath = "//div[contains(@id, 'view_container')]/descendant::div[contains(text(), 'Use another')]")
     @Wait(waitFunc = Wait.WaitFunc.PRESENCE)
     private WebElement chooseAccount;
 
-    public PasswordPage openPasswordPage(String userCred) {
+    @FindBy(xpath = "//div[contains(@id,'selectionc4')]")
+    @Wait(waitFunc = Wait.WaitFunc.CLICKABLE)
+    private WebElement notAgreeButton;
+
+    @FindBy(xpath = "//input[contains(@id,'totpPin')]")
+    @Wait(waitFunc = Wait.WaitFunc.CLICKABLE)
+    private WebElement oneTimeCode;
+
+    public OAuthConsentScreenPage confirmLogin(SecretCredentials credentials, String code) {
         try {
-            chooseAccount.click();
+            email.click();
         } catch (Exception e) {
-            log.info("Cannot switch account, authorization in default window");
+            chooseAccount.click();
+            email.click();
         }
-        email.click();
-        email.sendKeys(userCred);
+        email.sendKeys(credentials.getUser());
         submitButton.click();
-        return createPage(PasswordPage.class);
+        password.click();
+        password.sendKeys(credentials.getPassword());
+        submitButton.click();
+        notAgreeButton.click();
+        oneTimeCode.click();
+        oneTimeCode.sendKeys(code);
+        submitButton.click();
+        return createPage(OAuthConsentScreenPage.class);
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         getDriver().close();
-        log.info("Login page is closed");
     }
 }

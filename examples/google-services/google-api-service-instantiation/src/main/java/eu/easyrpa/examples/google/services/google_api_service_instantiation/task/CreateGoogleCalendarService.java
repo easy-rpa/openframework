@@ -13,9 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Slf4j
@@ -28,7 +27,7 @@ public class CreateGoogleCalendarService extends ApTask {
     private Calendar calendar;
 
     @Configuration(value = "google.primary.calendar.id")
-    private String primaryCalendarId;
+    private String belarusianHolidayCalendarId;
 
     @AfterInit
     public void init() {
@@ -36,25 +35,24 @@ public class CreateGoogleCalendarService extends ApTask {
     }
 
     public void execute() throws IOException {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String currentDate = dateFormat.format(new Date());
-        if(!isHoliday(currentDate)) {
-            log.info("Today is ordinary day '{}'", currentDate);
+        LocalDateTime currentDate = LocalDateTime.now();
+        if(isHaveNationalHoliday(currentDate)) {
+            log.info("Today is holiday");
+        } else {
+            log.info("Today is ordinary day");
         }
     }
 
-    private boolean isHoliday(String currentDate) throws IOException {
-        boolean isHoliday = false;
-        Events events = calendar.events().list(primaryCalendarId).execute();
+    private boolean isHaveNationalHoliday(LocalDateTime currentDate) throws IOException {
+        boolean isNationalHoliday = false;
+        Events events = calendar.events().list(belarusianHolidayCalendarId).execute();
         List<Event> eventList = events.getItems();
-        log.info("Getting all events in primary calendar");
         for (Event event : eventList) {
-            String line = event.getStart().getDate().toString();
-            if (line.equals(currentDate)) {
-                log.info("The holiday is '{}'", event.getSummary());
-                isHoliday = true;
+            if (event.getStart().getDate().getValue() == currentDate.toLocalDate()
+                    .atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()) {
+                isNationalHoliday = true;
             }
         }
-        return isHoliday;
+        return isNationalHoliday;
     }
 }
