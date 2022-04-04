@@ -1,4 +1,5 @@
 name: Release Core
+
 on:
   workflow_dispatch:
     inputs:
@@ -10,6 +11,7 @@ on:
         description: "Next snapshot version after release"
         required: true
         default: "X.Y.Z-SNAPSHOT"
+        
 jobs:  
   release:    
     runs-on: ubuntu-latest
@@ -22,6 +24,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 8
+          server-id: github 
           gpg-private-key: ${{ secrets.EASYRPA_GPG_SECRET_KEY }}
           gpg-passphrase: GPG_PASSPHRASE
           cache: 'maven'
@@ -34,4 +37,5 @@ jobs:
       - name: Prepare Maven Release
         run: mvn release:prepare -B -P maven-central-release -f 'libraries/core/pom.xml' -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
         env:
+          GITHUB_TOKEN: ${{ github.token }}
           GPG_PASSPHRASE: ${{ secrets.EASYRPA_GPG_PASSPHRASE }}
