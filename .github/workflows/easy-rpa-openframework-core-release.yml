@@ -1,0 +1,41 @@
+name: Release EasyRPA Openframework Core
+
+on:
+  workflow_dispatch:
+    inputs:
+      releaseVersion:
+        description: "Version number to release"
+        required: true
+        default: "X.Y.Z"
+      developmentVersion:
+        description: "Next snapshot version after release"
+        required: true
+        default: "X.Y.Z-SNAPSHOT"
+jobs:  
+  release:    
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project
+      - uses: actions/checkout@v3          
+      
+      - name: Setup Java JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: 8
+          gpg-private-key: ${{ secrets.EASYRPA_GPG_SECRET_KEY }}
+          gpg-passphrase: GPG_PASSPHRASE
+          cache: 'maven'
+          
+      - name: Configure Git User
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+
+      - name: Prepare Maven Release
+        run: mvn release:prepare -B \
+        -Pmaven-central-release \
+        -f 'libraries/core/pox.xml' \
+        -DreleaseVersion=${{ github.event.inputs.releaseVersion }} \
+        -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
+        env:
+          GPG_PASSPHRASE: ${{ secrets.EASYRPA_GPG_PASSPHRASE }}
