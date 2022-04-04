@@ -27,7 +27,7 @@ public class ConsentScreenPage extends WebPage {
     @Wait(waitFunc = Wait.WaitFunc.CLICKABLE)
     private WebElement oauthScreenTrust;
 
-    public void grantAccessToApplication(boolean isTestMode) {
+    public void grantAccess(boolean isTestMode) {
         if (isTestMode) {
             submitGrantPermission.click();
             oauthScreenTrust.click();
