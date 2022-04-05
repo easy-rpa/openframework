@@ -43,6 +43,8 @@ jobs:
       - name: Setup mvn settings to deploy release
         uses: actions/setup-java@v2
         with:          
+          distribution: 'temurin'
+          java-version: 8
           server-id: ossrh         
           server-username: OSSRH_USERNAME
           server-password: OSSRH_PASSWORD
