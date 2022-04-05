@@ -15,15 +15,15 @@ public class ConsentScreenPage extends WebPage {
 
     @FindBy(xpath = XPATH_COMMON_PART + "/descendant::a/parent::div/a[contains(@href, '#')]")
     @Wait(waitFunc = Wait.WaitFunc.CLICKABLE)
-    private WebElement additionalSettings; //OAuthConsentScreen production mode
+    private WebElement additionalSettings; //OAuthConsentScreen test mode
 
     @FindBy(xpath = XPATH_COMMON_PART + "/descendant::p/a[contains(@href, '#')]")
     @Wait(waitFunc = Wait.WaitFunc.CLICKABLE)
-    private WebElement openOauthScreen;  //OAuthConsentScreen production mode
+    private WebElement openOauthScreen;  //OAuthConsentScreen test mode
 
     @FindBy(xpath = "//div[contains(@id,'view_container')]/descendant::span[4]")
     @Wait(waitFunc = Wait.WaitFunc.CLICKABLE)
-    private WebElement submitGrantPermission; //OAuthConsentScreen test mode
+    private WebElement submitGrantPermission; //OAuthConsentScreen production mode
 
     @FindBy(xpath = "//div[contains(@id, 'submit_approve_access')]/descendant::span")
     @Wait(waitFunc = Wait.WaitFunc.CLICKABLE)

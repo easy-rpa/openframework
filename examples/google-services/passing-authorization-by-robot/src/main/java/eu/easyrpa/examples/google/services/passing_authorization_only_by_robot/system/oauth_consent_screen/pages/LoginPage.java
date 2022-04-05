@@ -4,7 +4,6 @@ import eu.ibagroup.easyrpa.engine.model.SecretCredentials;
 import eu.ibagroup.easyrpa.engine.rpa.page.WebPage;
 import eu.ibagroup.easyrpa.engine.rpa.po.annotation.Wait;
 import lombok.extern.slf4j.Slf4j;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
