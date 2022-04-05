@@ -1,0 +1,57 @@
+name: Release Google Services library
+
+on:
+  workflow_dispatch:
+    inputs:
+      releaseVersion:
+        description: "Version number to release"
+        required: true
+        default: "X.Y.Z"
+      developmentVersion:
+        description: "Next snapshot version after release"
+        required: true
+        default: "X.Y.Z-SNAPSHOT"
+
+jobs:
+  maven-central-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v3
+
+      - name: Configure Git User
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+
+      - name: Setup JDK and mvn settings to build release
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: 8
+          server-id: github
+          gpg-private-key: ${{ secrets.EASYRPA_GPG_SECRET_KEY }}
+          gpg-passphrase: GPG_PASSPHRASE
+          cache: 'maven'
+
+      - name: Prepare release
+        run: mvn release:prepare -B -P maven-central-release -f 'libraries/google-services/pom.xml' -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GPG_PASSPHRASE: ${{ secrets.EASYRPA_GPG_PASSPHRASE }}
+
+      - name: Setup mvn settings to deploy release
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: 8
+          server-id: ossrh
+          server-username: OSSRH_USERNAME
+          server-password: OSSRH_PASSWORD
+          cache: 'maven'
+
+      - name: Deploy release to Maven Central
+        run: mvn release:perform -B -P maven-central-release -f 'libraries/google-services/pom.xml'
+        env:
+          OSSRH_USERNAME: ${{ secrets.EASYRPA_OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.EASYRPA_OSSRH_PASSWORD }}
