@@ -16,10 +16,15 @@ jobs:
   release:    
     runs-on: ubuntu-latest
     steps:
+      - name: Configure Git User
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          
       - name: Checkout project
         uses: actions/checkout@v3
-        
-      - name: Setup Java JDK
+                
+      - name: Setup JDK and mvn settings to build release
         uses: actions/setup-java@v2
         with:
           distribution: 'temurin'
@@ -28,14 +33,23 @@ jobs:
           gpg-private-key: ${{ secrets.EASYRPA_GPG_SECRET_KEY }}
           gpg-passphrase: GPG_PASSPHRASE
           cache: 'maven'
-          
-      - name: Configure Git User
-        run: |
-          git config user.email "actions@github.com"
-          git config user.name "GitHub Actions"
-          
-      - name: Prepare Maven Release
+                  
+      - name: Build release
         run: mvn release:prepare -B -P maven-central-release -f 'libraries/core/pom.xml' -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_PASSPHRASE: ${{ secrets.EASYRPA_GPG_PASSPHRASE }}
+
+      - name: Setup mvn settings to deploy release
+        uses: actions/setup-java@v2
+        with:          
+          server-id: ossrh         
+          server-username: OSSRH_USERNAME
+          server-password: OSSRH_PASSWORD
+          cache: 'maven'
+                  
+      - name: Deploy release
+        run: mvn release:perform -B -P maven-central-release -f 'libraries/core/pom.xml'
+        env:
+          OSSRH_USERNAME: ${{ secrets.EASYRPA_OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.EASYRPA_OSSRH_PASSWORD }}
