@@ -15,14 +15,14 @@ on:
 jobs:  
   release:    
     runs-on: ubuntu-latest
-    steps:
+    steps:          
+      - name: Checkout project
+        uses: actions/checkout@v3
+        
       - name: Configure Git User
         run: |
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
-          
-      - name: Checkout project
-        uses: actions/checkout@v3
                 
       - name: Setup JDK and mvn settings to build release
         uses: actions/setup-java@v2
