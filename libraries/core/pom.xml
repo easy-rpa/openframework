@@ -23,8 +23,8 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:git://github.com/easy-rpa/openframework.git</connection>
-        <developerConnection>scm:git:ssh://github.com/easy-rpa/openframework.git</developerConnection>
+        <connection>scm:git:https://github.com/easy-rpa/openframework.git</connection>
+        <developerConnection>scm:git:https://github.com/easy-rpa/openframework.git</developerConnection>
         <url>https://github.com/easy-rpa/openframework/tree/main/</url>
     </scm>
 
