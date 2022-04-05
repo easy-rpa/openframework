@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>eu.easyrpa</groupId>
     <artifactId>easy-rpa-openframework-core</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>EasyRPA Open Framework - Core</name>
@@ -23,9 +23,8 @@
     <scm>
         <connection>scm:git:https://github.com/easy-rpa/openframework.git</connection>
         <developerConnection>scm:git:https://github.com/easy-rpa/openframework.git</developerConnection>
-        <url>https://github.com/easy-rpa/openframework/tree/main/</url>
-      <tag>HEAD</tag>
-  </scm>
+        <url>https://github.com/easy-rpa/openframework/tree/main/</url>      
+    </scm>
 
     <issueManagement>
         <system>GitHub</system>
