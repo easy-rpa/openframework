@@ -48,7 +48,7 @@ public class ListAllFiles extends ApTask {
             try (LoginPage loginPage = new OAuthConsentScreenApplication(browserDriver).open(url)) {
                 log.info("Authorization is started");
                 ConsentScreenPage consentScreenPage = loginPage.confirmLogin(secretCredentials, oneTimeCode);
-                consentScreenPage.grantAccess(false);
+                consentScreenPage.grantAccess();
                 log.info("Authorization is finished");
             }
         });

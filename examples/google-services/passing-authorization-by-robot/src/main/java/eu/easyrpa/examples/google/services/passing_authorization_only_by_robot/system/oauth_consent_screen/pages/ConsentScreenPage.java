@@ -3,9 +3,11 @@ package eu.easyrpa.examples.google.services.passing_authorization_only_by_robot.
 import eu.ibagroup.easyrpa.engine.rpa.locator.By;
 import eu.ibagroup.easyrpa.engine.rpa.page.WebPage;
 import eu.ibagroup.easyrpa.engine.rpa.po.annotation.Wait;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+
 
 public class ConsentScreenPage extends WebPage {
 
@@ -27,15 +29,14 @@ public class ConsentScreenPage extends WebPage {
     @Wait(waitFunc = Wait.WaitFunc.CLICKABLE)
     private WebElement oauthScreenTrust;
 
-    public void grantAccess(boolean isTestMode) {
-        if (isTestMode) {
+    public void grantAccess() {
+        try {
             submitGrantPermission.click();
-            oauthScreenTrust.click();
-        } else {
+        } catch (TimeoutException e) {
             additionalSettings.click();
             openOauthScreen.click();
-            oauthScreenTrust.click();
         }
+        oauthScreenTrust.click();
         getDriver().waitFor(ExpectedConditions.presenceOfElementLocated(By
                 .xpath("//body[contains(text(),'Received verification code. You may now close this window.')]")), 10, false, true);
     }
