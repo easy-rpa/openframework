@@ -71,7 +71,7 @@ The EasyRPA Open Framework includes following libraries:
 <table>
     <tr>
         <th align="left" width="150px">Name</th>
-        <th align="center">Latest version</th>
+        <th align="center" width="160px">Latest version</th>
         <th align="left">Description</th>
     </tr>
     <tr>
