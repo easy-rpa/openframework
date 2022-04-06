@@ -43,13 +43,13 @@ public class ListAllFiles extends ApTask {
     @AfterInit
     public void init() {
         drive.onAuthorization(url -> {
+            log.info("Authorization started");
             SecretCredentials secretCredentials = vaultService.getSecret(oauthConsentScreenCredentials);
             String oneTimeCode = getOneTimeCode(vaultService.getSecret(secretKey).getUser().toUpperCase());
             try (LoginPage loginPage = new OAuthConsentScreenApplication(browserDriver).open(url)) {
-                log.info("Authorization is started");
                 ConsentScreenPage consentScreenPage = loginPage.confirmLogin(secretCredentials, oneTimeCode);
                 consentScreenPage.grantAccess();
-                log.info("Authorization is finished");
+                log.info("Access granted");
             }
         });
     }
