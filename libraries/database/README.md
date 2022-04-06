@@ -25,7 +25,7 @@ To start use the library first you need to add corresponding Maven dependency to
 <dependency>
     <groupId>eu.easyrpa</groupId>
     <artifactId>easy-rpa-openframework-database</artifactId>
-    <version>1.0</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
@@ -37,7 +37,7 @@ is added also.
 <dependency>
     <groupId>eu.easyrpa</groupId>
     <artifactId>easy-rpa-adapter-for-openframework</artifactId>
-    <version>1.0</version>
+    <version>2.3.1</version>
 </dependency>
 ```
 

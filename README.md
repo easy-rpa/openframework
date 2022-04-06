@@ -38,19 +38,13 @@ The project is:
 
 EasyRPA Open Framework consist of several independent libraries. All of them are deployed on Maven Central repository.
 
-![mavenVersion](https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-database)
-![mavenVersion](https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-email)
-![mavenVersion](https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-excel)
-![mavenVersion](https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-google-drive)
-![mavenVersion](https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-google-sheets)
-
 In order to use any of EasyRPA Open Framework's library you need simply add it as a dependency in your Maven POM file. 
 E.g.:
 ```xml
 <dependency>
     <groupId>eu.easyrpa</groupId>
     <artifactId>easy-rpa-openframework-email</artifactId>
-    <version>1.0</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
@@ -63,7 +57,7 @@ EasyRPA platform is implemented and supported.
 <dependency>
     <groupId>eu.easyrpa</groupId>
     <artifactId>easy-rpa-adapter-for-openframework</artifactId>
-    <version>1.0</version>
+    <version>2.3.1</version>
 </dependency>
 ```
 
@@ -75,26 +69,54 @@ EasyRPA platform is implemented and supported.
 The EasyRPA Open Framework includes following libraries:
 
 <table>
-    <tr><th align="left" width="150px">Name</th><th align="left">Description</th></tr>
-    <tr><td valign="top"><a href="/libraries/database">Database</a></td><td>
-        Functionality to work with remote databases (MySQL, PostgreSQL, Oracle, DB2, MS SQL Server). 
-    </td></tr>
-    <tr><td valign="top"><a href="/libraries/email">Email</a></td><td>
-        Functionality to work with mailboxes and email messages. 
-    </td></tr>
-    <tr><td valign="top"><a href="/libraries/excel">Excel</a></td><td>
-        Functionality to work with Excel documents. 
-    </td></tr>
-    <tr><td valign="top"><a href="/libraries/google-services">Google Services</a></td><td>
-        Functionality to perform authentication, authorization and instantiation of Google Workspace API client 
-        services like Drive, Sheets, Calendar etc.
-    </td></tr>   
-    <tr><td valign="top"><a href="/libraries/google-drive">Google Drive</a></td><td>
-        Functionality to work with Google Drive files and folders. 
-    </td></tr>
-    <tr><td valign="top"><a href="/libraries/google-sheets">Google Sheets</a></td><td>
-        Functionality to work with Google Sheets. 
-    </td></tr>
+    <tr>
+        <th align="left" width="150px">Name</th>
+        <th align="center">Latest version</th>
+        <th align="left">Description</th>
+    </tr>
+    <tr>
+        <td valign="top"><a href="/libraries/database">Database</a></td>
+        <td><img alt="Maven Central" src="https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-database"></td>
+        <td>
+            Functionality to work with remote databases (MySQL, PostgreSQL, Oracle, DB2, MS SQL Server).
+        </td>
+    </tr>
+    <tr>
+        <td valign="top"><a href="/libraries/email">Email</a></td>
+        <td><img alt="Maven Central" src="https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-email"></td>
+        <td>
+            Functionality to work with mailboxes and email messages.
+        </td>
+    </tr>
+    <tr>
+        <td valign="top"><a href="/libraries/excel">Excel</a></td>
+        <td><img alt="Maven Central" src="https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-excel"></td>
+        <td>
+            Functionality to work with Excel documents.
+        </td>
+    </tr>
+    <tr>
+        <td valign="top"><a href="/libraries/google-services">Google Services</a></td>
+        <td><img alt="Maven Central" src="https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-google-services"></td>
+        <td>
+            Functionality to perform authentication, authorization and instantiation of Google Workspace API client 
+            services like Drive, Sheets, Calendar etc.
+        </td>
+    </tr>   
+    <tr>
+        <td valign="top"><a href="/libraries/google-drive">Google Drive</a></td>
+        <td><img alt="Maven Central" src="https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-google-drive"></td>        
+        <td>
+            Functionality to work with Google Drive files and folders. 
+        </td>
+    </tr>
+    <tr>
+        <td valign="top"><a href="/libraries/google-sheets">Google Sheets</a></td>
+        <td><img alt="Maven Central" src="https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-google-sheets"></td>        
+        <td>
+            Functionality to work with Google Sheets. 
+        </td>
+    </tr>
 </table> 
 
 ## Examples
