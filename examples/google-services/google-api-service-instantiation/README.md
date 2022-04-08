@@ -3,10 +3,15 @@
 This example demonstrates using of GoogleServiceProvider to perform authorization and instantiation of specific Google
 API service.  
 ```Java
-         //TODO
+@Inject
+private GoogleServicesProvider googleServicesProvider;
 
-    public void execute() {
-    }
+private Calendar calendar;
+
+@AfterInit
+public void init() {
+    calendar = googleServicesProvider.getService(Calendar.class, CalendarScopes.CALENDAR);
+}
 ```
 
 See the full source of this example for more details or check following instructions to run it.

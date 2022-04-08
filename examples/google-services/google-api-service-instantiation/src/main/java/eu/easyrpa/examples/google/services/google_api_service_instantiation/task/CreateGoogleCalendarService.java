@@ -26,7 +26,7 @@ public class CreateGoogleCalendarService extends ApTask {
 
     private Calendar calendar;
 
-    @Configuration(value = "google.primary.calendar.id")
+    @Configuration(value = "google.holiday.calendar.id")
     private String holidayCalendarId;
 
     @AfterInit

@@ -2,8 +2,8 @@ package eu.easyrpa.examples.google.services.passing_authorization_only_by_robot.
 
 import de.taimos.totp.TOTP;
 import eu.easyrpa.examples.google.services.passing_authorization_only_by_robot.system.oauth_consent_screen.OAuthConsentScreenApplication;
-import eu.easyrpa.examples.google.services.passing_authorization_only_by_robot.system.oauth_consent_screen.pages.LoginPage;
 import eu.easyrpa.examples.google.services.passing_authorization_only_by_robot.system.oauth_consent_screen.pages.ConsentScreenPage;
+import eu.easyrpa.examples.google.services.passing_authorization_only_by_robot.system.oauth_consent_screen.pages.LoginPage;
 import eu.easyrpa.openframework.google.drive.GoogleDrive;
 import eu.easyrpa.openframework.google.drive.model.GFileInfo;
 import eu.ibagroup.easyrpa.engine.annotation.*;
@@ -28,11 +28,11 @@ public class ListAllFiles extends ApTask {
                     initializer = BrowserDriver.DefaultChromeOptions.class)})
     private BrowserDriver browserDriver;
 
-    @Configuration(value = "google.services.auth.creds")
-    private String oauthConsentScreenCredentials;
+    @Configuration(value = "google.services.auth.credentials")
+    private String googleAccountCredentials;
 
-    @Configuration(value = "google.services.secret.code")
-    private String secretKey;
+    @Configuration(value = "google.services.auth.2fa.secret.key")
+    private String googleAccountSecretKey;
 
     @Inject
     private VaultService vaultService;
@@ -44,11 +44,12 @@ public class ListAllFiles extends ApTask {
     public void init() {
         drive.onAuthorization(url -> {
             log.info("Authorization started");
-            SecretCredentials secretCredentials = vaultService.getSecret(oauthConsentScreenCredentials);
-            String oneTimeCode = getOneTimeCode(vaultService.getSecret(secretKey).getUser().toUpperCase());
             try (LoginPage loginPage = new OAuthConsentScreenApplication(browserDriver).open(url)) {
-                ConsentScreenPage consentScreenPage = loginPage.confirmLogin(secretCredentials, oneTimeCode);
-                consentScreenPage.grantAccess();
+                SecretCredentials credentials = vaultService.getSecret(googleAccountCredentials);
+                String oneTimeCode = getOneTimeCode(vaultService.getSecret(googleAccountSecretKey).getPassword().toUpperCase());
+
+                loginPage.confirmLogin(credentials, oneTimeCode).grantAccess();
+
                 log.info("Access granted");
             }
         });

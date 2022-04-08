@@ -3,10 +3,49 @@
 Example of process that shows how the robot can authorize himself to perform some actions within his Google account.  
 
 ```Java
-         //TODO
+@Driver(value = DriverParams.Type.BROWSER, param =
+        {@DriverParameter(key = DriverParams.Browser.SELENIUM_NODE_CAPABILITIES,
+                initializer = BrowserDriver.DefaultChromeOptions.class)})
+private BrowserDriver browserDriver;
 
-    public void execute() {
-    }
+@Configuration(value = "google.services.auth.credentials")
+private String googleAccountCredentials;
+
+@Configuration(value = "google.services.auth.2fa.secret.key")
+private String googleAccountSecretKey;
+
+@Inject
+private VaultService vaultService;
+
+@Inject
+private GoogleDrive drive;
+
+@AfterInit
+public void init() {
+    drive.onAuthorization(url -> {
+        log.info("Authorization started");
+        try (LoginPage loginPage = new OAuthConsentScreenApplication(browserDriver).open(url)) {
+            SecretCredentials credentials = vaultService.getSecret(googleAccountCredentials);
+            String oneTimeCode = getOneTimeCode(vaultService.getSecret(googleAccountSecretKey).getPassword().toUpperCase());
+
+            loginPage.confirmLogin(credentials, oneTimeCode).grantAccess();
+
+            log.info("Access granted");
+        }
+    });
+}
+
+public void execute() {
+    List<GFileInfo> files = drive.listFiles();
+    ...
+}
+
+private String getOneTimeCode(String googleAccountSecretKey) {
+    Base32 base32 = new Base32();
+    byte[] bytes = base32.decode(googleAccountSecretKey);
+    String hexKey = Hex.encodeHexString(bytes);
+    return TOTP.getOTP(hexKey);
+}
 ```
 
 See the full source of this example for more details or check following instructions to run it.
