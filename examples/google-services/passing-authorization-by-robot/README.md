@@ -3,19 +3,11 @@
 Example of process that shows how the robot can authorize himself to perform some actions within his Google account.  
 
 ```Java
-@Driver(value = DriverParams.Type.BROWSER, param =
-        {@DriverParameter(key = DriverParams.Browser.SELENIUM_NODE_CAPABILITIES,
-                initializer = BrowserDriver.DefaultChromeOptions.class)})
-private BrowserDriver browserDriver;
-
 @Configuration(value = "google.services.auth.credentials")
 private String googleAccountCredentials;
 
 @Configuration(value = "google.services.auth.2fa.secret.key")
 private String googleAccountSecretKey;
-
-@Inject
-private VaultService vaultService;
 
 @Inject
 private GoogleDrive drive;
@@ -24,9 +16,14 @@ private GoogleDrive drive;
 public void init() {
     drive.onAuthorization(url -> {
         log.info("Authorization started");
+        Map<String, Object> params = Collections.singletonMap(DriverParams.Browser.SELENIUM_NODE_CAPABILITIES,
+                new BrowserDriver.DefaultChromeOptions().get());
+        BrowserDriver browserDriver = new BrowserDriverImpl(params, getConfigurationService());
+
         try (LoginPage loginPage = new OAuthConsentScreenApplication(browserDriver).open(url)) {
-            SecretCredentials credentials = vaultService.getSecret(googleAccountCredentials);
-            String oneTimeCode = getOneTimeCode(vaultService.getSecret(googleAccountSecretKey).getPassword().toUpperCase());
+            SecretCredentials credentials = getVaultService().getSecret(googleAccountCredentials);
+            String oneTimeCode = getOneTimeCode(getVaultService().getSecret(googleAccountSecretKey)
+                    .getPassword().toUpperCase());
 
             loginPage.confirmLogin(credentials, oneTimeCode).grantAccess();
 
