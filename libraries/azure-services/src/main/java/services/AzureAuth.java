@@ -41,7 +41,7 @@ public class AzureAuth {
     /**
      * The Azure Tenant ID is a Global Unique Identifier (GUID) for your Microsoft 365 Tenant.
      * It’s also referred to as the Office 365 Tenant ID.
-     * The ID is used to identify your tenant and it’s not your organization name or domain name.
+     * The ID is used to identify your tenant, and it’s not your organization name or domain name.
      */
     private String authTenantId;
 
@@ -93,7 +93,7 @@ public class AzureAuth {
      */
     public String getAuthTenantId(){
         if (authTenantId == null) {
-            authTenantId = getConfigParam(GraphServicesConfigParam.AUTH_SECRET);
+            authTenantId = getConfigParam(GraphServicesConfigParam.AUTH_TENANT_ID);
             if (authTenantId == null) {
                 authTenantId = DEFAULT_TENANT_ID;
             }

@@ -42,17 +42,63 @@ is added also.
 
 ### API client service authorization and instantiation
 
-The key feature of Google Services library is a `GoogleServiceProvider`. It's helper class that covers all steps
-related to Google Workspace API authorization within requested scope and instantiation of corresponding
-API client service. As result, using this class it's possible to create a new authorized instance of API client
-service with one line of code.
+The key feature of Azure Services library is a `Microsoft Graph`. Microsoft Graph is the gateway to data and 
+intelligence in Microsoft 365. It provides a unified programmability model that you can use to access the tremendous 
+amount of data in Microsoft 365, Windows, and Enterprise Mobility + Security. 
+Microsoft Graph exposes REST APIs and client libraries to access data on the following Microsoft cloud services:
 
-Below the example of using `GoogleServiceProvider` to create a new instance of `Calendar` client service of
-Google Calendar API.  
+* Microsoft 365 core services: Bookings, Calendar, Delve, Excel, Microsoft 365 compliance eDiscovery, Microsoft Search, OneDrive, OneNote, Outlook/Exchange, People (Outlook contacts), Planner, SharePoint, Teams, To Do, Viva Insights
+* Enterprise Mobility + Security services: Advanced Threat Analytics, Advanced Threat Protection, Azure Active Directory, Identity Manager, and Intune
+* Windows services: activities, devices, notifications, Universal Print
+* Dynamics 365 Business Central services
+
+To simplify building applications that access Microsoft Graph we use `Microsoft Graph SDK`. 
+The SDKs include two components: a service library and a core library.
+
+The service library contains models and request builders that are generated from Microsoft Graph metadata to provide a 
+rich, strongly typed, and discoverable experience when working with the many datasets available in Microsoft Graph.
+ 
+The core library provides a set of features that enhance working with all the Microsoft Graph services. 
+Embedded support for retry handling, secure redirects, transparent authentication, and payload compression improve the 
+quality of your application's interactions with Microsoft Graph, with no added complexity, while leaving you completely 
+in control.  The core library also provides support for common tasks such as paging through collections and creating 
+batch requests.
+
+In example below you can see how easily it to send a mail with OutlookEmailService Class
+
+```java
+@Inject
+private OutlookEmailService outlookEmailService;
+
+public void execute() {
+    ...        
+    outlookEmailService.sendMail("Subject","Body Text", "Email recipent");
+    ...
+}
+```  
+For creating of `OutlookEmailService` there should be provided an information, necessary
+for authentication on Azure Cloud. In case of injection of `OutlookEmailService` using `@Inject` annotation
+this information is expected to be defined in configuration parameters of the RPA process under the following keys:
+
+* `google.services.auth.clientID`.  Name of configuration parameter with clientID of your Azure app registration.
+* `google.services.auth.tenantID`. The Azure Tenant ID is a Global Unique Identifier (GUID) for your Microsoft 365 Tenant
+* `google.services.auth.graphUserScopes`.  Name of configuration parameter with list of necessary API permissions for your app.
+
+```properties
+ google.services.auth.clientID=<YOUR CLIENT ID>
+ ``` 
+
+ ```properties
+ google.services.auth.tenantID=<YOUR TENANT ID>
+ ``` 
+
+```properties
+ azure.services.graphUserScopes=<YOUR API PERMISSIONS LIST>
+ ``` 
 
 ### Other examples
 
-Please refer to [Google Services Examples](../../examples#google-services) to see more examples of using this library.
+Please refer to [Azure Services Examples](../../examples#google-services) to see more examples of using this library.
 
 ### Configuration parameters
 
@@ -67,18 +113,24 @@ RPA process.
       <a href="https://docs.microsoft.com/en-us/graph/tutorials/java?tabs=aad&tutorial-step=1">Azure app registration</a><br>
       <br>
     </td></tr>  
-    <tr><td valign="top"><code>azure.services.auth.secret</code></td><td>
-       Name of configuration parameter with secret information necessary to perform authentication on Azure server..<br>
+    <tr><td valign="top"><code>azure.services.auth.tenantID</code></td><td>
+       The Azure Tenant ID is a Global Unique Identifier (GUID) for your Microsoft 365 Tenant.
+        it’s also referred to as the Office 365 Tenant ID.
+      The ID is used to identify your tenant, and it’s not your organization name or domain name.<br>
         <br>
-        Exp: <code>C:\Users\Default\AppData\Local\Google\tokens</code><br>
-        <br>
-        For information regarding persisting of OAuth 2.0 access tokens see 
-        <a href="https://developers.google.com/api-client-library/java/google-api-java-client/oauth2#data_store">Data Store</a>
+        For information regarding how to find your tenant ID see 
+        <a href="https://docs.microsoft.com/en-us/graph/tutorials/java?tabs=aad&tutorial-step=1">Azure app registration</a>
         section<br>        
     </td></tr>    
     <tr><td valign="top"><code>azure.services.graphUserScopes</code></td><td>
-        Name of configuration parameter with list of necessary API permissions for your app.<br>                 
+        Name of configuration parameter with list of necessary API permissions for your app.<br>  
         <br>
-        Exp: user.read,mail.read,mail.send,mail.readwrite</code> 
+        Here you can read some additional information about Microsoft graph permissions:
+        <a href="https://docs.microsoft.com/en-us/graph/permissions-reference">Microsoft Graph permissions reference</a>
+        <br>
+        For information regarding how to set specific permissions you want, see
+        <a href="https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-configure-app-access-web-apis">Quickstart: Configure a client application to access a web API</a><br>
+        <br>
+        Exp: user.Read,mail.Read,mail.Send,mail.readwrite 
     </td></tr>
 </table> 

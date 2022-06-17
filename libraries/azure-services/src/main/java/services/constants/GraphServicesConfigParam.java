@@ -10,7 +10,7 @@ public class GraphServicesConfigParam {
     /**
      * Name of configuration parameter with secret information necessary to perform authentication on Azure server.
      */
-    public static final String AUTH_SECRET = "azure.services.auth.secret";
+    public static final String AUTH_TENANT_ID = "azure.services.auth.tenantID";
 
     /**
      * Name of configuration parameter with clientID of your Azure app registration.
