@@ -25,11 +25,16 @@
             <artifactId>easy-rpa-adapter-for-openframework</artifactId>
             <version>2.3.1</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>eu.easyrpa</groupId>-->
-<!--            <artifactId>easy-rpa-openframework-azure-services</artifactId>-->
-<!--            <version>1.0.0</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>eu.easyrpa</groupId>
+            <artifactId>easy-rpa-openframework-azure-services</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>eu.easyrpa</groupId>
+            <artifactId>easy-rpa-openframework-azure-services</artifactId>
+            <version>1.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
 
