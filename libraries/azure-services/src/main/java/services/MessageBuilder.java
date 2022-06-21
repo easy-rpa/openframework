@@ -2,6 +2,7 @@ package services;
 
 import com.microsoft.graph.models.*;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class MessageBuilder {
@@ -36,12 +37,16 @@ public class MessageBuilder {
             return  this;
         }
 
-        public  Builder setRecipient(String emailRecipient){
-            Recipient toRecipient = new Recipient();
-            toRecipient.emailAddress = new EmailAddress();
-            toRecipient.emailAddress.address = emailRecipient;
-            MessageBuilder.this.message.toRecipients = List.of(toRecipient);
-            return  this;
+        public  Builder setRecipient(String... emailRecipients){
+            LinkedList<Recipient> toRecipientsList = new LinkedList<Recipient>();
+            for(String emailRecipient: emailRecipients) {
+                Recipient toRecipient = new Recipient();
+                toRecipient.emailAddress = new EmailAddress();
+                toRecipient.emailAddress.address = emailRecipient;
+                toRecipientsList.add(toRecipient);
+            }
+            MessageBuilder.this.message.toRecipients = toRecipientsList;
+            return this;
         }
 
         public  MessageBuilder build(){

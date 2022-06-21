@@ -10,7 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class OutlookEmailService {
-    private AzureAuth azureAuth;
+    private final AzureAuth azureAuth;
 
     private GraphServiceClient<Request> graphServiceClient;
 
@@ -55,41 +55,17 @@ public class OutlookEmailService {
                 .get();
     }
 
-
-
     public  void deleteMessage(String messageID) {
         graphServiceClient.me().messages(messageID)
                 .buildRequest()
                 .delete();
     }
 
-    public  void sendMessages(String messageID){
+    public  void replyToMessage(String comment, String messageID, String emailRecipients){
+        Message message = MessageBuilder.newBuilder()
+                        .setRecipient(emailRecipients).build().getMessage();
+
         graphServiceClient.me().messages(messageID)
-                .send()
-                .buildRequest()
-                .post();
-    }
-
-    public  void replyToMessage(){
-        Message message = new Message();
-        LinkedList<Recipient> toRecipientsList = new LinkedList<Recipient>();
-        Recipient toRecipients = new Recipient();
-        EmailAddress emailAddress = new EmailAddress();
-        emailAddress.address = "samanthab@contoso.onmicrosoft.com";
-        emailAddress.name = "Samantha Booth";
-        toRecipients.emailAddress = emailAddress;
-        toRecipientsList.add(toRecipients);
-        Recipient toRecipients1 = new Recipient();
-        EmailAddress emailAddress1 = new EmailAddress();
-        emailAddress1.address = "randiw@contoso.onmicrosoft.com";
-        emailAddress1.name = "Randi Welch";
-        toRecipients1.emailAddress = emailAddress1;
-        toRecipientsList.add(toRecipients1);
-        message.toRecipients = toRecipientsList;
-
-        String comment = "Samantha, Randi, would you name the group please?";
-
-        graphServiceClient.me().messages("AAMkADA1MTAAAAqldOAAA=")
                 .reply(MessageReplyParameterSet
                         .newBuilder()
                         .withMessage(message)
@@ -99,6 +75,17 @@ public class OutlookEmailService {
                 .post();
     }
 
+    public void replyToAll(String comment, String messageID){
+        graphServiceClient.me().messages(messageID)
+                .createReplyAll(MessageCreateReplyAllParameterSet
+                        .newBuilder()
+                        .withMessage(null)
+                        .withComment(comment)
+                        .build())
+                .buildRequest()
+                .post();
+
+    }
 
 
 }
