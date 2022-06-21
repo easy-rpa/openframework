@@ -12,6 +12,7 @@ import services.constants.GraphServicesConfigParam;
 
 import javax.inject.Inject;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -56,12 +57,18 @@ public class AzureAuth {
      */
     private RPAServicesAccessor rpaServices;
 
+    private DeviceCodeCredential deviceCodeCredential;
+
+    private User user;
+
 
     /**
      * Default constructor for {@code AzureAuth}.
      */
     public AzureAuth(){
-
+        this.clientId = "";
+        this.authTenantId = DEFAULT_TENANT_ID;
+        this.graphUserScopes= Collections.emptyList();
     }
 
     /**
@@ -88,6 +95,10 @@ public class AzureAuth {
         return clientId;
     }
 
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
     /**
      * @return reference to used Tenant ID.
      */
@@ -101,6 +112,10 @@ public class AzureAuth {
         return authTenantId;
     }
 
+    public void setAuthTenantId(String authTenantId){
+        this.authTenantId = authTenantId;
+    }
+
     /**
      * @return reference to used User scopes of Azure API permissions.
      */
@@ -112,22 +127,22 @@ public class AzureAuth {
         return graphUserScopes;
     }
 
+    public void setGraphUserScopes(String graphUserScopes){
+        this.graphUserScopes = Arrays.asList(graphUserScopes.split(","));
+    }
+
     private DeviceCodeCredential setDeviceCodeCredential(Consumer<DeviceCodeInfo> challenge){
         return new DeviceCodeCredentialBuilder()
-                .clientId(clientId)
-                .tenantId(authTenantId)
+                .clientId(getClientId())
+                .tenantId(getAuthTenantId())
                 .challengeConsumer(challenge)
                 .build();
     }
 
     public GraphServiceClient<Request> initializeGraphForUserAuth(Consumer<DeviceCodeInfo> challenge) throws Exception {
 
-        clientId = getConfigParam("app.clientId");
-        authTenantId = getConfigParam("app.authTenant");
-        graphUserScopes = Arrays.asList(getConfigParam("app.graphUserScopes").split(","));
-
         final TokenCredentialAuthProvider authProvider =
-                new TokenCredentialAuthProvider(graphUserScopes,
+                new TokenCredentialAuthProvider(getGraphUserScopes(),
                         setDeviceCodeCredential(challenge));
 
         userClient = GraphServiceClient.builder()

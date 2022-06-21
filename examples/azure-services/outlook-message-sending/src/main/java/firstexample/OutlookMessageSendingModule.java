@@ -1,6 +1,6 @@
-package eu.easyrpa.examples.azure.services.outlook_message_sending;
+package firstexample;
 
-import eu.easyrpa.examples.azure.services.outlook_message_sending.tasks.SendOutlookMessage;
+import firstexample.tasks.SendOutlookMessage;
 import eu.ibagroup.easyrpa.engine.annotation.ApModuleEntry;
 import eu.ibagroup.easyrpa.engine.apflow.ApModule;
 import eu.ibagroup.easyrpa.engine.apflow.TaskOutput;
@@ -15,7 +15,5 @@ public class OutlookMessageSendingModule extends ApModule {
         return execute(getInput(), SendOutlookMessage.class).get();
     }
 
-    public static void main(String[] args) {
-        ApModuleRunner.localLaunch(OutlookMessageSendingModule.class);
-    }
+    public static void main(String[] args){ApModuleRunner.localLaunch(OutlookMessageSendingModule.class);}
 }

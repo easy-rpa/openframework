@@ -1,4 +1,4 @@
-package eu.easyrpa.examples.azure.services.outlook_message_sending.tasks;
+package firstexample.tasks;
 
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
@@ -16,7 +16,7 @@ public class SendOutlookMessage extends ApTask {
 
     @Override
     public void execute() throws Exception {
-
+        outlookEmailService.sendMail("BRuh", "Bruh", "kossart2001@gmail.com");
     }
 
 

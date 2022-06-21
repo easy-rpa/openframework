@@ -28,8 +28,8 @@ public class OutlookEmailService {
 
     @Inject
     public OutlookEmailService(RPAServicesAccessor rpaService){
-        this();
         this.rpaServicesAccessor = rpaService;
+        azureAuth = new AzureAuth(rpaService);
     }
 
     public  void sendMail(String subject, String body, String recipient) throws Exception {
@@ -38,19 +38,9 @@ public class OutlookEmailService {
             throw new Exception("Graph has not been initialized for user auth");
         }
 
-        // Create a new message
-        final Message message = new Message();
-        message.subject = subject;
-        message.body = new ItemBody();
-        message.body.content = body;
-        message.body.contentType = BodyType.TEXT;
+        Message message = MessageBuilder.newBuilder()
+                .setMessageContent(body).setMessageSubject(subject).setRecipient(recipient).build().getMessage();
 
-        final Recipient toRecipient = new Recipient();
-        toRecipient.emailAddress = new EmailAddress();
-        toRecipient.emailAddress.address = recipient;
-        message.toRecipients = List.of(toRecipient);
-
-        // Send the message
         this.graphServiceClient.me()
                 .sendMail(UserSendMailParameterSet.newBuilder()
                         .withMessage(message)
@@ -64,6 +54,8 @@ public class OutlookEmailService {
                 .buildRequest()
                 .get();
     }
+
+
 
     public  void deleteMessage(String messageID) {
         graphServiceClient.me().messages(messageID)
