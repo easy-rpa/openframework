@@ -57,8 +57,15 @@ public class AzureAuth {
      */
     private RPAServicesAccessor rpaServices;
 
+    /**
+     * A TokenCredential implementation which authenticates a user using the device code flow, and provides access
+     * tokens for that user account.
+     */
     private DeviceCodeCredential deviceCodeCredential;
 
+    /**
+     * Instance of User, which represents an Azure Active Directory (Azure AD) user account
+     */
     private User user;
 
 
@@ -95,6 +102,10 @@ public class AzureAuth {
         return clientId;
     }
 
+    /**
+     * Sets app unique identifier, which is located in AzureActiveDirectory
+     * @param clientId  Application unique identifier that is associated with an application
+     */
     public void setClientId(String clientId) {
         this.clientId = clientId;
     }
@@ -112,6 +123,10 @@ public class AzureAuth {
         return authTenantId;
     }
 
+    /**
+     * Sets authTenantId
+     * @param authTenantId is a Global Unique Identifier (GUID) for your Microsoft 365 Tenant
+     */
     public void setAuthTenantId(String authTenantId){
         this.authTenantId = authTenantId;
     }
@@ -127,11 +142,20 @@ public class AzureAuth {
         return graphUserScopes;
     }
 
+    /**
+     * Sets graph api permission scopes
+     * @param graphUserScopes is a space-separated list of delegated permissions that the app is requesting
+     */
     public void setGraphUserScopes(String graphUserScopes){
         this.graphUserScopes = Arrays.asList(graphUserScopes.split(","));
     }
 
-    private DeviceCodeCredential setDeviceCodeCredential(Consumer<DeviceCodeInfo> challenge){
+    /**
+     * Builds an instance of DeviceCodeCredential
+     * @param challenge
+     * @return an instance of DeviceCodeCredential
+     */
+    private DeviceCodeCredential deviceCodeCredential(Consumer<DeviceCodeInfo> challenge){
         return new DeviceCodeCredentialBuilder()
                 .clientId(getClientId())
                 .tenantId(getAuthTenantId())
@@ -143,7 +167,7 @@ public class AzureAuth {
 
         final TokenCredentialAuthProvider authProvider =
                 new TokenCredentialAuthProvider(getGraphUserScopes(),
-                        setDeviceCodeCredential(challenge));
+                        deviceCodeCredential(challenge));
 
         userClient = GraphServiceClient.builder()
                 .authenticationProvider(authProvider)
