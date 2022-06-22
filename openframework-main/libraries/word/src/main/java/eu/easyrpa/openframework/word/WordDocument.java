@@ -19,7 +19,6 @@ public class WordDocument {
     /**
      * Unique Word document identified.
      */
-
     private int id = -1;
 
     private WordDocumentElement child;
@@ -28,13 +27,11 @@ public class WordDocument {
      * Path to related to this document Word file. It's a place where the document
      * is saved when method <code>save()</code> is called.
      */
-
     private String filePath;
 
     /**
      * Reference to related Docx4j document.
      */
-
     private WordprocessingMLPackage wordPackage;
 
     private List<WordDocumentElement> wordDocumentElements;
@@ -42,15 +39,25 @@ public class WordDocument {
     /**
      * Creates empty Excel document.
      */
-
     public WordDocument() {
         initMainDocumentPart(null);
     }
 
+    /**
+     * Creates new Excel document for specified input stream.
+     *
+     * @param is input stream that needs to accessed via this document.
+     */
     public WordDocument(InputStream is) {
         initMainDocumentPart(is);
     }
 
+    /**
+     * Creates new Word document for specified path.
+     *
+     * @param path input path to Word file that needs to accessed via this document.
+     * @throws IllegalArgumentException if <code>path</code> is <code>null</code> or not exist.
+     */
     public WordDocument(Path path) {
         if (path == null) {
             throw new IllegalArgumentException("Path cannot be null.");
@@ -60,29 +67,6 @@ public class WordDocument {
             initMainDocumentPart(new FileInputStream(path.toFile()));
         } catch (FileNotFoundException e) {
             throw new IllegalArgumentException(String.format("File '%s' is not exist.", path.toAbsolutePath()), e);
-        }
-    }
-
-    private void initMainDocumentPart(InputStream is) {
-        try {
-            if (is == null) {
-                wordPackage = WordprocessingMLPackage.createPackage();
-                // Create new one
-            } else {
-                wordPackage = WordprocessingMLPackage.load(is);
-            }
-
-
-            if (id > 0) {
-                Docx4jElementsCache.unregister(id);
-            } else {
-                id = Docx4jElementsCache.generateWordDocumentId();
-            }
-
-            Docx4jElementsCache.register(id, wordPackage);
-            this.wordDocumentElements = new ArrayList<>();
-        } catch (Exception e) {
-            throw new RuntimeException(String.format("Initializing of word document for main part '%s' has failed.", getFilePath()), e);
         }
     }
 
@@ -197,6 +181,7 @@ public class WordDocument {
 
     /**
      * Helper method to add new instance of WordDocumentElement into list.
+     *
      * @param wordDocumentElement the instance of WordDocumentElement.
      */
     public void addWordDocumentElement(WordDocumentElement wordDocumentElement) {
@@ -206,6 +191,7 @@ public class WordDocument {
     /**
      * Helper functional method which return a setting PropertyResolver instance.
      * That class works out the actual set of properties which apply, following the order specified in ECMA-376.
+     *
      * @return property resolver instance.
      */
     public PropertyResolver getPropertyResolver() {
@@ -226,7 +212,8 @@ public class WordDocument {
 
     /**
      * Helper recursive method to find any List elements of object by docx4j hierarchy.
-     * @param obj the element in which to find the nested search elements.
+     *
+     * @param obj      the element in which to find the nested search elements.
      * @param toSearch class which you want to find. For example <code>{Tbl.class}, {Tr.class}, {P.class}</code>
      * @return the nested List of elements by provided base search element.
      */
@@ -247,6 +234,7 @@ public class WordDocument {
 
     /**
      * Gets elements which are in the Word file.
+     *
      * @return List of elements.
      */
     public List<Object> getElements() {
@@ -261,6 +249,7 @@ public class WordDocument {
         }
         return objectList;
     }
+
     //test method (to dev)
     public List<Class<?>> getClassElements() {
         List<Class<?>> outputList = new ArrayList<>();
@@ -275,7 +264,7 @@ public class WordDocument {
      * Finds the table with a cell that contains given value.
      *
      * @param matchMethod method that defines how passed value are matched with each cell value.
-     * @param value      string value to match.
+     * @param value       string value to match.
      * @return instance of found table or <code>null</code> if table not found.
      * @see MatchMethod
      */
@@ -300,7 +289,7 @@ public class WordDocument {
                         ArrayListWml textList = (ArrayListWml) r.getContent();
                         JAXBElement textElement = (JAXBElement) textList.get(0);
                         Text sourceValue = (Text) textElement.getValue();
-                        if(matchMethod.match(sourceValue.getValue(), value)) {
+                        if (matchMethod.match(sourceValue.getValue(), value)) {
                             return tbl;
                         }
                     }
@@ -316,7 +305,7 @@ public class WordDocument {
      * Finds the paragraph with given text value.
      *
      * @param matchMethod matchMethod that defines how passed value are matched with each paragraph value.
-     * @param value      string value to match.
+     * @param value       string value to match.
      * @return instance of found paragraph.
      * @see MatchMethod
      */
@@ -333,7 +322,7 @@ public class WordDocument {
                 JAXBElement textElement = (JAXBElement) textList.get(0);
                 Text sourceValue = (Text) textElement.getValue();
                 if (matchMethod.match(sourceValue.getValue(), value)) {
-                   return p;
+                    return p;
                 }
             } catch (ClassCastException e) {
                 continue;
@@ -346,13 +335,13 @@ public class WordDocument {
      * Finds the any object with given text value.
      *
      * @param matchMethod matchMethod that defines how passed value are matched with element's text value.
-     * @param value      string value to match.
+     * @param value       string value to match.
      * @return instance of element.
      * E.g. This method can return any element. This means that after calling the method,
      * you can cast the result to any element of any class that is contained in docx4j hierarchy.
      * <code>{Tbl table = (Tbl) returnedObject}</code>
      * @throws ClassCastException if you cast different classes. E.g. <code>{Tr tr = (Tr) returnedValue}</code>
-     * but <code>{returnedValue}</code> can be cast only to <code>{P paragraph = (P) returnedValue}</code>
+     *                            but <code>{returnedValue}</code> can be cast only to <code>{P paragraph = (P) returnedValue}</code>
      * @see MatchMethod
      */
     public Object findElementByText(MatchMethod matchMethod, String value) {
@@ -379,7 +368,7 @@ public class WordDocument {
                             ArrayListWml textList = (ArrayListWml) r.getContent();
                             JAXBElement textElement = (JAXBElement) textList.get(0);
                             Text sourceValue = (Text) textElement.getValue();
-                            if(matchMethod.match(sourceValue.getValue(), value)) {
+                            if (matchMethod.match(sourceValue.getValue(), value)) {
                                 return tc;
                             }
                         }
@@ -391,12 +380,40 @@ public class WordDocument {
         }
         return null;
     }
+
+    /**
+     * Creates and set word package from input stream specified.
+     *
+     * @param is input stream with word package contents. Creates new word package if is is null.
+     */
+    private void initMainDocumentPart(InputStream is) {
+        try {
+            if (is == null) {
+                wordPackage = WordprocessingMLPackage.createPackage();
+                // Create new one
+            } else {
+                wordPackage = WordprocessingMLPackage.load(is);
+            }
+
+
+            if (id > 0) {
+                Docx4jElementsCache.unregister(id);
+            } else {
+                id = Docx4jElementsCache.generateWordDocumentId();
+            }
+
+            Docx4jElementsCache.register(id, wordPackage);
+            this.wordDocumentElements = new ArrayList<>();
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("Initializing of word document for main part '%s' has failed.", getFilePath()), e);
+        }
+    }
 }
 
 
-    //implement getElements(), findTable(), findParagraphByText(), findElementByText(), findElement(Class class), find() get() remove(WordDocEl)
+//implement getElements(), findTable(), findParagraphByText(), findElementByText(), findElement(Class class), find() get() remove(WordDocEl)
 
-    //    private <T> T perform(BiFunction<Object, Class<?>, T> function) {
+//    private <T> T perform(BiFunction<Object, Class<?>, T> function) {
 //        return function.apply(wordPackage.getMainDocumentPart(), P.class);
 //    }
 //

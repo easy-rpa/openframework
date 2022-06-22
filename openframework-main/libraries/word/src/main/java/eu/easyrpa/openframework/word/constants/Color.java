@@ -1,6 +1,6 @@
 package eu.easyrpa.openframework.word.constants;
 
-public enum CellColor {
+public enum Color {
     RED("FF0000"),
     DARK_RED("C00000"),
     ORANGE("FFC000"),
@@ -19,7 +19,7 @@ public enum CellColor {
     /**
      * @param text choose on of cell color
      */
-    CellColor(final String text) {
+    Color(final String text) {
         this.text = text;
     }
 

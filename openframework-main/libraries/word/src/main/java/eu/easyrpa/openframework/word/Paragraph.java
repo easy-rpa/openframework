@@ -44,7 +44,8 @@ public class Paragraph implements Child {
     /**
      * Insert text value in paragraph. With adding it to the document.
      * After manipulation call save() or saveAs() in Word Document.
-     * @param p the instance in which you want to insert the text.
+     *
+     * @param p    the instance in which you want to insert the text.
      * @param text string value of text.
      */
     public void insertText(P p, String text) {
@@ -63,9 +64,9 @@ public class Paragraph implements Child {
      * Changes the style of text value in the object of class P, giving it a specific style (Title, Heading 1, etc.).
      * With adding it to the document.
      *
-     * @param p the instance in which you want to insert the text.
+     * @param p        the instance in which you want to insert the text.
      * @param resolver instance of PropertyResolver class to add specific JaxbElement to tree hierarchy of Docx4j Document Model.
-     * @param style represented all available styles interpretation by ParagraphStyle's enum.
+     * @param style    represented all available styles interpretation by ParagraphStyle's enum.
      */
     public void insertStyledText(P p, PropertyResolver resolver, ParagraphStyles style) {
         if (resolver.activateStyle(style.toString())) {
@@ -82,10 +83,11 @@ public class Paragraph implements Child {
 
     /**
      * Replaces the specified text passed as a parameter.
-     * @param p the instance where you want to replace text.
-     * @param method the way how the given values will be matched with value of cells. If <code>matchMethod</code>
-     *               is {@code null} the {@link MatchMethod#EXACT} is used as default.
-     * @param toFind string representation of desired value.
+     *
+     * @param p        the instance where you want to replace text.
+     * @param method   the way how the given values will be matched with value of cells. If <code>matchMethod</code>
+     *                 is {@code null} the {@link MatchMethod#EXACT} is used as default.
+     * @param toFind   string representation of desired value.
      * @param replacer string representation of replaceable value.
      * @throws ClassCastException if {@code P} not contain R class value (it's means that it's blank or non-text format)
      *                            cast to {@code R}.
@@ -106,9 +108,10 @@ public class Paragraph implements Child {
 
     /**
      * Adds an image at the end of the document without picture settings.
+     *
      * @param wordPackage the instance of base WordprocessingMLPackage witch allow generating byte array picture
      *                    representation to picture value.
-     * @param path the path to input picture file.
+     * @param path        the path to input picture file.
      */
     public void addImage(WordprocessingMLPackage wordPackage, Path path) throws Exception {
         byte[] bytes = convertImageToByteArray(path);
@@ -121,13 +124,14 @@ public class Paragraph implements Child {
 
     /**
      * Adds an image at the end of the document with picture settings.
-     * @param wordPackage the instance of base WordprocessingMLPackage witch allow generating byte array picture
-     *                    representation to picture value.
-     * @param path the path to input picture file.
+     *
+     * @param wordPackage  the instance of base WordprocessingMLPackage witch allow generating byte array picture
+     *                     representation to picture value.
+     * @param path         the path to input picture file.
      * @param fileNameHint filename setting, which will be reflected in a separate field in Word document tree hierarchy.
-     * @param altText alternative text setting with addition information in file description.
-     *                Which will be reflected in a separate field in Word document tree hierarchy.
-     * <p>These parameters are specific and are used to identify an image as an element when several identical images are added.</p>
+     * @param altText      alternative text setting with addition information in file description.
+     *                     Which will be reflected in a separate field in Word document tree hierarchy.
+     *                     <p>These parameters are specific and are used to identify an image as an element when several identical images are added.</p>
      */
     public void addImage(WordprocessingMLPackage wordPackage, Path path, String fileNameHint, String altText) throws Exception {
         byte[] bytes = convertImageToByteArray(path);
@@ -140,10 +144,11 @@ public class Paragraph implements Child {
 
     /**
      * Adds an image To a certain place where P element located without picture settings.
-     * @param p the instance where you want to insert picture.
+     *
+     * @param p           the instance where you want to insert picture.
      * @param wordPackage the instance of base WordprocessingMLPackage witch allow generating byte array picture
      *                    representation to picture value.
-     * @param path the path to input picture file.
+     * @param path        the path to input picture file.
      */
     public void addImage(P p, WordprocessingMLPackage wordPackage, Path path) throws Exception {
         byte[] bytes = convertImageToByteArray(path);
@@ -159,9 +164,10 @@ public class Paragraph implements Child {
 
     /**
      * Get an image byte array presentation.
-     * @param p the instance where you want to extract picture.
+     *
+     * @param p           the instance where you want to extract picture.
      * @param wordPackage the instance of base WordprocessingMLPackage represents the main package
-     *                   for working with all jaxb elements in the form of a tree-like hierarchy
+     *                    for working with all jaxb elements in the form of a tree-like hierarchy
      */
     public byte[] getImage(P p, WordprocessingMLPackage wordPackage) {
         JAXBElement<?> jaxbElement = (JAXBElement<?>) ((R) p.getContent().get(0)).getContent().get(0);
@@ -178,11 +184,12 @@ public class Paragraph implements Child {
 
     /**
      * Remove all text from p object with WordprocessingMLPackage. Delete the p-object from tree-hierarchy.
-     * @param p the instance where you want to remove text.
+     *
+     * @param p           the instance where you want to remove text.
      * @param wordPackage the instance of base WordprocessingMLPackage represents the main package
-     *                   for working with all jaxb elements in the form of a tree-like hierarchy
+     *                    for working with all jaxb elements in the form of a tree-like hierarchy
      * @throws ClassCastException if you want to remove the text, but it does not exist in this object.
-     * For example, it's contains Graphic, Table object, etc.
+     *                            For example, it's contains Graphic, Table object, etc.
      */
     public void removeText(P p, WordprocessingMLPackage wordPackage) {
         if (!p.getContent().isEmpty()) {
@@ -196,6 +203,7 @@ public class Paragraph implements Child {
 
     /**
      * Helper method to convert inline object to jaxb paragraph element (P).
+     *
      * @param inline the instance of Graphic object that allows to convert picture to paragraph element and add it to hierarchy.
      */
     private P addInlineImage(Inline inline) {
@@ -212,9 +220,10 @@ public class Paragraph implements Child {
 
     /**
      * Helper method to convert file to byte array.
+     *
      * @param path path to image file.
      * @throws RuntimeException if file too large or all bytes hasn't been read.
-     * @throws IOException if specific file path incorrect or missing.
+     * @throws IOException      if specific file path incorrect or missing.
      */
     private byte[] convertImageToByteArray(Path path) throws IOException {
         byte[] bytes;

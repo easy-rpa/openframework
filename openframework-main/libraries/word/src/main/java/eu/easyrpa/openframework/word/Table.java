@@ -1,6 +1,6 @@
 package eu.easyrpa.openframework.word;
 
-import eu.easyrpa.openframework.word.constants.CellColor;
+import eu.easyrpa.openframework.word.constants.Color;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.table.TblFactory;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -151,11 +151,12 @@ public class Table {
 
     /**
      * Set color of cell by provided tc docx4j object.
+     *
      * @param cell  docx4j element which represents the cell in the docx4j hierarchy.
      * @param color enum color (<code>{CellColor.RED, CellColor.BLUE, etc.}</code>.
-     * @see CellColor
+     * @see Color
      */
-    public void setCellColor(Tc cell, CellColor color) {
+    public void setCellColor(Tc cell, Color color) {
         if (color != null) {
             TcPr tableCellProperties = cell.getTcPr();
             if (tableCellProperties == null) {
@@ -170,22 +171,24 @@ public class Table {
 
     /**
      * Helper method to change default cell color.
-     * @param cell  docx4j element which represents the cell in the docx4j hierarchy.
+     *
+     * @param cell docx4j element which represents the cell in the docx4j hierarchy.
      */
     public void removeCellColor(Tc cell) {
-        setCellColor(cell, CellColor.WHITE);
+        setCellColor(cell, Color.WHITE);
     }
 
     /**
      * Set inch cell width .
-     * @param cell  docx4j element which represents the cell in the docx4j hierarchy.
+     *
+     * @param cell      docx4j element which represents the cell in the docx4j hierarchy.
      * @param inchWidth a floating value that specifies how many inches you want to resize the cell.
-     * E.g. Шn docx4j jaxb element which present "width" using dxa system to set width value.
+     *                  E.g. Шn docx4j jaxb element which present "width" using dxa system to set width value.
      */
     public void setCellWidth(Tc cell, float inchWidth) {
         if (inchWidth > 0) {
             float floatWidth = inchWidth * 10;
-            int width = (int) floatWidth  * 144;   // by dxa type system
+            int width = (int) floatWidth * 144;   // by dxa type system
             TcPr tableCellProperties = cell.getTcPr();
             if (tableCellProperties == null) {
                 tableCellProperties = new TcPr();
@@ -200,11 +203,12 @@ public class Table {
 
     /**
      * Merging cells horizontally.
-     * @param table docx4j element which represents the table in the hierarchy.
-     * @param row numeric index of row (start from 0).
-     *            E.g. It's means that if you want to choose 1-st row you should set 0-value.
+     *
+     * @param table     docx4j element which represents the table in the hierarchy.
+     * @param row       numeric index of row (start from 0).
+     *                  E.g. It's means that if you want to choose 1-st row you should set 0-value.
      * @param startCell numeric value where the merge starts.
-     * @param endCell numeric value where the merge ends.
+     * @param endCell   numeric value where the merge ends.
      */
     public void mergeCellsHorizontal(Tbl table, int row, int startCell, int endCell) {
         if (row < 0 || startCell < 0 || endCell < 0) {
@@ -234,11 +238,12 @@ public class Table {
 
     /**
      * Merging cells horizontally.
-     * @param table docx4j element which represents the table in the hierarchy.
-     * @param col numeric index of column (start from 0).
-     *            E.g. It's means that if you want to choose 1-st column you should set 0-value.
+     *
+     * @param table    docx4j element which represents the table in the hierarchy.
+     * @param col      numeric index of column (start from 0).
+     *                 E.g. It's means that if you want to choose 1-st column you should set 0-value.
      * @param startRow numeric value where the row merge starts.
-     * @param endRow numeric value where the row merge ends.
+     * @param endRow   numeric value where the row merge ends.
      */
     public void mergeCellsVertically(Tbl table, int col, int startRow, int endRow) {
         if (col < 0 || startRow < 0 || endRow < 0) {
@@ -265,10 +270,11 @@ public class Table {
 
     /**
      * Helper method to get cell from Tbl docx4j element.
+     *
      * @param table docx4j element which represents the table in the hierarchy.
-     * @param row numeric index of row.
-     * @param cell numeric index of cell.
-     * For example <code>{row = 2, cell = 3}</code> it will return a docx4j cell by the 1st row index and the 2nd cell index.
+     * @param row   numeric index of row.
+     * @param cell  numeric index of cell.
+     *              For example <code>{row = 2, cell = 3}</code> it will return a docx4j cell by the 1st row index and the 2nd cell index.
      * @return tc docx4j element by provided table element, row and cell index.
      */
     private Tc getTc(Tbl table, int row, int cell) {
@@ -288,6 +294,7 @@ public class Table {
 
     /**
      * Helper method to all cells by provided docx4j row element.
+     *
      * @param row docx4j element which represents the row in the table docx4j hierarchy.
      * @return the List of cells docx4j element by provided row element.
      * @throws ClassCastException if cell element missing or damaged.
@@ -314,6 +321,7 @@ public class Table {
 
     /**
      * Helper method to all row by provided docx4j table element.
+     *
      * @param table docx4j element which represents the table in the docx4j hierarchy.
      * @return the List of rows docx4j element by provided table element.
      */
@@ -334,6 +342,7 @@ public class Table {
 
     /**
      * Helper method to create specific instance docx4j TcPr.
+     *
      * @param cell the element represented cell in docx4j structure.
      * @return new TcPr instance.
      */
