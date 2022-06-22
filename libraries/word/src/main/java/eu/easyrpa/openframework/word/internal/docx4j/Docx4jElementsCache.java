@@ -1,7 +1,6 @@
 package eu.easyrpa.openframework.word.internal.docx4j;
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 
 import java.util.HashMap;
 import java.util.Map;
