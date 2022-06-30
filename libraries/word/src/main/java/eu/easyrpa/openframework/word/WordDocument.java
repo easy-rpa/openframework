@@ -1,27 +1,18 @@
 package eu.easyrpa.openframework.word;
 
 import eu.easyrpa.openframework.core.utils.FilePathUtils;
-import eu.easyrpa.openframework.word.constants.MatchMethod;
-import eu.easyrpa.openframework.word.internal.docx4j.Docx4jElementsCache;
-import org.docx4j.model.PropertyResolver;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.wml.*;
 
-import javax.xml.bind.JAXBElement;
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 public class WordDocument {
 
-    /**
-     * Unique Word document identified.
-     */
-    private int id = -1;
-
-    private WordDocumentElement child;
 
     /**
      * Path to related to this document Word file. It's a place where the document
@@ -30,17 +21,15 @@ public class WordDocument {
     private String filePath;
 
     /**
-     * Reference to related Docx4j document.
+     * Reference to related OPC Package.
      */
-    private WordprocessingMLPackage wordPackage;
-
-    private List<WordDocumentElement> wordDocumentElements;
+    private WordprocessingMLPackage opcPackage;
 
     /**
      * Creates empty Excel document.
      */
     public WordDocument() {
-        initMainDocumentPart(null);
+        reload(null);
     }
 
     /**
@@ -49,7 +38,19 @@ public class WordDocument {
      * @param is input stream that needs to accessed via this document.
      */
     public WordDocument(InputStream is) {
-        initMainDocumentPart(is);
+        reload(is);
+    }
+
+    public WordDocument(File file) {
+        if (file == null) {
+            throw new IllegalArgumentException("File cannot be null.");
+        }
+        try {
+            setFilePath(file.getAbsolutePath());
+            reload(new FileInputStream(file));
+        } catch (FileNotFoundException e) {
+            throw new IllegalArgumentException(String.format("File '%s' is not exist.", file.getAbsolutePath()), e);
+        }
     }
 
     /**
@@ -63,10 +64,23 @@ public class WordDocument {
             throw new IllegalArgumentException("Path cannot be null.");
         }
         try {
-            setFilePath(String.valueOf(path.toAbsolutePath()));
-            initMainDocumentPart(new FileInputStream(path.toFile()));
+            setFilePath(path.toAbsolutePath().toString());
+            reload(Files.newInputStream(path));
+        } catch (IOException e) {
+            throw new IllegalArgumentException(String.format("Failed to read file '%s'. Perhaps is's not exist.", path), e);
+        }
+    }
+
+    public WordDocument(String filePath) {
+        if (filePath == null) {
+            throw new IllegalArgumentException("File path cannot be null.");
+        }
+        File file = FilePathUtils.getFile(filePath);
+        try {
+            setFilePath(file.getAbsolutePath());
+            reload(new FileInputStream(file));
         } catch (FileNotFoundException e) {
-            throw new IllegalArgumentException(String.format("File '%s' is not exist.", path.toAbsolutePath()), e);
+            throw new IllegalArgumentException(String.format("File '%s' is not exist.", filePath), e);
         }
     }
 
@@ -135,30 +149,112 @@ public class WordDocument {
                 }
             }
             try (FileOutputStream out = new FileOutputStream(file, false)) {
-                wordPackage.save(out);
+                opcPackage.save(out);
             }
         } catch (Docx4JException | IOException e) {
             throw new RuntimeException(String.format("Failed to save excel document to file located at '%s'.", filePath), e);
         }
     }
 
-    /**
-     * Updates content of this Excel document. Invokes Apache POI workbook reinitialization.
-     *
-     * @param is input stream with contents.
-     */
-
-    public void update(InputStream is) {
-        initMainDocumentPart(is);
+    public String text() {
+        //TODO Implement this.
+        // Reading of all text of this document.
+        return null;
     }
 
-    /**
-     * Gets this Word document unique identifier.
-     *
-     * @return unique identifier of this document.
-     */
-    public int getId() {
-        return id;
+    public List<WordDocElement> read() {
+        //TODO Implement this.
+        // Reading of all supported doc elements.
+        return null;
+    }
+
+    public void read(Function<WordDocElement, Boolean> handler) {
+        //TODO Implement this.
+        // Reading of all supported doc elements. Using via handler. If handler returns false
+        // the reading is interrupted.
+    }
+
+    public void append(String text) {
+        //TODO Implement this.
+        // Appends text the end of document.
+        // append as new paragraph
+    }
+
+    public void append(Picture picture) {
+        //TODO Implement this.
+        // Appends picture the end of document.
+    }
+
+    public void insertBefore(TextRange textRange, String text) {
+        //TODO Implement this.
+        // Insert text into the place related of text range.
+        // Insert as new paragraph
+    }
+
+    public void insertBefore(TextRange textRange, Picture picture) {
+        //TODO Implement this.
+        // Insert picture into the place related of text range.
+        // Insert as new paragraph
+    }
+
+    public void insertAfter(TextRange textRange, String text) {
+        //TODO Implement this.
+        // Insert text into the place related of text range.
+        // Insert as new paragraph
+    }
+
+    public void insertAfter(TextRange textRange, Picture picture) {
+        //TODO Implement this.
+        // Insert picture into the place related of text range.
+        // Insert as new paragraph
+    }
+
+    public void setVariable(String varName, String value) {
+        //TODO Implement this.
+        // Sets the value of specific variable in the document.
+    }
+
+    public void mapVariables(Map<String, String> values) {
+        //TODO Implement this.
+        // Sets values of variables in the document provided with map.
+    }
+
+    public TextRange findText(String regexp) {
+        //TODO Implement this.
+        return null;
+    }
+
+    public TextRange findText(String regexp, Function<TextRange, Boolean> checker) {
+        //TODO Implement this.
+        return null;
+    }
+
+    public List<TextRange> findAllText(String regexp) {
+        //TODO Implement this.
+        return null;
+    }
+
+    public Picture findPicture(String altTextRegexp) {
+        //TODO Implement this.
+        return null;
+    }
+
+    public Picture findPicture(String altTextRegexp, Function<Picture, Boolean> checker) {
+        //TODO Implement this.
+        return null;
+    }
+
+    public List<Picture> findPictures(String altTextRegexp) {
+        //TODO Implement this.
+        return null;
+    }
+
+    public void exportToPDF(String pdfFilePath) {
+        //TODO Implement this.
+    }
+
+    public void exportToPDF(Path pdfFilePath) {
+        //TODO Implement this.
     }
 
     /**
@@ -166,244 +262,217 @@ public class WordDocument {
      *
      * @return the instance of WordprocessingMLPackage.
      */
-    public WordprocessingMLPackage getWordPackage() {
-        return wordPackage;
+    public WordprocessingMLPackage getOpcPackage() {
+        return opcPackage;
     }
-
-    /**
-     * Gets list of WordDocumentElements.
-     *
-     * @return the list of WordDocumentElements.
-     */
-    public List<WordDocumentElement> getWordDocumentElements() {
-        return wordDocumentElements;
-    }
-
-    /**
-     * Helper method to add new instance of WordDocumentElement into list.
-     *
-     * @param wordDocumentElement the instance of WordDocumentElement.
-     */
-    public void addWordDocumentElement(WordDocumentElement wordDocumentElement) {
-        getWordDocumentElements().add(wordDocumentElement);
-    }
-
-    /**
-     * Helper functional method which return a setting PropertyResolver instance.
-     * That class works out the actual set of properties which apply, following the order specified in ECMA-376.
-     *
-     * @return property resolver instance.
-     */
-    public PropertyResolver getPropertyResolver() {
-        return this.wordPackage.getMainDocumentPart().getPropertyResolver();
-    }
-
-    //?
-    public Object findElement(Class<?> toSearch) {
-        for (Object o : getElements()) {
-            try {
-                return toSearch.cast(o);
-            } catch (ClassCastException e) {
-                return null;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Helper recursive method to find any List elements of object by docx4j hierarchy.
-     *
-     * @param obj      the element in which to find the nested search elements.
-     * @param toSearch class which you want to find. For example <code>{Tbl.class}, {Tr.class}, {P.class}</code>
-     * @return the nested List of elements by provided base search element.
-     */
-    public List<Object> getElements(Object obj, Class<?> toSearch) {
-        List<Object> result = new ArrayList<>();
-        if (obj instanceof JAXBElement) obj = ((JAXBElement<?>) obj).getValue();
-
-        if (obj.getClass().equals(toSearch))
-            result.add(obj);
-        else if (obj instanceof ContentAccessor) {
-            List<?> children = ((ContentAccessor) obj).getContent();
-            for (Object child : children) {
-                result.addAll(getElements(child, toSearch));
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Gets elements which are in the Word file.
-     *
-     * @return List of elements.
-     */
-    public List<Object> getElements() {
-        List<Object> objectList = new ArrayList<>();
-        for (Object o : wordPackage.getMainDocumentPart().getJaxbElement().getBody().getContent()) {
-            try {
-                JAXBElement jaxbElement = (JAXBElement) o;
-                objectList.add(jaxbElement.getValue());
-            } catch (ClassCastException e) {
-                objectList.add(o);
-            }
-        }
-        return objectList;
-    }
-
-    //test method (to dev)
-    public List<Class<?>> getClassElements() {
-        List<Class<?>> outputList = new ArrayList<>();
-        List<Object> objectList = wordPackage.getMainDocumentPart().getJaxbElement().getBody().getContent();
-        for (Object o : objectList) {
-            outputList.add(o.getClass());
-        }
-        return outputList;
-    }
-
-    /**
-     * Finds the table with a cell that contains given value.
-     *
-     * @param matchMethod method that defines how passed value are matched with each cell value.
-     * @param value       string value to match.
-     * @return instance of found table or <code>null</code> if table not found.
-     * @see MatchMethod
-     */
-    public Tbl findTable(MatchMethod matchMethod, String value) {
-        for (Object o : getElements()) {
-            try {
-                Tbl tbl = (Tbl) o;
-                List<Object> rows = getElements(tbl, Tr.class);
-                for (Object row : rows) {
-                    Tr templateRow = (Tr) row;
-                    List<Object> rowsContent = templateRow.getContent();
-                    for (Object rowContent : rowsContent) {
-                        JAXBElement rowElement = (JAXBElement) rowContent;
-                        Tc tc = (Tc) rowElement.getValue();
-                        ArrayListWml paragraphsList = (ArrayListWml) tc.getContent();
-                        P p = (P) paragraphsList.get(0);
-                        ArrayListWml rList = (ArrayListWml) p.getContent();
-                        if (rList.isEmpty()) {
-                            break;
-                        }
-                        R r = (R) rList.get(0);
-                        ArrayListWml textList = (ArrayListWml) r.getContent();
-                        JAXBElement textElement = (JAXBElement) textList.get(0);
-                        Text sourceValue = (Text) textElement.getValue();
-                        if (matchMethod.match(sourceValue.getValue(), value)) {
-                            return tbl;
-                        }
-                    }
-                }
-            } catch (ClassCastException e) {
-                continue;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Finds the paragraph with given text value.
-     *
-     * @param matchMethod matchMethod that defines how passed value are matched with each paragraph value.
-     * @param value       string value to match.
-     * @return instance of found paragraph.
-     * @see MatchMethod
-     */
-    public P findParagraphByText(MatchMethod matchMethod, String value) {
-        for (Object o : getElements()) {
-            try {
-                P p = (P) o;
-                ArrayListWml rList = (ArrayListWml) p.getContent();
-                if (rList.isEmpty()) {
-                    return null;
-                }
-                R r = (R) rList.get(0);
-                ArrayListWml textList = (ArrayListWml) r.getContent();
-                JAXBElement textElement = (JAXBElement) textList.get(0);
-                Text sourceValue = (Text) textElement.getValue();
-                if (matchMethod.match(sourceValue.getValue(), value)) {
-                    return p;
-                }
-            } catch (ClassCastException e) {
-                continue;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Finds the any object with given text value.
-     *
-     * @param matchMethod matchMethod that defines how passed value are matched with element's text value.
-     * @param value       string value to match.
-     * @return instance of element.
-     * E.g. This method can return any element. This means that after calling the method,
-     * you can cast the result to any element of any class that is contained in docx4j hierarchy.
-     * <code>{Tbl table = (Tbl) returnedObject}</code>
-     * @throws ClassCastException if you cast different classes. E.g. <code>{Tr tr = (Tr) returnedValue}</code>
-     *                            but <code>{returnedValue}</code> can be cast only to <code>{P paragraph = (P) returnedValue}</code>
-     * @see MatchMethod
-     */
-    public Object findElementByText(MatchMethod matchMethod, String value) {
-        try {
-            return findParagraphByText(matchMethod, value);
-        } catch (ClassCastException e) {
-            for (Object o : getElements()) {
-                try {
-                    Tbl tbl = (Tbl) o;
-                    List<Object> rows = getElements(tbl, Tr.class);
-                    for (Object row : rows) {
-                        Tr templateRow = (Tr) row;
-                        List<Object> rowsContent = templateRow.getContent();
-                        for (Object rowContent : rowsContent) {
-                            JAXBElement rowElement = (JAXBElement) rowContent;
-                            Tc tc = (Tc) rowElement.getValue();
-                            ArrayListWml paragraphsList = (ArrayListWml) tc.getContent();
-                            P p = (P) paragraphsList.get(0);
-                            ArrayListWml rList = (ArrayListWml) p.getContent();
-                            if (rList.isEmpty()) {
-                                break;
-                            }
-                            R r = (R) rList.get(0);
-                            ArrayListWml textList = (ArrayListWml) r.getContent();
-                            JAXBElement textElement = (JAXBElement) textList.get(0);
-                            Text sourceValue = (Text) textElement.getValue();
-                            if (matchMethod.match(sourceValue.getValue(), value)) {
-                                return tc;
-                            }
-                        }
-                    }
-                } catch (ClassCastException exception) {
-                    continue;
-                }
-            }
-        }
-        return null;
-    }
+//
+//
+//
+//    //?
+//    public Object findElement(Class<?> toSearch) {
+////        TraversalUtil.visit(wordPackage, true, new TraversalUtilVisitor<P>(){
+////            public void apply(P element) {
+////
+////            }
+////        });
+//
+//        for (Object o : getElements()) {
+//            try {
+//                return toSearch.cast(o);
+//            } catch (ClassCastException e) {
+//                return null;
+//            }
+//        }
+//        return null;
+//    }
+//
+//    /**
+//     * Helper recursive method to find any List elements of object by docx4j hierarchy.
+//     *
+//     * @param obj      the element in which to find the nested search elements.
+//     * @param toSearch class which you want to find. For example <code>{Tbl.class}, {Tr.class}, {P.class}</code>
+//     * @return the nested List of elements by provided base search element.
+//     */
+//    public List<Object> getElements(Object obj, Class<?> toSearch) {
+//        List<Object> result = new ArrayList<>();
+//        if (obj instanceof JAXBElement) obj = ((JAXBElement<?>) obj).getValue();
+//
+//        if (obj.getClass().equals(toSearch))
+//            result.add(obj);
+//        else if (obj instanceof ContentAccessor) {
+//            List<?> children = ((ContentAccessor) obj).getContent();
+//            for (Object child : children) {
+//                result.addAll(getElements(child, toSearch));
+//            }
+//        }
+//        return result;
+//    }
+//
+//    /**
+//     * Gets elements which are in the Word file.
+//     *
+//     * @return List of elements.
+//     */
+//    public List<Object> getElements() {
+//        List<Object> objectList = new ArrayList<>();
+//        for (Object o : opcPackage.getMainDocumentPart().getJaxbElement().getBody().getContent()) {
+//            try {
+//                JAXBElement jaxbElement = (JAXBElement) o;
+//                objectList.add(jaxbElement.getValue());
+//            } catch (ClassCastException e) {
+//                objectList.add(o);
+//            }
+//        }
+//        return objectList;
+//    }
+//
+//    //test method (to dev)
+//    public List<Class<?>> getClassElements() {
+//        List<Class<?>> outputList = new ArrayList<>();
+//        List<Object> objectList = opcPackage.getMainDocumentPart().getJaxbElement().getBody().getContent();
+//        for (Object o : objectList) {
+//            outputList.add(o.getClass());
+//        }
+//        return outputList;
+//    }
+//
+//    /**
+//     * Finds the table with a cell that contains given value.
+//     *
+//     * @param matchMethod method that defines how passed value are matched with each cell value.
+//     * @param value       string value to match.
+//     * @return instance of found table or <code>null</code> if table not found.
+//     * @see MatchMethod
+//     */
+//    public Tbl findTable(MatchMethod matchMethod, String value) {
+//
+//
+//        for (Object o : getElements()) {
+//            try {
+//                Tbl tbl = (Tbl) o;
+//                List<Object> rows = getElements(tbl, Tr.class);
+//                for (Object row : rows) {
+//                    Tr templateRow = (Tr) row;
+//                    List<Object> rowsContent = templateRow.getContent();
+//                    for (Object rowContent : rowsContent) {
+//                        JAXBElement rowElement = (JAXBElement) rowContent;
+//                        Tc tc = (Tc) rowElement.getValue();
+//                        ArrayListWml paragraphsList = (ArrayListWml) tc.getContent();
+//                        P p = (P) paragraphsList.get(0);
+//                        ArrayListWml rList = (ArrayListWml) p.getContent();
+//                        if (rList.isEmpty()) {
+//                            break;
+//                        }
+//                        R r = (R) rList.get(0);
+//                        ArrayListWml textList = (ArrayListWml) r.getContent();
+//                        JAXBElement textElement = (JAXBElement) textList.get(0);
+//                        Text sourceValue = (Text) textElement.getValue();
+//                        if (matchMethod.match(sourceValue.getValue(), value)) {
+//                            return tbl;
+//                        }
+//                    }
+//                }
+//            } catch (ClassCastException e) {
+//                continue;
+//            }
+//        }
+//        return null;
+//    }
+//
+//    /**
+//     * Finds the paragraph with given text value.
+//     *
+//     * @param matchMethod matchMethod that defines how passed value are matched with each paragraph value.
+//     * @param value       string value to match.
+//     * @return instance of found paragraph.
+//     * @see MatchMethod
+//     */
+//    public P findParagraphByText(MatchMethod matchMethod, String value) {
+//        for (Object o : getElements()) {
+//            try {
+//                P p = (P) o;
+//                ArrayListWml rList = (ArrayListWml) p.getContent();
+//                if (rList.isEmpty()) {
+//                    return null;
+//                }
+//                R r = (R) rList.get(0);
+//                ArrayListWml textList = (ArrayListWml) r.getContent();
+//                JAXBElement textElement = (JAXBElement) textList.get(0);
+//                Text sourceValue = (Text) textElement.getValue();
+//                if (matchMethod.match(sourceValue.getValue(), value)) {
+//                    return p;
+//                }
+//            } catch (ClassCastException e) {
+//                continue;
+//            }
+//        }
+//        return null;
+//    }
+//
+//    /**
+//     * Finds the any object with given text value.
+//     *
+//     * @param matchMethod matchMethod that defines how passed value are matched with element's text value.
+//     * @param value       string value to match.
+//     * @return instance of element.
+//     * E.g. This method can return any element. This means that after calling the method,
+//     * you can cast the result to any element of any class that is contained in docx4j hierarchy.
+//     * <code>{Tbl table = (Tbl) returnedObject}</code>
+//     * @throws ClassCastException if you cast different classes. E.g. <code>{Tr tr = (Tr) returnedValue}</code>
+//     *                            but <code>{returnedValue}</code> can be cast only to <code>{P paragraph = (P) returnedValue}</code>
+//     * @see MatchMethod
+//     */
+//    public Object findElementByText(MatchMethod matchMethod, String value) {
+//        try {
+//            return findParagraphByText(matchMethod, value);
+//        } catch (ClassCastException e) {
+//            for (Object o : getElements()) {
+//                try {
+//                    Tbl tbl = (Tbl) o;
+//                    List<Object> rows = getElements(tbl, Tr.class);
+//                    for (Object row : rows) {
+//                        Tr templateRow = (Tr) row;
+//                        List<Object> rowsContent = templateRow.getContent();
+//                        for (Object rowContent : rowsContent) {
+//                            JAXBElement rowElement = (JAXBElement) rowContent;
+//                            Tc tc = (Tc) rowElement.getValue();
+//                            ArrayListWml paragraphsList = (ArrayListWml) tc.getContent();
+//                            P p = (P) paragraphsList.get(0);
+//                            ArrayListWml rList = (ArrayListWml) p.getContent();
+//                            if (rList.isEmpty()) {
+//                                break;
+//                            }
+//                            R r = (R) rList.get(0);
+//                            ArrayListWml textList = (ArrayListWml) r.getContent();
+//                            JAXBElement textElement = (JAXBElement) textList.get(0);
+//                            Text sourceValue = (Text) textElement.getValue();
+//                            if (matchMethod.match(sourceValue.getValue(), value)) {
+//                                return tc;
+//                            }
+//                        }
+//                    }
+//                } catch (ClassCastException exception) {
+//                    continue;
+//                }
+//            }
+//        }
+//        return null;
+//    }
 
     /**
      * Creates and set word package from input stream specified.
      *
      * @param is input stream with word package contents. Creates new word package if is is null.
      */
-    private void initMainDocumentPart(InputStream is) {
+    public void reload(InputStream is) {
         try {
             if (is == null) {
-                wordPackage = WordprocessingMLPackage.createPackage();
+                opcPackage = WordprocessingMLPackage.createPackage();
                 // Create new one
             } else {
-                wordPackage = WordprocessingMLPackage.load(is);
+                opcPackage = WordprocessingMLPackage.load(is);
             }
 
-
-            if (id > 0) {
-                Docx4jElementsCache.unregister(id);
-            } else {
-                id = Docx4jElementsCache.generateWordDocumentId();
-            }
-
-            Docx4jElementsCache.register(id, wordPackage);
-            this.wordDocumentElements = new ArrayList<>();
         } catch (Exception e) {
             throw new RuntimeException(String.format("Initializing of word document for main part '%s' has failed.", getFilePath()), e);
         }

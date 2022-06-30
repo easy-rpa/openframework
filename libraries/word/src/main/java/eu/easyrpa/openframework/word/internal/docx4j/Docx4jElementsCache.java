@@ -5,6 +5,8 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import java.util.HashMap;
 import java.util.Map;
 
+// TODO REMOVE THIS CLASS
+
 public class Docx4jElementsCache {
 
     private static Docx4jElementsCache INSTANCE;

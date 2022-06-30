@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+//TODO REMOVE THIS CLASS
+
 public class DocVariables {
     private static final int SEED = 100_000;
 

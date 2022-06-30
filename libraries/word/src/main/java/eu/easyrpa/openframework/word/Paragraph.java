@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 
+//TODO REMOVE THIS CLASS
+
 /**
  * Represents specific paragraph of Word document and provides functionality to work with it.
  */

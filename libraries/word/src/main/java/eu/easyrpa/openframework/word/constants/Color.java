@@ -1,5 +1,7 @@
 package eu.easyrpa.openframework.word.constants;
 
+//TODO REMOVE THIS CLASS
+
 public enum Color {
     RED("FF0000"),
     DARK_RED("C00000"),

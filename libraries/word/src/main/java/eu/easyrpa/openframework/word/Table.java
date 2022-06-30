@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+//TODO REDESIGN
+
 public class Table {
 
     /**
@@ -41,7 +43,7 @@ public class Table {
      * @return parent Word document.
      */
 
-    public WordDocumentElement getDocumentElement() {
+    public WordDocElement getDocumentElement() {
         return null;
     }
 

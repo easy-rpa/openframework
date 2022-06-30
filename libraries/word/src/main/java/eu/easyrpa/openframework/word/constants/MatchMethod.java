@@ -1,6 +1,5 @@
 package eu.easyrpa.openframework.word.constants;
 
-
 /**
  * Helps to identify way of matching value strings during comparing.
  */
