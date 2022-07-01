@@ -5,7 +5,7 @@ import org.docx4j.wml.R;
 import java.util.List;
 import java.util.function.Function;
 
-public class TextRange extends WordDocElement {
+public class TextRange {
 
     private List<R> textRuns;
 
@@ -13,16 +13,15 @@ public class TextRange extends WordDocElement {
 
     private int endIndex;
 
-    TextRange(WordDocument document, List<R> textRuns, int startIndex, int endIndex) {
-        super(document);
+    TextRange(List<R> textRuns, int startIndex, int endIndex) {
         this.textRuns = textRuns;
         this.startIndex = startIndex;
         this.endIndex = endIndex;
     }
 
-    public TextStyle style() {
+    public TextFormat format() {
         //TODO implement this
-        return new TextStyle(this);
+        return new TextFormat(this);
     }
 
     public String text() {

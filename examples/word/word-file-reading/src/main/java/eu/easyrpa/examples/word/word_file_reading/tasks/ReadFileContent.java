@@ -1,14 +1,10 @@
 package eu.easyrpa.examples.word.word_file_reading.tasks;
 
-import eu.easyrpa.openframework.word.WordDocElement;
 import eu.easyrpa.openframework.word.WordDocument;
-import eu.easyrpa.openframework.word.constants.MatchMethod;
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
 
 @ApTaskEntry(name = "Read File Content")
 @Slf4j
@@ -35,33 +31,31 @@ public class ReadFileContent extends ApTask {
 //        doc.append(text); //add paragraph the end
 //        doc.setVariable(vVarName, value); // set var value
 //        doc.mapVariables(Map<var, value>);
-//        TextRange pos = doc.findText(regx)
-//        doc.findText(regx, o->{
-//            return true // go to next
-//            return false // stop
+//        TextRange text = doc.findText(regx)
+//        TextRange text = doc.findText(regx, o->{
+//            return true // return as result
+//            return false // continue
 //        })
 //        List<TextRange> result = findAllText(regx)
 //
 //       // TextRange - the work within current paragraph
-//        doc.findText(regx).style().bold().color(red).apply();
-//        doc.findText(regx).extend(left|right|both, 1, words|chars|lines).replace(text)
+//        doc.findText(regx).format().bold().color(red);
+//        doc.findText(regx).expandLeft().expandRight().replace(text)
 //        doc.findText(regx).text()
 //        doc.findText(regx).words()
-//        doc.findText(regx).add(after|before, text)
-//        doc.findText(regx).add(after|before, path) //insert image
-//        doc.findText(regx).add(after|before, path) // insert table
-//        doc.findText(regx).replace(text)
-//        doc.findText(regx).replaceWith(picture|file|path) //insert image
-//        doc.findText(regx).replaceWith(entityClass, List<Entiry>) // insert table
+//        doc.findText(regx).addAfter(text)
+//        doc.findText(regx).addBefore(path) //insert image
+//        doc.findText(regx).replaceWith(text)
+//        doc.findText(regx).replaceWith(picture) //insert image
 //        doc.findText(regx).remove()
 //
-//       // TextStyle
-//        style().bold()
-//        style().italic()
-//        style().font()
-//        style().fontSize()
-//        style().color()
-//        style().background()
+//       // TextFormat
+//        format().bold()
+//        format().italic()
+//        format().font()
+//        format().fontSize()
+//        format().color()
+//        format().background()
 //
 //       // Picture
 //        doc.append(picture) // add picture to the end

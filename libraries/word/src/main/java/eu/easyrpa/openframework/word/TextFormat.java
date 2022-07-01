@@ -7,11 +7,11 @@ import java.awt.*;
 
 //TODO update javadoc
 
-public class TextStyle {
+public class TextFormat {
 
     private TextRange relatedText;
 
-    TextStyle(TextRange relatedText) {
+    TextFormat(TextRange relatedText) {
         this.relatedText = relatedText;
     }
 
@@ -21,7 +21,7 @@ public class TextStyle {
      * @param font the {@link FontFamily} of font to apply.
      * @return this cell style object to allow joining of methods calls into chain.
      */
-    public TextStyle font(FontFamily font) {
+    public TextFormat font(FontFamily font) {
         //TODO implement this
         return this;
     }
@@ -37,7 +37,7 @@ public class TextStyle {
      * @param fontSize the size of font in points.
      * @return this cell style object to allow joining of methods calls into chain.
      */
-    public TextStyle fontSize(int fontSize) {
+    public TextFormat fontSize(int fontSize) {
         //TODO implement this
         return this;
     }
@@ -53,7 +53,7 @@ public class TextStyle {
      * @param isBold {@code true} to set as bold and {@code false} otherwise.
      * @return this cell style object to allow joining of methods calls into chain.
      */
-    public TextStyle bold(boolean isBold) {
+    public TextFormat bold(boolean isBold) {
         //TODO implement this
         return this;
     }
@@ -69,7 +69,7 @@ public class TextStyle {
      * @param isItalic {@code true} to set as italic and {@code false} otherwise.
      * @return this cell style object to allow joining of methods calls into chain.
      */
-    public TextStyle italic(boolean isItalic) {
+    public TextFormat italic(boolean isItalic) {
         //TODO implement this
         return this;
     }
@@ -85,7 +85,7 @@ public class TextStyle {
      * @param isUnderline {@code true} to set as underlined and {@code false} otherwise.
      * @return this cell style object to allow joining of methods calls into chain.
      */
-    public TextStyle underline(boolean isUnderline) {
+    public TextFormat underline(boolean isUnderline) {
         //TODO implement this
         return this;
     }
@@ -101,7 +101,7 @@ public class TextStyle {
      * @param color the color to set.
      * @return this cell style object to allow joining of methods calls into chain.
      */
-    public TextStyle color(Color color) {
+    public TextFormat color(Color color) {
         //TODO implement this
         return this;
     }
@@ -117,7 +117,7 @@ public class TextStyle {
      * @param color the color to set.
      * @return this cell style object to allow joining of methods calls into chain.
      */
-    public TextStyle background(Color color) {
+    public TextFormat background(Color color) {
         //TODO implement this
         return this;
     }
@@ -134,7 +134,7 @@ public class TextStyle {
      * @return this cell style object to allow joining of methods calls into chain.
      * @see TextAlignment
      */
-    public TextStyle align(TextAlignment align) {
+    public TextFormat align(TextAlignment align) {
         //TODO implement this
         return this;
     }

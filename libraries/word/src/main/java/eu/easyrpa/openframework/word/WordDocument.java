@@ -162,13 +162,13 @@ public class WordDocument {
         return null;
     }
 
-    public List<WordDocElement> read() {
+    public List<Object> read() {
         //TODO Implement this.
         // Reading of all supported doc elements.
         return null;
     }
 
-    public void read(Function<WordDocElement, Boolean> handler) {
+    public void read(Function<Object, Boolean> handler) {
         //TODO Implement this.
         // Reading of all supported doc elements. Using via handler. If handler returns false
         // the reading is interrupted.
