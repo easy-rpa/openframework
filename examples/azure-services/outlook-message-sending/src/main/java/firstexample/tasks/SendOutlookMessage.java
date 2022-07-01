@@ -16,7 +16,7 @@ public class SendOutlookMessage extends ApTask {
 
     @Override
     public void execute() throws Exception {
-        outlookEmailService.sendMail("BRuh", "Bruh", "kossart2001@gmail.com");
+        outlookEmailService.sendMail("Subject", "Body", "Recipient");
     }
 
 

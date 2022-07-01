@@ -9,10 +9,10 @@ import com.microsoft.graph.requests.GraphServiceClient;
 import eu.easyrpa.openframework.core.sevices.RPAServicesAccessor;
 import okhttp3.Request;
 import services.constants.GraphServicesConfigParam;
+import services.exception.GraphAuthException;
 
 import javax.inject.Inject;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -23,9 +23,9 @@ import java.util.function.Consumer;
  * Helps to perform configuration and retrieving of necessary secret information, authentication on Azure server and
  * authorization to using some Azure API service on behalf of specific Microsoft account.
  */
-public class AzureAuth {
+public class GraphServiceProvider {
 
-    private static final String DEFAULT_TENANT_ID= "common";
+    private static final String DEFAULT_TENANT_ID = "common";
 
     /**
      * An instance of GraphServiceClient object to make requests against the service.
@@ -49,7 +49,7 @@ public class AzureAuth {
     /**
      * This parameter is a space-separated list of delegated permissions that the app is requesting.
      */
-    private List<String> graphUserScopes;
+    private List<String> permissionList;
 
     /**
      * Instance of RPA services accessor that allows to get configuration parameters and secret vault entries from
@@ -72,10 +72,8 @@ public class AzureAuth {
     /**
      * Default constructor for {@code AzureAuth}.
      */
-    public AzureAuth(){
-        this.clientId = "";
-        this.authTenantId = DEFAULT_TENANT_ID;
-        this.graphUserScopes= Collections.emptyList();
+    public GraphServiceProvider() {
+
     }
 
     /**
@@ -87,16 +85,16 @@ public class AzureAuth {
      *                    like configuration, secret vault etc.
      */
     @Inject
-    public AzureAuth(RPAServicesAccessor rpaServices) {
+    public GraphServiceProvider(RPAServicesAccessor rpaServices) {
         this();
         this.rpaServices = rpaServices;
     }
 
-     /**
+    /**
      * @return reference to used Client ID.
      */
     public String getClientId() {
-        if(clientId == null){
+        if (clientId == null) {
             clientId = getConfigParam(GraphServicesConfigParam.AUTH_CLIENT_ID);
         }
         return clientId;
@@ -104,7 +102,8 @@ public class AzureAuth {
 
     /**
      * Sets app unique identifier, which is located in AzureActiveDirectory
-     * @param clientId  Application unique identifier that is associated with an application
+     *
+     * @param clientId Application unique identifier that is associated with an application
      */
     public void setClientId(String clientId) {
         this.clientId = clientId;
@@ -113,7 +112,7 @@ public class AzureAuth {
     /**
      * @return reference to used Tenant ID.
      */
-    public String getAuthTenantId(){
+    public String getAuthTenantId() {
         if (authTenantId == null) {
             authTenantId = getConfigParam(GraphServicesConfigParam.AUTH_TENANT_ID);
             if (authTenantId == null) {
@@ -125,55 +124,94 @@ public class AzureAuth {
 
     /**
      * Sets authTenantId
+     *
      * @param authTenantId is a Global Unique Identifier (GUID) for your Microsoft 365 Tenant
      */
-    public void setAuthTenantId(String authTenantId){
+    public void setAuthTenantId(String authTenantId) {
         this.authTenantId = authTenantId;
     }
 
     /**
      * @return reference to used User scopes of Azure API permissions.
      */
-    public List<String> getGraphUserScopes() throws Exception {
-        if (graphUserScopes == null) {
-            graphUserScopes = Arrays.asList(Objects.requireNonNull(
+    public List<String> getPermissionList() {
+        if (permissionList == null) {
+            permissionList = Arrays.asList(Objects.requireNonNull(
                     getConfigParam(GraphServicesConfigParam.API_PERMISSION_LIST)).split(","));
         }
-        return graphUserScopes;
+        return permissionList;
     }
 
     /**
-     * Sets graph api permission scopes
-     * @param graphUserScopes is a space-separated list of delegated permissions that the app is requesting
+     * Sets graph api permission list
+     *
+     * @param permissionList is a space-separated list of delegated permissions that the app is requesting
      */
-    public void setGraphUserScopes(String graphUserScopes){
-        this.graphUserScopes = Arrays.asList(graphUserScopes.split(","));
+    public void setPermissionList(String permissionList) {
+        this.permissionList = Arrays.asList(permissionList.split(","));
     }
 
     /**
-     * Builds an instance of DeviceCodeCredential
-     * @param challenge
-     * @return an instance of DeviceCodeCredential
+     * Build and return a GraphServiceClient object to make requests against the service.
+     *
+     * <p>
+     * This is a preferable way of working with this class. E.g.:
+     * <pre>
+     *   {@code @Inject}
+     *     private GraphServiceProvider graphServiceProvider;
+     *
+     *     public void execute() {
+     *          ...
+     *         GraphServiceClient<Request> userClient = graphServiceProvider.getGraphServiceClient(
+     *                   challenge -> System.out.println(challenge.getMessage()));
+     *        ...
+     *     }
+     *  </pre>
+     *
+     * @param challenge prints a URL and special device code to sigh.
+     * @return An instance of GraphServiceClient object to make requests against the service.
      */
-    private DeviceCodeCredential deviceCodeCredential(Consumer<DeviceCodeInfo> challenge){
-        return new DeviceCodeCredentialBuilder()
-                .clientId(getClientId())
-                .tenantId(getAuthTenantId())
-                .challengeConsumer(challenge)
-                .build();
-    }
-
-    public GraphServiceClient<Request> initializeGraphForUserAuth(Consumer<DeviceCodeInfo> challenge) throws Exception {
+    public GraphServiceClient<Request> getGraphServiceClient(Consumer<DeviceCodeInfo> challenge) {
 
         final TokenCredentialAuthProvider authProvider =
-                new TokenCredentialAuthProvider(getGraphUserScopes(),
+                new TokenCredentialAuthProvider(getPermissionList(),
                         deviceCodeCredential(challenge));
 
-        userClient = GraphServiceClient.builder()
+        this.userClient = GraphServiceClient.builder()
                 .authenticationProvider(authProvider)
                 .buildClient();
 
         return userClient;
+    }
+
+    /**
+     * @return the user id that is associated with secret information.
+     */
+    public User getUser() {
+        try {
+            this.user = userClient.me()
+                    .buildRequest()
+                    .get();
+
+        } catch (Exception e) {
+            throw new GraphAuthException("Graph has not been initialized for user auth", e);
+        }
+        return user;
+    }
+
+    /**
+     * Builds an instance of DeviceCodeCredential
+     *
+     * @param challenge prints a URL and special device code to sigh in
+     * @return an instance of DeviceCodeCredential
+     */
+    private DeviceCodeCredential deviceCodeCredential(Consumer<DeviceCodeInfo> challenge) {
+        this.deviceCodeCredential = new DeviceCodeCredentialBuilder()
+                .clientId(getClientId())
+                .tenantId(getAuthTenantId())
+                .challengeConsumer(challenge)
+                .build();
+        return deviceCodeCredential;
     }
 
     /**
@@ -197,21 +235,6 @@ public class AzureAuth {
         }
 
         return result;
-    }
-
-    /**
-     * @return the user id that is associated with secret information.
-     */
-    public  User getUser() throws Exception {
-        // Ensure client isn't null
-        if (userClient == null) {
-            throw new Exception("Graph has not been initialized for user auth");
-        }
-
-        return userClient.me()
-                .buildRequest()
-                .select("displayName,mail,userPrincipalName")
-                .get();
     }
 
 }
