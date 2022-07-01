@@ -37,15 +37,15 @@ public class Table {
     public Table() {
     }
 
-    /**
-     * Gets parent Word document.
-     *
-     * @return parent Word document.
-     */
-
-    public WordDocElement getDocumentElement() {
-        return null;
-    }
+//    /**
+//     * Gets parent Word document.
+//     *
+//     * @return parent Word document.
+//     */
+//
+//    public WordDocElement getDocumentElement() {
+//        return null;
+//    }
 
 
     /**

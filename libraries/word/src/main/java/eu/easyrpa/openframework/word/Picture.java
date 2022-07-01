@@ -6,32 +6,27 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Path;
 
-public class Picture extends WordDocElement {
+public class Picture{
 
     private R textRun;
 
     public Picture(String imagePath) {
-        super(null);
         //TODO implement this
     }
 
     public Picture(Path imagePath) {
-        super(null);
         //TODO implement this
     }
 
     public Picture(File imageFile) {
-        super(null);
         //TODO implement this
     }
 
     public Picture(InputStream imageIs) {
-        super(null);
         //TODO implement this
     }
 
-    Picture(WordDocument document, R textRun) {
-        super(document);
+    Picture(R textRun) {
         this.textRun = textRun;
     }
 
