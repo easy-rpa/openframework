@@ -1,15 +1,27 @@
 package eu.easyrpa.openframework.word;
 
+import eu.easyrpa.openframework.word.constants.Colors;
 import eu.easyrpa.openframework.word.constants.FontFamily;
 import eu.easyrpa.openframework.word.constants.TextAlignment;
+import org.docx4j.jaxb.Context;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.wml.*;
 
+import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
 import java.awt.*;
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 //TODO update javadoc
 
 public class TextFormat {
 
     private TextRange relatedText;
+
 
     TextFormat(TextRange relatedText) {
         this.relatedText = relatedText;
@@ -101,9 +113,99 @@ public class TextFormat {
      * @param color the color to set.
      * @return this cell style object to allow joining of methods calls into chain.
      */
-    public TextFormat color(Color color) {
-        //TODO implement this
+    public TextFormat color(Colors color) {
+        P parent = (P) relatedText.getTextRuns().get(relatedText.getExpandIndex()).getParent();
+        Text castedText = relatedText.textCast(relatedText.getTextRuns(), relatedText.getExpandIndex());
+        String textValue = castedText.getValue();
+        Pattern pattern = Pattern.compile(TextRange.EXPAND_RIGHT);
+        if (relatedText.getStartIndex() == 0) {
+            Matcher matcher = pattern.matcher(textValue);
+            if (matcher.find()) {
+                String coloredText = textValue.substring(0, matcher.start() - 1);
+                R coloredRun = createRun(coloredText, parent);
+                setWmlRColor(coloredRun, color);
+                String endTextRun = textValue.substring(matcher.start());
+                R endRun = createRun(endTextRun, parent);
+                R whitespaceRun = createWhitespaceRun(parent);
+                int indexOfColorRun = parent.getContent().indexOf(relatedText.getTextRuns().get(relatedText.getExpandIndex()));
+                parent.getContent().set(indexOfColorRun, coloredRun);
+                parent.getContent().add(indexOfColorRun + 1, whitespaceRun);
+                parent.getContent().add(indexOfColorRun + 2, endRun);
+                relatedText.getTextRuns().set(relatedText.getExpandIndex(), coloredRun);
+                relatedText.getTextRuns().add(relatedText.getExpandIndex() + 1, whitespaceRun);
+                relatedText.getTextRuns().add(relatedText.getExpandIndex() + 2, endRun);
+                relatedText.setExpandIndex(relatedText.getExpandIndex() + 1);
+                return this;
+            }
+        }
+        String startRunText = textValue.substring(0, relatedText.getStartIndex() - 1); //first run (-1 for whitespace)
+        R startRun = createRun(startRunText, parent);
+        String mainRunText = textValue.substring(relatedText.getStartIndex());
+        Matcher matcher = pattern.matcher(mainRunText);
+        if (matcher.find()) {
+            String coloredText = mainRunText.substring(0, matcher.start() - 1); // middle run
+            R coloredRun = createRun(coloredText, parent);
+            setWmlRColor(coloredRun, color);
+            String endTextRun = mainRunText.substring(matcher.start());  // last run
+            R endRun = createRun(endTextRun, parent);
+            R whitespaceRun = createWhitespaceRun(parent);
+            int indexOfColorRun = parent.getContent().indexOf(relatedText.getTextRuns().get(relatedText.getExpandIndex()));
+            parent.getContent().set(indexOfColorRun, startRun);
+            parent.getContent().add(indexOfColorRun + 1, whitespaceRun);
+            parent.getContent().add(indexOfColorRun + 2, coloredRun);
+            parent.getContent().add(indexOfColorRun + 3, whitespaceRun);
+            parent.getContent().add(indexOfColorRun + 4, endRun);
+            relatedText.getTextRuns().set(relatedText.getExpandIndex(), startRun);
+            relatedText.getTextRuns().add(relatedText.getExpandIndex() + 1, whitespaceRun);
+            relatedText.getTextRuns().add(relatedText.getExpandIndex() + 2, coloredRun);
+            relatedText.getTextRuns().add(relatedText.getExpandIndex() + 3, whitespaceRun);
+            relatedText.getTextRuns().add(relatedText.getExpandIndex() + 4, endRun);
+            relatedText.setExpandIndex(relatedText.getExpandIndex() + 2);
+        }
         return this;
+    }
+
+    private void addContent(List<Object> listContent, Object toAdd, int startIndex, int endValue) {
+        for (int i = startIndex; i < startIndex + endValue; i++) {
+            listContent.add(startIndex, toAdd);
+        }
+    }
+
+    private R createRun(String text, P parent) {
+        ObjectFactory factory = Context.getWmlObjectFactory();
+        QName qName = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "t", "");
+        Text t = factory.createText();
+        t.setValue(text);
+        R run = factory.createR();
+        run.setParent(parent);
+        JAXBElement<?> element = new JAXBElement(qName, Text.class, R.class, t);
+        run.getContent().add(element);
+        return run;
+    }
+
+    private R createWhitespaceRun(P parent) {
+        ObjectFactory factory = Context.getWmlObjectFactory();
+        QName qName = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "t", "");
+        Text text = factory.createText();
+        text.setValue(" ");
+        text.setSpace("preserve");
+        R run = factory.createR();
+        run.setParent(parent);
+        JAXBElement<?> element = new JAXBElement(qName, Text.class, R.class, text);
+        run.getContent().add(element);
+        return run;
+    }
+
+    private void setWmlRColor(R run, Colors color) {
+        RPr colorRunRPr = run.getRPr();
+        if (colorRunRPr == null) {
+            colorRunRPr = new RPr();
+            run.setRPr(colorRunRPr);
+        }
+        org.docx4j.wml.Color wmlColor = Context.getWmlObjectFactory().createColor();
+        wmlColor.setVal(color.name());
+        colorRunRPr.setColor(wmlColor);
+        run.setRPr(colorRunRPr);
     }
 
     public Color getColor() {

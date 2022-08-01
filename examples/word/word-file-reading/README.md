@@ -1,7 +1,11 @@
 # Reading content of DOCX file
 
-This example demonstrates ...  
+This example demonstrates how easily we can read the content of document located at different places and after working with them.
 
+```java
+    WordDocument doc = new WordDocument("source.docx");
+    List<Object> objectList = doc.read();
+```
 
 See the full source of this example for more details or check following instructions to run it.
 
@@ -45,8 +49,8 @@ All necessary configuration files can be found in `src/main/resources` directory
 
 <table>
     <tr><th>Parameter</th><th>Value</th></tr>
-    <tr><td valign="top"><code>source.spreadsheet.file</code></td><td>
-        Path to spreadsheet file that has to be read. It can be path on local file system or within resources of this 
+    <tr><td valign="top"><code>source.document.file</code></td><td>
+        Path to Word file that has to be read. It can be path on local file system or within resources of this 
         module.
     </td></tr>        
 </table>

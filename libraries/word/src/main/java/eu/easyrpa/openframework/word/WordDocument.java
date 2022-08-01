@@ -1,19 +1,33 @@
 package eu.easyrpa.openframework.word;
 
 import eu.easyrpa.openframework.core.utils.FilePathUtils;
+import org.docx4j.Docx4J;
+import org.docx4j.TraversalUtil;
+import org.docx4j.convert.out.HTMLSettings;
+import org.docx4j.dml.Graphic;
+import org.docx4j.dml.wordprocessingDrawing.Anchor;
+import org.docx4j.dml.wordprocessingDrawing.Inline;
+import org.docx4j.model.datastorage.migration.VariablePrepare;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
+import org.docx4j.wml.*;
 
+import javax.xml.bind.JAXBElement;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class WordDocument {
 
-
+    private static final Logger LOGGER = Logger.getLogger(WordDocument.class.getName());
     /**
      * Path to related to this document Word file. It's a place where the document
      * is saved when method <code>save()</code> is called.
@@ -67,7 +81,7 @@ public class WordDocument {
             setFilePath(path.toAbsolutePath().toString());
             reload(Files.newInputStream(path));
         } catch (IOException e) {
-            throw new IllegalArgumentException(String.format("Failed to read file '%s'. Perhaps is's not exist.", path), e);
+            throw new IllegalArgumentException(String.format("Failed to read file '%s'. Perhaps it's not exist.", path), e);
         }
     }
 
@@ -163,9 +177,49 @@ public class WordDocument {
     }
 
     public List<Object> read() {
+        List<Object> opcPackageObjList = opcPackage.getMainDocumentPart().getJaxbElement().getBody().getContent();
+        List<Object> outputList = new ArrayList<>();
+        for (Object o : opcPackageObjList) {
+            ArrayListWml<?> listWml = (ArrayListWml<?>) ((P) o).getContent();
+            List<R> runList = new ArrayList<>();
+            for (Object o1 : listWml) {
+                try {
+                    R textRun = (R) o1;
+                    if (textRun.getContent().isEmpty()) {
+                        continue;
+                    }
+                    try {
+                        Drawing pic = (Drawing) ((JAXBElement<?>) ((ArrayListWml<?>) textRun.getContent())
+                                .get(pictureIndexValidation(textRun))).getValue();
+                        ArrayListWml<?> drawingContent = (ArrayListWml<?>) pic.getAnchorOrInline();
+                        Picture picture = new Picture(textRun);
+                        try {
+                            Anchor anchor = (Anchor) drawingContent.get(0);
+                            Graphic anchGraphic = anchor.getGraphic();
+                            picture.setBinaryImage(BinaryPartAbstractImage.getImage(opcPackage, anchGraphic));
+                        } catch (ClassCastException e) {
+                            Inline inline = (Inline) drawingContent.get(0);
+                            Graphic inlineGraphic = inline.getGraphic();
+                            picture.setBinaryImage(BinaryPartAbstractImage.getImage(opcPackage, inlineGraphic));
+                        }
+                        outputList.add(picture);
+                    } catch (ClassCastException e) {
+                        runList.add(textRun);
+                    }
+                } catch (ClassCastException e) {
+                    continue;
+                }
+            }
+            TextRange textRange = indexQualifier(runList);
+            if (textRange.getStartIndex() != -1) {
+                outputList.add(textRange);
+            }
+        }
+        return outputList;
+
+
         //TODO Implement this.
         // Reading of all supported doc elements.
-        return null;
     }
 
     public void read(Function<Object, Boolean> handler) {
@@ -175,14 +229,19 @@ public class WordDocument {
     }
 
     public void append(String text) {
+        this.opcPackage.getMainDocumentPart().addParagraphOfText(text);
+
         //TODO Implement this.
         // Appends text the end of document.
         // append as new paragraph
     }
 
-    public void append(Picture picture) {
-        //TODO Implement this.
-        // Appends picture the end of document.
+    public void append(Picture picture) throws Exception {
+        BinaryPartAbstractImage imagePart =
+                BinaryPartAbstractImage.createImagePart(opcPackage, Picture.convertFileToByteArray(picture.getPicFile()));
+        Inline inline = imagePart.createImageInline("Default",
+                "Default", 1, 2, false);
+        this.opcPackage.getMainDocumentPart().addObject(Picture.addInlineImage(inline));
     }
 
     public void insertBefore(TextRange textRange, String text) {
@@ -214,13 +273,23 @@ public class WordDocument {
         // Sets the value of specific variable in the document.
     }
 
-    public void mapVariables(Map<String, String> values) {
-        //TODO Implement this.
-        // Sets values of variables in the document provided with map.
+    public void mapVariables(Map<String, String> values) throws Exception {
+        VariablePrepare.prepare(opcPackage);
+        opcPackage.getMainDocumentPart().variableReplace(values);
     }
 
     public TextRange findText(String regexp) {
-        //TODO Implement this.
+        List<Object> elements = read();
+        for (Object element : elements) {
+            try {
+                TextRange textRange = (TextRange) element;
+                if (textRange.text().matches(regexp)) {
+                    return textRange;
+                }
+            } catch (ClassCastException e) {
+                break;
+            }
+        }
         return null;
     }
 
@@ -250,11 +319,22 @@ public class WordDocument {
     }
 
     public void exportToPDF(String pdfFilePath) {
-        //TODO Implement this.
+        try {
+            HTMLSettings htmlSettings = Docx4J.createHTMLSettings();
+            htmlSettings.setOpcPackage(opcPackage);
+            OutputStream os = new FileOutputStream(pdfFilePath);
+            Docx4J.toPDF(opcPackage, os);
+            os.flush();
+            os.close();
+        } catch (Docx4JException | FileNotFoundException e) {
+            throw new IllegalArgumentException("Input stream missing or corrupted.", e);
+        } catch (IOException e) {
+            throw new RuntimeException("Cannot close output stream.", e);
+        }
     }
 
     public void exportToPDF(Path pdfFilePath) {
-        //TODO Implement this.
+        exportToPDF(pdfFilePath.toAbsolutePath().toString());
     }
 
     /**
@@ -265,6 +345,87 @@ public class WordDocument {
     public WordprocessingMLPackage getOpcPackage() {
         return opcPackage;
     }
+
+    private TextRange indexQualifier(List<R> runList) throws IndexOutOfBoundsException {
+        if (!runList.isEmpty()) {
+            int startIndex = 0;
+            int endIndex = 0;
+            Pattern startPattern = Pattern.compile("[^\\s.*;:()#'\\/]");
+            try {
+                Text startTextOfRun = (Text) ((JAXBElement<?>) ((ArrayListWml<?>) runList
+                        .get(startIndexValidation(runList, false)).getContent())
+                        .get(startIndexValidation(runList, true))).getValue();
+                Matcher firstMatcher = startPattern.matcher(startTextOfRun.getValue());
+                if (firstMatcher.find()) {
+                    startIndex = firstMatcher.start();
+                }
+                Text endTextOfRun = (Text) ((JAXBElement<?>) ((ArrayListWml<?>) runList
+                        .get(endIndexValidation(runList, false)).getContent())
+                        .get(endIndexValidation(runList, true))).getValue();
+                Pattern endPattern = Pattern.compile("[^\\s,*;:#'\\\\](?=[\\s*;:,#'\\\\]*$)");
+                Matcher secondMatcher = endPattern.matcher(endTextOfRun.getValue());
+                if (secondMatcher.find()) {
+                    endIndex = secondMatcher.end();
+                }
+                return new TextRange(runList, startIndex, endIndex);
+            } catch (IndexOutOfBoundsException e) {
+                return new TextRange(runList, -1, -1);
+            }
+        }
+        return new TextRange(runList, -1, -1);
+    }
+
+    private int startIndexValidation(List<R> runList, boolean isNestedContent) {
+        for (int i = 0; i < runList.size(); i++) {
+            for (int j = 0; j < runList.get(i).getContent().size(); j++) {
+                try {
+                    Text.class.cast(((JAXBElement<?>) ((ArrayListWml<?>) runList.get(i).getContent()).get(j)).getValue());
+//                    Text startTextOfRun = (Text) ((JAXBElement<?>) ((ArrayListWml<?>) runList.get(i).getContent()).get(j)).getValue();
+                    if (isNestedContent) {
+                        return j;
+                    } else {
+                        return i;
+                    }
+                } catch (ClassCastException e) {
+                    continue;
+                }
+            }
+        }
+        return -1;
+    }
+
+    private int endIndexValidation(List<R> runList, boolean isNestedContent) {
+        for (int i = runList.size() - 1; i >= 0; i--) {
+            for (int j = 0; j < runList.get(i).getContent().size(); j++) {
+                try {
+                    Text.class.cast(((JAXBElement<?>) ((ArrayListWml<?>) runList.get(i).getContent()).get(j)).getValue());
+//                    Text endTextOfRun = (Text) ((JAXBElement<?>) ((ArrayListWml<?>) runList.get(i).getContent()).get(j)).getValue();
+                    if (isNestedContent) {
+                        return j;
+                    } else {
+                        return i;
+                    }
+                } catch (ClassCastException e) {
+                    continue;
+                }
+            }
+        }
+        return -1;
+    }
+
+    private int pictureIndexValidation(R run) {
+        for (int j = 0; j < run.getContent().size(); j++) {
+            try {
+                Drawing.class.cast(((JAXBElement<?>) ((ArrayListWml<?>) run.getContent()).get(j)).getValue());
+//                Drawing pic = (Drawing) ((JAXBElement<?>) ((ArrayListWml<?>) run.getContent()).get(j)).getValue();
+                return j;
+            } catch (ClassCastException e) {
+                continue;
+            }
+        }
+        return 0;
+    }
+
 //
 //
 //
