@@ -12,6 +12,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.wml.*;
+import org.pptx4j.pml.Pic;
 
 import javax.xml.bind.JAXBElement;
 import java.io.*;
@@ -241,7 +242,9 @@ public class WordDocument {
                 BinaryPartAbstractImage.createImagePart(opcPackage, Picture.convertFileToByteArray(picture.getPicFile()));
         Inline inline = imagePart.createImageInline("Default",
                 "Default", 1, 2, false);
-        this.opcPackage.getMainDocumentPart().addObject(Picture.addInlineImage(inline));
+        P picParagraph = this.opcPackage.getMainDocumentPart().createParagraphOfText("");
+        picParagraph.getContent().add(Picture.addInlineImage(inline));
+        this.opcPackage.getMainDocumentPart().addObject(picParagraph);
     }
 
     public void insertBefore(TextRange textRange, String text) {

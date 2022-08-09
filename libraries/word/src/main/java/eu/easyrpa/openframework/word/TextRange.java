@@ -205,16 +205,28 @@ public class TextRange {
     }
 
     public void replaceWith(String text) {
+
+
         //TODO Implement this.
     }
 
     public void replaceWith(Picture picture, WordprocessingMLPackage opcPackage) throws Exception {
-        BinaryPartAbstractImage imagePart =
-                BinaryPartAbstractImage.createImagePart(opcPackage, Picture.convertFileToByteArray(picture.getPicFile()));
-        Inline inline = imagePart.createImageInline("Default",
-                "Default", 1, 2, false);
-        int index = opcPackage.getMainDocumentPart().getJaxbElement().getBody().getContent().indexOf(textRuns.get(0).getParent());
-        opcPackage.getMainDocumentPart().getJaxbElement().getBody().getContent().set(index, Picture.addInlineImage(inline));
+        for(int i = 0; i < textRuns.size(); i ++) {
+            try {
+                Text text = textCast(textRuns, i);
+                if(!text.getValue().isEmpty()) {
+                    P p = (P) ((R) text.getParent()).getParent();
+                    int runIndex = p.getContent().indexOf(text.getParent());
+                    BinaryPartAbstractImage imagePart =
+                            BinaryPartAbstractImage.createImagePart(opcPackage, Picture.convertFileToByteArray(picture.getPicFile()));
+                    Inline inline = imagePart.createImageInline("Default",
+                            "Default", 1, 2, false);
+                    p.getContent().set(runIndex, Picture.addInlineImage(inline));
+                    textRuns.set(i, Picture.addInlineImage(inline));
+                }
+            } catch (ClassCastException ignored) {
+            }
+        }
     }
 
     public void remove() {

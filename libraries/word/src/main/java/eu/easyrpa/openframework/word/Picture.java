@@ -80,23 +80,20 @@ public class Picture{
     }
 
     /**
-     * We create an object factory and use it to create a paragraph and a run.
-     * Then we add the run to the paragraph. Next we create a drawing and
-     * add it to the run. Finally we add the inline object to the drawing and
-     * return the paragraph.
+     * We create an object factory and use it to create a run.
+     * Next we create a drawing and add it to the run.
+     * Finally we add the inline object to the drawing and
+     * return the run.
      *
      * @param inline the instance of Graphic object that allows to convert picture to paragraph element and add it to hierarchy.
      */
-    public static P addInlineImage(Inline inline) {
-        // Now add the in-line image to a paragraph
+    public static R addInlineImage(Inline inline) {
         ObjectFactory factory = new ObjectFactory();
-        P paragraph = factory.createP();
         R run = factory.createR();
-        paragraph.getContent().add(run);
         Drawing drawing = factory.createDrawing();
         run.getContent().add(drawing);
         drawing.getAnchorOrInline().add(inline);
-        return paragraph;
+        return run;
     }
 
     /**
