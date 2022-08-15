@@ -18,6 +18,7 @@ public interface HolidayRepository extends CrudRepository<HolidayEntity, Integer
         TypedQuery<HolidayEntity> q = getEntityManager().createQuery("select t from \"" + dsName + "\" t where t.id::text = :id", HolidayEntity.class)
                 .withParam("id", id);
         List<HolidayEntity> entities = q.execute();
+
         HolidayEntity e = entities.stream().findFirst().orElse(null);
         if (e != null) {
             e.setDsName(dsName);

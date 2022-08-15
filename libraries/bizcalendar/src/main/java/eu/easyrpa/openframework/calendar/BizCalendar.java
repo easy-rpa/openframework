@@ -57,6 +57,7 @@ public class BizCalendar {
         calendar.set(date.getYear(), date.getMonthValue() - 1, date.getDayOfMonth());
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
         return dayOfWeek != Calendar.SUNDAY && dayOfWeek != Calendar.SATURDAY;
+
     }
 
     public boolean isWorkingDay(LocalDate date) {

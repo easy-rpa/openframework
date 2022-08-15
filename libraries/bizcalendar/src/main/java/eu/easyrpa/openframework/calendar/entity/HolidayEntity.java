@@ -18,8 +18,8 @@ public class HolidayEntity {
 
     private String dsName;
 
-    public HolidayEntity(String dsName, String region, String type, int month, int day, String description,
-                         boolean isChurchHoliday, String churchHolidayType, int validFrom, int validTo) {
+    public HolidayEntity(String dsName, String region, String type, int month, int day,
+                         String description, boolean isChurchHoliday, String churchHolidayType, int validFrom, int validTo) {
         this.dsName = dsName;
         this.region = region;
         this.type = type;
