@@ -18,6 +18,7 @@ public interface HolidayRepository extends CrudRepository<HolidayEntity, Integer
         TypedQuery<HolidayEntity> q = getEntityManager().createQuery("select t from \"" + dsName + "\" t where t.id::text = :id", HolidayEntity.class)
                 .withParam("id", id);
         List<HolidayEntity> entities = q.execute();
+
         HolidayEntity e = entities.stream().findFirst().orElse(null);
         if (e != null) {
             e.setDsName(dsName);
@@ -34,8 +35,7 @@ public interface HolidayRepository extends CrudRepository<HolidayEntity, Integer
         StringBuilder where = new StringBuilder("where");
         for (String id : ids) {
             String key = "id" + i++;
-            where.append(" t.").append("t.id::text").append("=").append(":").append(key)
-            ;
+            where.append(" t.").append("t.id::text").append("=").append(":").append(key);
             params.put(key, String.valueOf(id));
             if (i < ids.size()) {
                 where.append(" or ");
@@ -62,19 +62,22 @@ public interface HolidayRepository extends CrudRepository<HolidayEntity, Integer
 
     }
 
+    //TODO: have to be checked
     default List<HolidayEntity> findAllOtherHolidays_(String dsName){
-        TypedQuery<HolidayEntity> tq = getEntityManager().createQuery("select t from " + dsName +" t where t.isOtherHoliday =: true", HolidayEntity.class);
+        TypedQuery<HolidayEntity> tq = getEntityManager().createQuery("select t from " + dsName + " t " + "where t.isPublicHoliday =: true", HolidayEntity.class);
         List<HolidayEntity> result = tq.execute();
         result.forEach(e -> e.setDsName(dsName));
         return result;
     }
 
-    default  List<HolidayEntity> findAllPublicHolidays_(String dsName){
-        TypedQuery<HolidayEntity> tq = getEntityManager().createQuery("select t from " + dsName + " t where t.isPublicHoliday =: true", HolidayEntity.class);
+    //TODO: have to be checked
+    default List<HolidayEntity> findAllPublicHolidays_(String dsName){
+        TypedQuery<HolidayEntity> tq = getEntityManager().createQuery("select t from " + dsName + " t " + "where t.isPublicHoliday =: true", HolidayEntity.class);
         List<HolidayEntity> result = tq.execute();
         result.forEach(e -> e.setDsName(dsName));
         return result;
     }
+
 
     EntityManager getEntityManager();
 }

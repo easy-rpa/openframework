@@ -18,8 +18,8 @@ public class HolidayEntity {
 
     private String dsName;
 
-    public HolidayEntity(String dsName, String region, String type, int month, int day, String description,
-                         boolean isChurchHoliday, String churchHolidayType, int validFrom, int validTo) {
+    public HolidayEntity(String dsName, String region, String type, int month, int day,
+                         String description, boolean isChurchHoliday, String churchHolidayType, int validFrom, int validTo) {
         this.dsName = dsName;
         this.region = region;
         this.type = type;
@@ -40,10 +40,7 @@ public class HolidayEntity {
     private String region;         // ---BY---
 
     @Column("type")
-    private String type;  // ---Fixed---
-
-    @Column("year")
-    private int year;
+    private String type;            // ---Fixed---
 
     @Column("month")
     private int month;          // ---12---
@@ -55,13 +52,13 @@ public class HolidayEntity {
     private String description;     // ---New Year---
 
     @Column("isChurchHoliday")
-    private boolean isChurchHoliday; // ---false---
-
-    @Column("isPublicHoliday")
-    private boolean isPublicHoliday;
+    private boolean isChurchHoliday;  // ---false---
 
     @Column("isOtherHoliday")
     private boolean isOtherHoliday;
+
+    @Column("isPublicHoliday")
+    private boolean isPublicHoliday;
 
     @Column("churchHolidayType")
     private String churchHolidayType;     // ---null---
