@@ -3,8 +3,10 @@ package eu.easyrpa.openframework.calendar;
 import eu.easyrpa.openframework.calendar.entity.HolidayEntity;
 import eu.easyrpa.openframework.calendar.repository.HolidayRepository;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BizCalendar {
 
@@ -13,17 +15,14 @@ public class BizCalendar {
     private final List<HolidayEntity> holidayEntities;
     private final List<HolidayEntity> otherHolidays;
     private final List<HolidayEntity> publicHolidays;
-    private final Calendar calendar;
 
     public BizCalendar(List<HolidayEntity> holidayEntities, HolidayRepository holidayRepository) {
         this.holidayEntities = holidayEntities;
-        calendar = new GregorianCalendar(Locale.forLanguageTag(holidayEntities.get(0).getRegion()));
-        otherHolidays = holidayRepository.findAllOtherHolidays_("*COMMON_DS_NAME*");
-        publicHolidays = holidayRepository.findAllPublicHolidays_("*COMMON_DS_NAME*");
+        this.otherHolidays = holidayRepository.findAllOtherHolidays_("*COMMON_DS_NAME*");
+        this.publicHolidays = holidayRepository.findAllPublicHolidays_("*COMMON_DS_NAME*");
     }
 
     public LocalDate addWorkingDays(LocalDate startDate, int numberOfWorkingDaysToAdd) {
-
         for (int i = 0; i < numberOfWorkingDaysToAdd; i++) {
             if (isWorkingDay(startDate)) {
                 startDate = startDate.plusDays(1);
@@ -66,13 +65,14 @@ public class BizCalendar {
     public List<LocalDate> getWorkingDaysInRange(LocalDate startDate, LocalDate endDate) {
         List<LocalDate> result = new ArrayList<>();
 
-        while(!startDate.isEqual(endDate)) {
-            if(isWorkingDay(startDate)){
+        while (!startDate.isEqual(endDate)) {
+            if (isWorkingDay(startDate)) {
                 result.add(startDate);
                 startDate = startDate.plusDays(1);
             }
         }
         return result;
+
     }
 
     public boolean isOtherHoliday(LocalDate date) {
@@ -94,88 +94,19 @@ public class BizCalendar {
     }
 
     public boolean isWeekend(LocalDate date) {
-        calendar.set(date.getYear(), date.getMonthValue() - 1, date.getDayOfMonth());
-        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-        return dayOfWeek != Calendar.SUNDAY && dayOfWeek != Calendar.SATURDAY;
-
+        return date.getDayOfWeek() != DayOfWeek.SUNDAY && date.getDayOfWeek() != DayOfWeek.SATURDAY;
     }
 
-    public boolean isWorkingDay(LocalDate date) {
-        calendar.set(date.getYear(), date.getMonthValue() - 1, date.getDayOfMonth());
-        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-        if (dayOfWeek == Calendar.SUNDAY || dayOfWeek == Calendar.SATURDAY) {
-            return false;
-        } else {
-            for (HolidayEntity holidayEntity : holidayEntities) {
-                if (holidayEntity.getMonth() == date.getMonthValue()
-                        && holidayEntity.getDay() == date.getDayOfMonth()) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
 
-    //TODO: Simplify this method
-//    private List<HolidayEntity> findHolidaysInRange(List<HolidayEntity> holidayEntities, LocalDate startDate, LocalDate endDate) {
-//        List<HolidayEntity> result = new ArrayList<>();
-//        if (startDate.getYear() == endDate.getYear()) {
-//            for (HolidayEntity holiday : holidayEntities) {
-//                if (startDate.getMonthValue() == holiday.getMonth() && endDate.getMonthValue() == startDate.getMonthValue()) {
-//                    if (startDate.getDayOfMonth() < holiday.getDay() && endDate.getDayOfMonth() > holiday.getDay()) {
-//                        result.add(holiday);
-//                    }
-//                }
-//
-//                if (startDate.getMonthValue() == holiday.getMonth() && endDate.getMonthValue() != holiday.getMonth()) {
-//                    if (startDate.getDayOfMonth() < holiday.getDay()) {
-//                        result.add(holiday);
-//                    }
-//                }
-//
-//                if (endDate.getMonthValue() == holiday.getMonth() && startDate.getMonthValue() != holiday.getMonth()) {
-//                    if (endDate.getDayOfMonth() > holiday.getDay()) {
-//                        result.add(holiday);
-//                    }
-//                }
-//
-//                if (startDate.getMonthValue() < holiday.getMonth() && endDate.getMonthValue() > holiday.getMonth()) {
-//                    result.add(holiday);
-//                }
-//            }
-//        }
-//
-//        if (startDate.getYear() == endDate.getYear() + 1) {
-//            for (HolidayEntity holiday : holidayEntities) {
-//                if (startDate.getMonthValue() == holiday.getMonth() && endDate.getMonthValue() != holiday.getMonth()) {
-//                    if (startDate.getDayOfMonth() < holiday.getDay()) {
-//                        result.add(holiday);
-//                    }
-//                }
-//
-//                if (endDate.getMonthValue() == holiday.getMonth() && startDate.getMonthValue() != holiday.getMonth()) {
-//                    if (endDate.getDayOfMonth() > holiday.getDay()) {
-//                        result.add(holiday);
-//                    }
-//                }
-//
-//                if (startDate.getMonthValue() < holiday.getMonth() || endDate.getMonthValue() > holiday.getMonth()) {
-//                    result.add(holiday);
-//                }
-//            }
-//        }
-//        return result;
-//    }
-
-    private List<HolidayEntity> findHolidaysInRange(List<HolidayEntity> holidayEntities, LocalDate startDate, LocalDate endDate){
+    private List<HolidayEntity> findHolidaysInRange(List<HolidayEntity> holidayEntities, LocalDate startDate, LocalDate endDate) {
         List<HolidayEntity> result = new ArrayList<>();
 
-        while(!startDate.isEqual(endDate)){
-            if(isOtherHoliday(startDate)){
-                for(HolidayEntity holidayEntity: holidayEntities){
-                    if(startDate.getMonthValue()==holidayEntity.getMonth() && startDate.getDayOfMonth() == holidayEntity.getDay()){
+        while (!startDate.isEqual(endDate)) {
+            if (isOtherHoliday(startDate)) {
+                for (HolidayEntity holidayEntity : holidayEntities) {
+                    if (startDate.getMonthValue() == holidayEntity.getMonth() && startDate.getDayOfMonth() == holidayEntity.getDay()) {
                         result.add(holidayEntity);
-                      startDate =  startDate.plusDays(1);
+                        startDate = startDate.plusDays(1);
                     }
                 }
             }
@@ -184,6 +115,49 @@ public class BizCalendar {
         return result;
     }
 
+//    public boolean isOtherHoliday(LocalDate date) {
+//        AtomicBoolean isOtherHoliday = new AtomicBoolean(false);
+//        holidayEntities.forEach(holidayEntity -> {
+//            if(holidayEntity.getMonth() == date.getMonthValue()
+//                    && holidayEntity.getDay() == date.getDayOfMonth()
+//                    && holidayEntity.isCustomHoliday()) {
+//                isOtherHoliday.set(true);
+//            }
+//        });
+//        return isOtherHoliday.get();
+//    }
+
+//    public boolean isPublicHoliday(LocalDate date) {
+//        AtomicBoolean isPublicHoliday = new AtomicBoolean(false);
+//        if(!isOtherHoliday(date)) {
+//            holidayEntities.forEach(holidayEntity -> {
+//                if (holidayEntity.getMonth() == date.getMonthValue()
+//                        && holidayEntity.getDay() == date.getDayOfMonth()) {
+//                    isPublicHoliday.set(true);
+//                }
+//            });
+//        }
+//        return isPublicHoliday.get();
+//    }
+
+    public boolean isWorkingDay(LocalDate date) {
+        if (isWeekend(date)) {
+            return false;
+        } else {
+            for (HolidayEntity holidayEntity : holidayEntities) {
+                if (holidayEntity.getMonth() == date.getMonthValue()
+                        && holidayEntity.getDay() == date.getDayOfMonth()) {
+                    if (holidayEntity.isSubstitute()) {
+                        LocalDate weekendDate = LocalDate.of(date.getYear(), date.getMonthValue() , date.getDayOfMonth());
+                        while (!isWeekend(weekendDate)) {
+                            weekendDate = weekendDate.plusDays(1);
+                        }
+                    }
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
 }
-
-

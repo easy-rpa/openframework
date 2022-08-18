@@ -64,7 +64,7 @@ public interface HolidayRepository extends CrudRepository<HolidayEntity, Integer
 
     //TODO: have to be checked
     default List<HolidayEntity> findAllOtherHolidays_(String dsName){
-        TypedQuery<HolidayEntity> tq = getEntityManager().createQuery("select t from " + dsName + " t " + "where t.isPublicHoliday =: true", HolidayEntity.class);
+        TypedQuery<HolidayEntity> tq = getEntityManager().createQuery("select t from " + dsName + " t " + "where t.isCustomHoliday =: true", HolidayEntity.class);
         List<HolidayEntity> result = tq.execute();
         result.forEach(e -> e.setDsName(dsName));
         return result;
@@ -72,7 +72,7 @@ public interface HolidayRepository extends CrudRepository<HolidayEntity, Integer
 
     //TODO: have to be checked
     default List<HolidayEntity> findAllPublicHolidays_(String dsName){
-        TypedQuery<HolidayEntity> tq = getEntityManager().createQuery("select t from " + dsName + " t " + "where t.isPublicHoliday =: true", HolidayEntity.class);
+        TypedQuery<HolidayEntity> tq = getEntityManager().createQuery("select t from " + dsName + " t " + "where t.isCustomHoliday =: false", HolidayEntity.class);
         List<HolidayEntity> result = tq.execute();
         result.forEach(e -> e.setDsName(dsName));
         return result;
