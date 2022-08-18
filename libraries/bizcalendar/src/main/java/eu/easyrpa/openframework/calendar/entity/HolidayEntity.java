@@ -54,11 +54,8 @@ public class HolidayEntity {
     @Column("isChurchHoliday")
     private boolean isChurchHoliday;  // ---false---
 
-    @Column("isOtherHoliday")
-    private boolean isOtherHoliday;
-
-    @Column("isPublicHoliday")
-    private boolean isPublicHoliday;
+    @Column("isCustomHoliday")
+    private boolean isCustomHoliday;
 
     @Column("churchHolidayType")
     private String churchHolidayType;     // ---null---
@@ -68,6 +65,9 @@ public class HolidayEntity {
 
     @Column("validTo")
     private int validTo;            // ---2024---
+
+    @Column("isSubstitute")
+    private boolean isSubstitute;
 
     public String entityName() {
         return dsName;
