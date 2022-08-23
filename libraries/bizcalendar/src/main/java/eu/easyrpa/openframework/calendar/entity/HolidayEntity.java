@@ -9,6 +9,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Class that represents a holiday day.
+ */
 @Entity(value = "")
 @NoArgsConstructor
 @AllArgsConstructor

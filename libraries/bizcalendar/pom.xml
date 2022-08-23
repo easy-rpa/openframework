@@ -71,21 +71,7 @@
         <dependency>
             <groupId>eu.ibagroup</groupId>
             <artifactId>easy-rpa-engine</artifactId>
-            <version>2.3.1</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>eu.ibagroup</groupId>
-            <artifactId>easy-rpa-engine</artifactId>
             <version>${easyrpa.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>eu.ibagroup</groupId>
-            <artifactId>easy-rpa-engine-api</artifactId>
-            <version>${easyrpa.version}</version>
->>>>>>> b8381ad594ecd11b8a64db0f90ca510858d6b459:libraries/bizcalendar/pom.xml
         </dependency>
     </dependencies>
 
