@@ -42,16 +42,11 @@ public class BizCalendar {
      */
     private RPAServicesAccessor rpaServices;
 
-    private final List<HolidayEntity> movingHolidays;
-
     //TODO: Ask what will be better: two parameters or only HolidayRepository as a parameter
     public BizCalendar(HolidayRepository holidayRepository) {
-        this.holidayEntities = holidayRepository.findAll_("*COMMON_DS_NAME*");
-        this.otherHolidays = holidayRepository.findAllOtherHolidays_("*COMMON_DS_NAME*");
-        this.publicHolidays = holidayRepository.findAllPublicHolidays_("*COMMON_DS_NAME*");
-
-        //TODO write the findAllMovingHolidays method in repo
-        this.movingHolidays = holidayRepository.findAllOtherHolidays_("*COMMON_DS_NAME");
+        this.holidayEntities = holidayRepository.findAll_("*COMMON_DS_NAME OR REGION*");
+        this.otherHolidays = holidayRepository.findAllOtherHolidays_("*COMMON_DS_NAME OR REGION*");
+        this.publicHolidays = holidayRepository.findAllPublicHolidays_("*COMMON_DS_NAME OR REGION*");
     }
 
     /**
@@ -177,6 +172,12 @@ public class BizCalendar {
      */
     public boolean isOtherHoliday(LocalDate date) {
         for (HolidayEntity holiday : otherHolidays) {
+            if(holiday.getType() == HolidayEntity.HolidayType.MOVING){
+                LocalDate movingDate = movingDateToLocalDate(holiday);
+                if(movingDate.isEqual(date)){
+                    return true;
+                }
+            }
             if (date.getMonthValue() == holiday.getMonth() && date.getDayOfMonth() == holiday.getDay()) {
                 return true;
             }
@@ -192,6 +193,12 @@ public class BizCalendar {
      */
     public boolean isPublicHoliday(LocalDate date) {
         for (HolidayEntity holiday : publicHolidays) {
+            if(holiday.getType() == HolidayEntity.HolidayType.MOVING){
+                LocalDate movingDate = movingDateToLocalDate(holiday);
+                if(movingDate.isEqual(date)){
+                    return true;
+                }
+            }
             if (date.getMonthValue() == holiday.getMonth() && date.getDayOfMonth() == holiday.getDay()) {
                 return true;
             }
@@ -240,6 +247,12 @@ public class BizCalendar {
         return null;
     }
 
+    /**
+     * Parses HolidayEntity with HolidayType.MOVING to LocalDate object.
+     *
+     * @param holiday a holidayEntity instance with a moving date.
+     * @return LocalDate object.
+     */
     private LocalDate movingDateToLocalDate(HolidayEntity holiday) {
         String[] dates = holiday.getDateOfMovingHoliday().split(" ");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("E");

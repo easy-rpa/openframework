@@ -62,6 +62,12 @@ public class HolidayEntity {
     @Column(value = "type", adapter = HolidayTypeAdaptor.class)
     private HolidayType type;// ---Fixed---
 
+
+    /**
+     * Special column where the moving date is defined.
+     * <p>
+     *  For example "3 FRIDAY MAY"
+     */
     @Column("dateOfMovingHoliday")
     private String dateOfMovingHoliday;
 
@@ -130,7 +136,7 @@ public class HolidayEntity {
     }
 
     /**
-     * Static class which is used to HolidayType object to string.
+     * Static class which is used to adapt the usage of HolidayType object in DataStore.
      */
     public static class HolidayTypeAdaptor extends EnumAdaptor<HolidayType> {
         public HolidayType adaptString(Field f, String s) {
