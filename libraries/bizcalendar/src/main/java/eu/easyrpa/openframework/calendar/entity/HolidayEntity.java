@@ -15,7 +15,7 @@ import java.lang.reflect.Field;
 /**
  * Class that represents a holiday day.
  */
-@Entity(value = "crud_example_holidays", type = EntityType.DATASTORE)
+@Entity(value = "crud_example_holidays", type = EntityType.AP_RESULT_DATASTORE)
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -25,11 +25,12 @@ public class HolidayEntity {
 
     private String dsName;
 
-    public HolidayEntity(String dsName, String region, HolidayType type, int month, int day,
-                         String description, boolean isChurchHoliday, boolean isCustomHoliday, String churchHolidayType, int validFrom, int validTo, boolean isSubstitute) {
+    public HolidayEntity(String dsName, String region, HolidayType type, String dateOfFloatingHoliday, int month, int day,
+                         String description, boolean isChurchHoliday, boolean isCustomHoliday, ChurchHolidayType churchHolidayType, int validFrom, int validTo, boolean isSubstitute) {
         this.dsName = dsName;
         this.region = region;
         this.type = type;
+        this.dateOfFloatingHoliday = dateOfFloatingHoliday;
         this.month = month;
         this.day = day;
         this.description = description;
@@ -46,83 +47,82 @@ public class HolidayEntity {
      */
     @Id
     @Column(Column.CS_ID)
-    private Long id;            // ---1---
+    private Long id;
 
     /**
      * Region where a holiday day is held.
      */
     @Column("country")
-    private String region;         // ---BY---
+    private String region;
 
     /**
      * Type of holiday day.
      * <p>
-     * Can be "FIXED" or "MOVING".
+     * Can be "FIXED" or "FLOATING".
      */
-    @Column(value = "type", adapter = HolidayTypeAdaptor.class)
-    private HolidayType type;// ---Fixed---
-
+    @Column(value = "holiday_type", adapter = HolidayTypeAdaptor.class)
+    private HolidayType type;
 
     /**
      * Special column where the moving date is defined.
      * <p>
-     *  For example "3 FRIDAY MAY"
+     * For example "3 FRIDAY MAY"
      */
-    @Column("dateOfMovingHoliday")
-    private String dateOfMovingHoliday;
+    @Column("date_of_floating_holiday")
+    private String dateOfFloatingHoliday;
 
     /**
      * Number of month of a holiday day.
      */
     @Column("month")
-    private int month;          // ---12---
+    private int month;
 
     /**
      * Day of month if a holiday day.
      */
     @Column("day")
-    private int day;            // ---31---
+    private int day;
 
     /**
      * Description of a holiday day. Usually it is an official name of a holiday day.
      */
     @Column("description")
-    private String description;     // ---New Year---
+    private String description;
 
     /**
      * True if the holiday day is a church holiday. False otherwise.
      */
-    @Column("isChurchHoliday")
-    private boolean isChurchHoliday;  // ---false---
+    @Column("is_church_holiday")
+    private boolean isChurchHoliday;
 
     /**
      * True if the holiday day is custom(not an official government holiday). False otherwise.
      */
-    @Column("isCustomHoliday")
+    @Column("is_custom_holiday")
     private boolean isCustomHoliday;
 
     /**
      * Type of the church holiday.
      */
-    @Column("churchHolidayType")
-    private String churchHolidayType;     // ---null---
+    @Column(value = "church_holiday_type", adapter = ChurchHolidayTypeAdaptor.class)
+    private ChurchHolidayType churchHolidayType;
 
     /**
      * Year value from which the holiday is valid.
      */
-    @Column("validFrom")
-    private int validFrom;          // ---null (every year)---
+    @Column("valid_from")
+    private int validFrom;
 
     /**
      * Year value to which the holiday is valid.
      */
-    @Column("validTo")
-    private int validTo;            // ---2024---
+    @Column("valid_to")
+    private int validTo;
 
     /**
      * True if the holiday day will be substituted because if different terms. False otherwise.
      */
-    @Column("isSubstitute")
+    @Column("is_substitute")
     private boolean isSubstitute;
 
     /**
@@ -132,15 +132,32 @@ public class HolidayEntity {
      * "MOVING" is for holiday days that have a moving date(3rd thursday of may for example).
      */
     public enum HolidayType {
-       FIXED, MOVING
+        FIXED, FLOATING
     }
 
     /**
-     * Static class which is used to adapt the usage of HolidayType object in DataStore.
+     * Enum class which describes type of the church holiday day.
+     *
+     */
+    public enum ChurchHolidayType {
+        ORTHODOX, CATHOLIC, ISLAMIC, NONE
+    }
+
+    /**
+     * Static class which is used to adapt the usage of HolidayType field in DataStore.
      */
     public static class HolidayTypeAdaptor extends EnumAdaptor<HolidayType> {
         public HolidayType adaptString(Field f, String s) {
             return s != null && !s.isEmpty() ? HolidayType.valueOf(s) : null;
+        }
+    }
+
+    /**
+     * Static class which is used to adapt the usage of ChurchHolidayType field in DataStore.
+     */
+    public static class ChurchHolidayTypeAdaptor extends EnumAdaptor<ChurchHolidayType> {
+        public ChurchHolidayType adaptString(Field f, String s) {
+            return s != null && !s.isEmpty() ? ChurchHolidayType.valueOf(s) : null;
         }
     }
 

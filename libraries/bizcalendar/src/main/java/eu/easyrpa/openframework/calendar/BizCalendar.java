@@ -49,6 +49,10 @@ public class BizCalendar {
         this.publicHolidays = holidayRepository.findAllPublicHolidays_("*COMMON_DS_NAME OR REGION*");
     }
 
+    public List<HolidayEntity> getHolidayEntities() {
+        return holidayEntities;
+    }
+
     /**
      * Adds the specified number of working days to a start date returning the result.
      * <p>
@@ -154,7 +158,7 @@ public class BizCalendar {
     public List<LocalDate> getWorkingDaysInRange(LocalDate startDate, LocalDate endDate) {
         List<LocalDate> result = new ArrayList<>();
 
-        while (!startDate.isEqual(endDate)) {
+        while (!startDate.isEqual(endDate.plusDays(1))) {
             if (isWorkingDay(startDate)) {
                 result.add(startDate);
                 startDate = startDate.plusDays(1);
@@ -165,16 +169,16 @@ public class BizCalendar {
     }
 
     /**
-     * Checks if the given date represents a date defined as an 'other holiday' in the specified DataStore.
+     * Checks if the given date represents a date defined as an 'other holiday' in the DataStore.
      *
      * @param date the date to check.
      * @return True to indicate that the given date falls on another holiday; False otherwise.
      */
     public boolean isOtherHoliday(LocalDate date) {
         for (HolidayEntity holiday : otherHolidays) {
-            if(holiday.getType() == HolidayEntity.HolidayType.MOVING){
+            if (holiday.getType() == HolidayEntity.HolidayType.FLOATING) {
                 LocalDate movingDate = movingDateToLocalDate(holiday);
-                if(movingDate.isEqual(date)){
+                if (movingDate.isEqual(date)) {
                     return true;
                 }
             }
@@ -188,14 +192,14 @@ public class BizCalendar {
     /**
      * Checks if the given date represents a public holiday as defined in the specified DataStore.
      *
-     * @param date the date to check
-     * @return True to indicate that the given date falls on a public holiday; False otherwise
+     * @param date the date to check.
+     * @return True to indicate that the given date falls on a public holiday; False otherwise.
      */
     public boolean isPublicHoliday(LocalDate date) {
         for (HolidayEntity holiday : publicHolidays) {
-            if(holiday.getType() == HolidayEntity.HolidayType.MOVING){
+            if (holiday.getType() == HolidayEntity.HolidayType.FLOATING) {
                 LocalDate movingDate = movingDateToLocalDate(holiday);
-                if(movingDate.isEqual(date)){
+                if (movingDate.isEqual(date)) {
                     return true;
                 }
             }
@@ -209,8 +213,8 @@ public class BizCalendar {
     /**
      * Checks if the given date represents a weekend.
      *
-     * @param date the date to check
-     * @return True to indicate that the given date falls on a weekend; False otherwise
+     * @param date the date to check.
+     * @return True to indicate that the given date falls on a weekend; False otherwise.
      */
     public boolean isWeekend(LocalDate date) {
         return date.getDayOfWeek() != DayOfWeek.SUNDAY && date.getDayOfWeek() != DayOfWeek.SATURDAY;
@@ -219,20 +223,27 @@ public class BizCalendar {
     /**
      * Checks if the given date represents a working day as defined in the specified DataStore.
      *
-     * @param date the date to check
-     * @return True to indicate that the given date falls on a working day; False otherwise
+     * @param date the date to check.
+     * @return True to indicate that the given date falls on a working day; False otherwise.
      */
     public boolean isWorkingDay(LocalDate date) {
         if (isWeekend(date) || isPublicHoliday(date) || isOtherHoliday(date)) {
             return false;
         }
 
-        return date.getDayOfWeek() != DayOfWeek.MONDAY
-                || (!isPublicHoliday(date.minusDays(2)) && !isPublicHoliday(date.minusDays(1)));
+        if (date.getDayOfWeek() == DayOfWeek.MONDAY) {
+            if(isPublicHoliday(date.minusDays(1))&&isPublicHoliday(date.minusDays(2))){
+                HolidayEntity holiday = checkDate(holidayEntities,date);
+                assert holiday != null;
+                return !holiday.isSubstitute();
+            }
+        }
+
+        return true;
     }
 
     /**
-     * Finds and returns whether public or other holidays, within the specified range.
+     * Finds and returns whether public or other holiday.
      *
      * @param holidayEntities the list of given holidays, whether public or others.
      * @param date            the date to check what public or other holiday it is.
@@ -248,13 +259,13 @@ public class BizCalendar {
     }
 
     /**
-     * Parses HolidayEntity with HolidayType.MOVING to LocalDate object.
+     * Parses HolidayEntity with {@code HolidayType.MOVING} to {@link LocalDate} object.
      *
-     * @param holiday a holidayEntity instance with a moving date.
-     * @return LocalDate object.
+     * @param holiday a {@code HolidayEntity} instance with a moving date.
+     * @return {@link LocalDate} object.
      */
     private LocalDate movingDateToLocalDate(HolidayEntity holiday) {
-        String[] dates = holiday.getDateOfMovingHoliday().split(" ");
+        String[] dates = holiday.getDateOfFloatingHoliday().split(" ");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("E");
         TemporalAccessor accessor = formatter.parse(dates[1]);
 
