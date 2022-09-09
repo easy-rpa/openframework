@@ -15,14 +15,11 @@ import java.util.*;
  */
 public interface HolidayRepository extends CrudRepository<HolidayEntity, Integer> {
 
-
     default HolidayEntity save_(HolidayEntity entity) {
         HolidayEntity e = getEntityManager().persist(entity);
         entity.setId(e.getId());
         return e;
     }
-
-
 
     default HolidayEntity findById_(String dsName, String id) {
         TypedQuery<HolidayEntity> q = getEntityManager().createQuery("select t from \"" + dsName + "\" t where t.id::text = :id", HolidayEntity.class)
@@ -35,7 +32,6 @@ public interface HolidayRepository extends CrudRepository<HolidayEntity, Integer
         }
         return e;
     }
-
 
     default List<HolidayEntity> findAllById_(String dsName, Collection<String> ids) {
         if (ids == null || ids.isEmpty()) {
@@ -61,7 +57,6 @@ public interface HolidayRepository extends CrudRepository<HolidayEntity, Integer
         return result;
 
     }
-
 
     default List<HolidayEntity> findAll_(String dsName) {
         TypedQuery<HolidayEntity> tq = getEntityManager().createQuery("select t from " + dsName + " t", HolidayEntity.class);

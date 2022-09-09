@@ -2,8 +2,10 @@ package eu.easyrpa.openframework.calendar;
 
 import eu.easyrpa.openframework.calendar.entity.HolidayEntity;
 import eu.easyrpa.openframework.calendar.repository.HolidayRepository;
+import eu.easyrpa.openframework.calendar.utils.Converter;
 import eu.easyrpa.openframework.core.sevices.RPAServicesAccessor;
 
+import javax.inject.Inject;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -42,15 +44,16 @@ public class BizCalendar {
      */
     private RPAServicesAccessor rpaServices;
 
-    //TODO: Ask what will be better: two parameters or only HolidayRepository as a parameter
-    public BizCalendar(HolidayRepository holidayRepository) {
-        this.holidayEntities = holidayRepository.findAll_("*COMMON_DS_NAME OR REGION*");
-        this.otherHolidays = holidayRepository.findAllOtherHolidays_("*COMMON_DS_NAME OR REGION*");
-        this.publicHolidays = holidayRepository.findAllPublicHolidays_("*COMMON_DS_NAME OR REGION*");
+    public BizCalendar(HolidayRepository holidayRepository, String dsName) {
+        this.holidayEntities = holidayRepository.findAll_(dsName);
+        this.otherHolidays = holidayRepository.findAllOtherHolidays_(dsName);
+        this.publicHolidays = holidayRepository.findAllPublicHolidays_(dsName);
     }
 
-    public List<HolidayEntity> getHolidayEntities() {
-        return holidayEntities;
+    @Inject
+    public BizCalendar(HolidayRepository holidayRepository, RPAServicesAccessor rpaServices, String dsName){
+        this(holidayRepository, dsName);
+        this.rpaServices = rpaServices;
     }
 
     /**
@@ -99,12 +102,16 @@ public class BizCalendar {
      */
     public int countWorkingDaysInRange(LocalDate startDate, LocalDate endDate) {
         int result = 0;
-        while (!startDate.isEqual(endDate.plusDays(1))) {
-            if (isWorkingDay(startDate)) {
-                result++;
+
+        if(endDate.isAfter(startDate)) {
+            while (!startDate.isEqual(endDate.plusDays(1))) {
+                if (isWorkingDay(startDate)) {
+                    result++;
+                }
+                startDate = startDate.plusDays(1);
             }
-            startDate = startDate.plusDays(1);
         }
+
         return result;
     }
 
@@ -118,10 +125,12 @@ public class BizCalendar {
     public List<HolidayEntity> getOtherHolidaysInRange(LocalDate startDate, LocalDate endDate) {
         List<HolidayEntity> result = new ArrayList<>();
 
-        while (!startDate.isEqual(endDate)) {
-            if (isOtherHoliday(startDate)) {
-                result.add(checkDate(otherHolidays, startDate));
-                startDate = startDate.plusDays(1);
+        if(endDate.isAfter(startDate)) {
+            while (!startDate.isEqual(endDate.plusDays(1))) {
+                if (isOtherHoliday(startDate)) {
+                    result.add(checkDate(otherHolidays, startDate));
+                    startDate = startDate.plusDays(1);
+                }
             }
         }
 
@@ -138,10 +147,12 @@ public class BizCalendar {
     public List<HolidayEntity> getPublicHolidaysInRange(LocalDate startDate, LocalDate endDate) {
         List<HolidayEntity> result = new ArrayList<>();
 
-        while (!startDate.isEqual(endDate)) {
-            if (isPublicHoliday(startDate)) {
-                result.add(checkDate(publicHolidays, startDate));
-                startDate = startDate.plusDays(1);
+        if(endDate.isAfter(startDate)) {
+            while (!startDate.isEqual(endDate)) {
+                if (isPublicHoliday(startDate)) {
+                    result.add(checkDate(publicHolidays, startDate));
+                    startDate = startDate.plusDays(1);
+                }
             }
         }
 
@@ -158,13 +169,14 @@ public class BizCalendar {
     public List<LocalDate> getWorkingDaysInRange(LocalDate startDate, LocalDate endDate) {
         List<LocalDate> result = new ArrayList<>();
 
-        while (!startDate.isEqual(endDate.plusDays(1))) {
-            if (isWorkingDay(startDate)) {
-                result.add(startDate);
-                startDate = startDate.plusDays(1);
+        if(endDate.isAfter(startDate)) {
+            while (!startDate.isEqual(endDate.plusDays(1))) {
+                if (isWorkingDay(startDate)) {
+                    result.add(startDate);
+                    startDate = startDate.plusDays(1);
+                }
             }
         }
-
         return result;
     }
 
@@ -203,6 +215,22 @@ public class BizCalendar {
                     return true;
                 }
             }
+            if(holiday.isChurchHoliday()) {
+
+                if (holiday.getChurchHolidayType() == HolidayEntity.ChurchHolidayType.ISLAMIC) {
+                    LocalDate date1 = Converter.fromHijriToLocal(holiday);
+                    if (date1.isEqual(date)) {
+                        return true;
+                    }
+                }
+
+
+                LocalDate date1 = Converter.easterDateResolving(holiday.getValidFrom(), holiday.getChurchHolidayType()).plusDays(holiday.getDaysAfterEaster());
+                if (date1.equals(date)) {
+                    return true;
+                }
+            }
+
             if (date.getMonthValue() == holiday.getMonth() && date.getDayOfMonth() == holiday.getDay()) {
                 return true;
             }
@@ -232,10 +260,14 @@ public class BizCalendar {
         }
 
         if (date.getDayOfWeek() == DayOfWeek.MONDAY) {
-            if(isPublicHoliday(date.minusDays(1))&&isPublicHoliday(date.minusDays(2))){
-                HolidayEntity holiday = checkDate(holidayEntities,date);
-                assert holiday != null;
-                return !holiday.isSubstitute();
+            if (isPublicHoliday(date.minusDays(1)) && isPublicHoliday(date.minusDays(2))) {
+                for (HolidayEntity holidayEntity : holidayEntities) {
+                    if (date.getMonthValue() == holidayEntity.getMonth() &&
+                            date.getDayOfMonth() == holidayEntity.getDay() &&
+                            holidayEntity.isSubstitute()) {
+                       return false;
+                    }
+                }
             }
         }
 
