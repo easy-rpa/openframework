@@ -11,11 +11,14 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Proxy;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Class that represents a holiday day.
  */
-@Entity(value = "crud_example_holidays", type = EntityType.AP_RESULT_DATASTORE)
+@Entity(value = "")
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -23,7 +26,7 @@ import java.lang.reflect.Field;
 public class HolidayEntity {
 
 
-    private String dsName;
+    private String dsName = "";
 
     public HolidayEntity(String dsName, String region, HolidayType type, String dateOfFloatingHoliday, int month, int day,
                          String description, boolean isChurchHoliday, boolean isCustomHoliday, ChurchHolidayType churchHolidayType, int validFrom, int validTo, boolean isSubstitute) {
@@ -40,14 +43,15 @@ public class HolidayEntity {
         this.validFrom = validFrom;
         this.validTo = validTo;
         this.isSubstitute = isSubstitute;
+        generateId();
     }
 
     /**
      * Unique identifier of a holiday day.
      */
     @Id
-    @Column(Column.CS_ID)
-    private Long id;
+    @Column("id")
+    private String id;
 
     /**
      * Region where a holiday day is held.
@@ -128,6 +132,33 @@ public class HolidayEntity {
     @Column("is_substitute")
     private boolean isSubstitute;
 
+    public void updateEntityValue() {
+        Entity annotation = this.getClass().getAnnotation(Entity.class);
+        final String key = "value";
+        Object handler = Proxy.getInvocationHandler(annotation);
+        Field f;
+        try {
+            f = handler.getClass().getDeclaredField("memberValues");
+        } catch (NoSuchFieldException | SecurityException e) {
+            throw new IllegalStateException(e);
+        }
+        f.setAccessible(true);
+        Map<String, Object> memberValues;
+        try {
+            memberValues = (Map<String, Object>) f.get(handler);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            throw new IllegalStateException(e);
+        }
+        memberValues.put(key, dsName);
+    }
+
+    public void generateId() {
+        if (id == null) {
+            this.id = dsName + "_" + UUID.randomUUID();
+        }
+        updateEntityValue();
+    }
+
     /**
      * Enum class which describes type of the holiday day.
      * <p>
@@ -172,3 +203,5 @@ public class HolidayEntity {
         return EntityType.DATASTORE;
     }
 }
+
+
