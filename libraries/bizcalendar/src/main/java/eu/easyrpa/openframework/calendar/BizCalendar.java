@@ -210,6 +210,7 @@ public class BizCalendar {
         return false;
     }
 
+    //fixed
     /**
      * Checks if the given date represents a weekend.
      *
@@ -217,7 +218,7 @@ public class BizCalendar {
      * @return True to indicate that the given date falls on a weekend; False otherwise.
      */
     public boolean isWeekend(LocalDate date) {
-        return date.getDayOfWeek() != DayOfWeek.SUNDAY && date.getDayOfWeek() != DayOfWeek.SATURDAY;
+        return date.getDayOfWeek() == DayOfWeek.SUNDAY || date.getDayOfWeek() == DayOfWeek.SATURDAY;
     }
 
     /**
