@@ -44,18 +44,44 @@ public class BizCalendar {
      */
     private RPAServicesAccessor rpaServices;
 
+
     public BizCalendar(HolidayRepository holidayRepository, String dsName) {
         this.holidayEntities = holidayRepository.findAll_(dsName);
         this.otherHolidays = holidayRepository.findAllOtherHolidays_(dsName);
         this.publicHolidays = holidayRepository.findAllPublicHolidays_(dsName);
     }
 
+
+    //TODO: rethink how to inject
     @Inject
     public BizCalendar(HolidayRepository holidayRepository, RPAServicesAccessor rpaServices, String dsName){
         this(holidayRepository, dsName);
         this.rpaServices = rpaServices;
     }
 
+    /**
+     * Returns all public holidays of a country.
+     * @return list of public holidays.
+     */
+    public List<HolidayEntity> getPublicHolidays(){
+        return  publicHolidays;
+    }
+
+    /**
+     * Returns all other holidays of a country.
+     * @return list of other holidays.
+     */
+    public List<HolidayEntity> getOtherHolidays(){
+        return  otherHolidays;
+    }
+
+    /**
+     * Returns all holidays of a country.
+     * @return list of all holidays.
+     */
+    public List<HolidayEntity> getAllHolidays(){
+        return holidayEntities;
+    }
     /**
      * Adds the specified number of working days to a start date returning the result.
      * <p>
@@ -69,25 +95,23 @@ public class BizCalendar {
      * @return The date with the specified number of days added to it.
      */
     public LocalDate addWorkingDays(LocalDate startDate, int numberOfWorkingDaysToAdd) {
+        int count = 0;
         if (numberOfWorkingDaysToAdd < 0) {
             numberOfWorkingDaysToAdd = Math.abs(numberOfWorkingDaysToAdd);
-            for (int i = 0; i < numberOfWorkingDaysToAdd; i++) {
-                if (isWorkingDay(startDate)) {
-                    startDate = startDate.minusDays(1);
-                } else {
-                    startDate = startDate.minusDays(1);
-                    numberOfWorkingDaysToAdd++;
+            while(count != numberOfWorkingDaysToAdd){
+                if(isWorkingDay(startDate.minusDays(1))){
+                    count++;
                 }
+                startDate = startDate.minusDays(1);
             }
+            return startDate;
         }
         if (numberOfWorkingDaysToAdd > 0) {
-            for (int i = 0; i < numberOfWorkingDaysToAdd; i++) {
-                if (isWorkingDay(startDate)) {
-                    startDate = startDate.plusDays(1);
-                } else {
-                    startDate = startDate.plusDays(1);
-                    numberOfWorkingDaysToAdd++;
+            while(count != numberOfWorkingDaysToAdd){
+                if(isWorkingDay(startDate.plusDays(1))){
+                    count++;
                 }
+                startDate = startDate.plusDays(1);
             }
         }
         return startDate;
@@ -129,8 +153,8 @@ public class BizCalendar {
             while (!startDate.isEqual(endDate.plusDays(1))) {
                 if (isOtherHoliday(startDate)) {
                     result.add(checkDate(otherHolidays, startDate));
-                    startDate = startDate.plusDays(1);
                 }
+                startDate = startDate.plusDays(1);
             }
         }
 
@@ -151,8 +175,8 @@ public class BizCalendar {
             while (!startDate.isEqual(endDate)) {
                 if (isPublicHoliday(startDate)) {
                     result.add(checkDate(publicHolidays, startDate));
-                    startDate = startDate.plusDays(1);
                 }
+                startDate = startDate.plusDays(1);
             }
         }
 
@@ -173,8 +197,8 @@ public class BizCalendar {
             while (!startDate.isEqual(endDate.plusDays(1))) {
                 if (isWorkingDay(startDate)) {
                     result.add(startDate);
-                    startDate = startDate.plusDays(1);
                 }
+                startDate = startDate.plusDays(1);
             }
         }
         return result;
@@ -225,10 +249,10 @@ public class BizCalendar {
                 }
 
 
-                LocalDate date1 = Converter.easterDateResolving(holiday.getValidFrom(), holiday.getChurchHolidayType()).plusDays(holiday.getDaysFromEaster());
-                if (date1.equals(date)) {
-                    return true;
-                }
+//               // LocalDate date1 = Converter.easterDateResolving(holiday.getValidFrom(), holiday.getChurchHolidayType()).plusDays(holiday.getDaysFromEaster());
+//                if (date1.equals(date)) {
+//                    return true;
+//                }
             }
 
             if (date.getMonthValue() == holiday.getMonth() && date.getDayOfMonth() == holiday.getDay()) {

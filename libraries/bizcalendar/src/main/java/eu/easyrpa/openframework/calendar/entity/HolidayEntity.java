@@ -111,8 +111,8 @@ public class HolidayEntity {
     @Column(value = "church_holiday_type", adapter = ChurchHolidayTypeAdaptor.class)
     private ChurchHolidayType churchHolidayType;
 
-    @Column(value = "days_from_easter")
-    private int daysFromEaster;
+//    @Column(value = "days_from_easter")
+//    private int daysFromEaster;
 
     /**
      * Year value from which the holiday is valid.

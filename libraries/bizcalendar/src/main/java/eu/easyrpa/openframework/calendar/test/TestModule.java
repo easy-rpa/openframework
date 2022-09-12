@@ -18,6 +18,6 @@ public class TestModule extends ApModule {
     }
 
     public static void main(String[] args){
-        ApModuleRunner.localLaunch(TestModule.class, new StandaloneConfigurationModule());
+        ApModuleRunner.localLaunch(TestModule.class, new DevelopmentConfigurationModule());
     }
 }
