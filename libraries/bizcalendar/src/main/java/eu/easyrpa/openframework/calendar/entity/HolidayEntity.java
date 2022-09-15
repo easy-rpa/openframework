@@ -4,6 +4,7 @@ import eu.ibagroup.easyrpa.persistence.annotation.Column;
 import eu.ibagroup.easyrpa.persistence.annotation.Entity;
 import eu.ibagroup.easyrpa.persistence.annotation.EntityType;
 import eu.ibagroup.easyrpa.persistence.annotation.Id;
+import eu.ibagroup.easyrpa.persistence.impl.adaptor.BooleanAdaptor;
 import eu.ibagroup.easyrpa.persistence.impl.adaptor.EnumAdaptor;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,7 +19,7 @@ import java.util.UUID;
 /**
  * Class that represents a holiday day.
  */
-@Entity(value = "")
+@Entity(value = "USA")
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -29,7 +30,7 @@ public class HolidayEntity {
     private String dsName = "";
 
     public HolidayEntity(String dsName, String region, HolidayType type, String dateOfFloatingHoliday, int month, int day,
-                         String description, boolean isChurchHoliday, boolean isCustomHoliday, ChurchHolidayType churchHolidayType, int validFrom, int validTo, boolean isSubstitute) {
+                         String description, boolean isChurchHoliday, boolean isCustomHoliday, ChurchHolidayType churchHolidayType, int daysFromEaster, int validFrom, int validTo, boolean isSubstitute) {
         this.dsName = dsName;
         this.region = region;
         this.type = type;
@@ -43,6 +44,7 @@ public class HolidayEntity {
         this.validFrom = validFrom;
         this.validTo = validTo;
         this.isSubstitute = isSubstitute;
+        this.daysFromEaster = daysFromEaster;
         generateId();
     }
 
@@ -96,13 +98,13 @@ public class HolidayEntity {
     /**
      * True if the holiday day is a church holiday. False otherwise.
      */
-    @Column("is_church_holiday")
+    @Column(value = "is_church_holiday", adapter = BooleanAdaptor.class)
     private boolean isChurchHoliday;
 
     /**
      * True if the holiday day is custom(not an official government holiday). False otherwise.
      */
-    @Column("is_custom_holiday")
+    @Column(value = "is_custom_holiday", adapter =  BooleanAdaptor.class)
     private boolean isCustomHoliday;
 
     /**
@@ -111,8 +113,11 @@ public class HolidayEntity {
     @Column(value = "church_holiday_type", adapter = ChurchHolidayTypeAdaptor.class)
     private ChurchHolidayType churchHolidayType;
 
-//    @Column(value = "days_from_easter")
-//    private int daysFromEaster;
+    /**
+     * Amount of days from easter date.
+     */
+    @Column(value = "days_from_easter")
+    private int daysFromEaster;
 
     /**
      * Year value from which the holiday is valid.
@@ -129,7 +134,7 @@ public class HolidayEntity {
     /**
      * True if the holiday day will be substituted because if different terms. False otherwise.
      */
-    @Column("is_substitute")
+    @Column(value = "is_substitute", adapter = BooleanAdaptor.class)
     private boolean isSubstitute;
 
     public void updateEntityValue() {
@@ -194,6 +199,7 @@ public class HolidayEntity {
             return s != null && !s.isEmpty() ? ChurchHolidayType.valueOf(s) : null;
         }
     }
+
 
     public String entityName() {
         return dsName;

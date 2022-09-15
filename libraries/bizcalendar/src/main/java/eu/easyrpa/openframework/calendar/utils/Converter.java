@@ -11,6 +11,11 @@ public class Converter {
         return LocalDate.from(HijrahDate.of(holiday.getValidFrom(), holiday.getMonth(), holiday.getDay()));
     }
 
+    public static LocalDate getFloatingChurchHolidayDate(HolidayEntity holiday){
+        LocalDate easterDate = easterDateResolving(holiday.getValidFrom(), holiday.getChurchHolidayType());
+        return easterDate.plusDays(holiday.getDaysFromEaster());
+    }
+
     public static LocalDate easterDateResolving(int year, HolidayEntity.ChurchHolidayType type) {
         float A, B, C, P, Q, M, N, D, E;
 
@@ -45,4 +50,5 @@ public class Converter {
             return type.equals(HolidayEntity.ChurchHolidayType.CATHOLIC) ? resultDate : resultDate.plusDays(7);
         }
     }
+
 }

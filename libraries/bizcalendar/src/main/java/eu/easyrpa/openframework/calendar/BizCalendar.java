@@ -45,6 +45,12 @@ public class BizCalendar {
     private RPAServicesAccessor rpaServices;
 
 
+    /**
+     * Default constructor for {@code BizCalendar}.
+     *
+     * @param holidayRepository an instance of {@code HolidayRepository}.
+     * @param dsName name of a concrete data store where holidays are stored.
+     */
     public BizCalendar(HolidayRepository holidayRepository, String dsName) {
         this.holidayEntities = holidayRepository.findAll_(dsName);
         this.otherHolidays = holidayRepository.findAllOtherHolidays_(dsName);
@@ -233,14 +239,7 @@ public class BizCalendar {
      */
     public boolean isPublicHoliday(LocalDate date) {
         for (HolidayEntity holiday : publicHolidays) {
-            if (holiday.getType() == HolidayEntity.HolidayType.FLOATING) {
-                LocalDate movingDate = movingDateToLocalDate(holiday);
-                if (movingDate.isEqual(date)) {
-                    return true;
-                }
-            }
             if(holiday.isChurchHoliday()) {
-
                 if (holiday.getChurchHolidayType() == HolidayEntity.ChurchHolidayType.ISLAMIC) {
                     LocalDate date1 = Converter.fromHijriToLocal(holiday);
                     if (date1.isEqual(date)) {
@@ -248,11 +247,27 @@ public class BizCalendar {
                     }
                 }
 
+                if(holiday.getChurchHolidayType() == HolidayEntity.ChurchHolidayType.ORTHODOX){
+                    LocalDate date1 = Converter.getFloatingChurchHolidayDate(holiday);
+                    if (date1.equals(date)) {
+                        return true;
+                    }
+                }
 
-//               // LocalDate date1 = Converter.easterDateResolving(holiday.getValidFrom(), holiday.getChurchHolidayType()).plusDays(holiday.getDaysFromEaster());
-//                if (date1.equals(date)) {
-//                    return true;
-//                }
+                if(holiday.getChurchHolidayType() == HolidayEntity.ChurchHolidayType.CATHOLIC){
+                    LocalDate date1 = Converter.getFloatingChurchHolidayDate(holiday);
+                    if (date1.equals(date)) {
+                        return true;
+                    }
+                }
+               continue;
+            }
+
+            if (holiday.getType() == HolidayEntity.HolidayType.FLOATING) {
+                LocalDate movingDate = movingDateToLocalDate(holiday);
+                if (movingDate.isEqual(date)) {
+                    return true;
+                }
             }
 
             if (date.getMonthValue() == holiday.getMonth() && date.getDayOfMonth() == holiday.getDay()) {
@@ -285,12 +300,17 @@ public class BizCalendar {
         }
 
         if (date.getDayOfWeek() == DayOfWeek.MONDAY) {
-            if (isPublicHoliday(date.minusDays(1)) && isPublicHoliday(date.minusDays(2))) {
-                for (HolidayEntity holidayEntity : holidayEntities) {
-                    if (date.getMonthValue() == holidayEntity.getMonth() &&
-                            date.getDayOfMonth() == holidayEntity.getDay() &&
+            if (isPublicHoliday(date.minusDays(1))  || isPublicHoliday(date.minusDays(2))) {
+                for (HolidayEntity holidayEntity : publicHolidays) {
+                    if (date.minusDays(1).getMonthValue() == holidayEntity.getMonth() &&
+                            date.minusDays(1).getDayOfMonth() == holidayEntity.getDay() &&
                             holidayEntity.isSubstitute()) {
                        return false;
+                    }
+                    if (date.minusDays(2).getMonthValue() == holidayEntity.getMonth() &&
+                            date.minusDays(2).getDayOfMonth() == holidayEntity.getDay() &&
+                            holidayEntity.isSubstitute()) {
+                        return false;
                     }
                 }
             }
