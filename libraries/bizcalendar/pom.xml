@@ -73,6 +73,7 @@
             <artifactId>easy-rpa-engine</artifactId>
             <version>${easyrpa.version}</version>
         </dependency>
+
     </dependencies>
 
     <build>

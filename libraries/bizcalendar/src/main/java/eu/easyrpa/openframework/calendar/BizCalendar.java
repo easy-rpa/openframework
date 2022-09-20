@@ -1,5 +1,6 @@
 package eu.easyrpa.openframework.calendar;
 
+import eu.easyrpa.openframework.calendar.constants.BizCalendarConfigParam;
 import eu.easyrpa.openframework.calendar.entity.HolidayEntity;
 import eu.easyrpa.openframework.calendar.repository.HolidayRepository;
 import eu.easyrpa.openframework.calendar.utils.Converter;
@@ -12,19 +13,23 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Provides base functionality to work with working days.
  * <p>
  * With this class you can easily check whether the certain date is a working day or a holiday, calculate how many
- * working days or holidays between two current dates etc.
+ * working days or holidays are there between two current dates etc.
  */
 public class BizCalendar {
 
+    private static final String DEFAULT_DS_NAME = "USA";
+    private static final String DEFAULT_WEEKENDS = "Sat,Sun";
+
     /**
-     * List of Holiday Entity objects, which contains all holidays of a certain country.
+     * List of {@code HolidayEntity} objects, which contains all holidays of a certain country.
      * <p>
-     * All information about holidays is located in the DataStore on the EasyRPA Control Server
+     * All information about holidays is located in the DataStore on the EasyRPA Control Server.
      */
     private final List<HolidayEntity> holidayEntities;
 
@@ -39,55 +44,101 @@ public class BizCalendar {
     private final List<HolidayEntity> publicHolidays;
 
     /**
+     * Name of the data store, where holidays are hold.
+     */
+    private String dsName;
+
+    /**
+     * List of days of week that are weekends.
+     */
+    private List<DayOfWeek> weekends;
+
+    /**
      * Instance of RPA services accessor that allows to get configuration parameters and secret vault entries from
      * RPA platform.
      */
     private RPAServicesAccessor rpaServices;
 
-
     /**
      * Default constructor for {@code BizCalendar}.
      *
      * @param holidayRepository an instance of {@code HolidayRepository}.
-     * @param dsName name of a concrete data store where holidays are stored.
      */
-    public BizCalendar(HolidayRepository holidayRepository, String dsName) {
+    public BizCalendar(HolidayRepository holidayRepository) {
+        this.dsName = getDsName();
+        this.weekends = getWeekends();
         this.holidayEntities = holidayRepository.findAll_(dsName);
         this.otherHolidays = holidayRepository.findAllOtherHolidays_(dsName);
         this.publicHolidays = holidayRepository.findAllPublicHolidays_(dsName);
     }
 
-
-    //TODO: rethink how to inject
+    //TODO: fix fix fix fix
     @Inject
-    public BizCalendar(HolidayRepository holidayRepository, RPAServicesAccessor rpaServices, String dsName){
-        this(holidayRepository, dsName);
+    public BizCalendar(HolidayRepository holidayRepository, RPAServicesAccessor rpaServices) {
+        this(holidayRepository);
         this.rpaServices = rpaServices;
     }
 
     /**
+     * Gets data store name, where holidays are hold.
+     *
+     * @return data sore name where holidays are holds.
+     */
+    public String getDsName() {
+        if (dsName == null) {
+            dsName = getConfigParam(BizCalendarConfigParam.DATASTORE_NAME);
+            if (dsName == null) {
+                dsName = DEFAULT_DS_NAME;
+            }
+        }
+        return dsName;
+    }
+
+    /**
+     * Gets list of {@link DayOfWeek}, which are weekends.
+     *
+     * @return list of {@link DayOfWeek}, which are weekends
+     */
+    public List<DayOfWeek> getWeekends() {
+        String daysOfWeek = "";
+        if (weekends == null) {
+            daysOfWeek = getConfigParam(BizCalendarConfigParam.WEEKENDS);
+        }
+        if (weekends == null) {
+            daysOfWeek = DEFAULT_WEEKENDS;
+        }
+        List<String> buf = Arrays.asList(Objects.requireNonNull(daysOfWeek).split(","));
+        weekends = buf.stream().map(this::fromStringToDayOfWeek).collect(Collectors.toList());
+        return weekends;
+    }
+
+    /**
      * Returns all public holidays of a country.
+     *
      * @return list of public holidays.
      */
-    public List<HolidayEntity> getPublicHolidays(){
-        return  publicHolidays;
+    public List<HolidayEntity> getPublicHolidays() {
+        return publicHolidays;
     }
 
     /**
      * Returns all other holidays of a country.
+     *
      * @return list of other holidays.
      */
-    public List<HolidayEntity> getOtherHolidays(){
-        return  otherHolidays;
+    public List<HolidayEntity> getOtherHolidays() {
+        return otherHolidays;
     }
 
     /**
      * Returns all holidays of a country.
+     *
      * @return list of all holidays.
      */
-    public List<HolidayEntity> getAllHolidays(){
+    public List<HolidayEntity> getAllHolidays() {
         return holidayEntities;
     }
+
     /**
      * Adds the specified number of working days to a start date returning the result.
      * <p>
@@ -104,8 +155,8 @@ public class BizCalendar {
         int count = 0;
         if (numberOfWorkingDaysToAdd < 0) {
             numberOfWorkingDaysToAdd = Math.abs(numberOfWorkingDaysToAdd);
-            while(count != numberOfWorkingDaysToAdd){
-                if(isWorkingDay(startDate.minusDays(1))){
+            while (count != numberOfWorkingDaysToAdd) {
+                if (isWorkingDay(startDate.minusDays(1))) {
                     count++;
                 }
                 startDate = startDate.minusDays(1);
@@ -113,8 +164,8 @@ public class BizCalendar {
             return startDate;
         }
         if (numberOfWorkingDaysToAdd > 0) {
-            while(count != numberOfWorkingDaysToAdd){
-                if(isWorkingDay(startDate.plusDays(1))){
+            while (count != numberOfWorkingDaysToAdd) {
+                if (isWorkingDay(startDate.plusDays(1))) {
                     count++;
                 }
                 startDate = startDate.plusDays(1);
@@ -133,7 +184,7 @@ public class BizCalendar {
     public int countWorkingDaysInRange(LocalDate startDate, LocalDate endDate) {
         int result = 0;
 
-        if(endDate.isAfter(startDate)) {
+        if (endDate.isAfter(startDate)) {
             while (!startDate.isEqual(endDate.plusDays(1))) {
                 if (isWorkingDay(startDate)) {
                     result++;
@@ -155,10 +206,10 @@ public class BizCalendar {
     public List<HolidayEntity> getOtherHolidaysInRange(LocalDate startDate, LocalDate endDate) {
         List<HolidayEntity> result = new ArrayList<>();
 
-        if(endDate.isAfter(startDate)) {
+        if (endDate.isAfter(startDate)) {
             while (!startDate.isEqual(endDate.plusDays(1))) {
                 if (isOtherHoliday(startDate)) {
-                    result.add(checkDate(otherHolidays, startDate));
+                    result.add(findHoliday(otherHolidays, startDate));
                 }
                 startDate = startDate.plusDays(1);
             }
@@ -177,10 +228,10 @@ public class BizCalendar {
     public List<HolidayEntity> getPublicHolidaysInRange(LocalDate startDate, LocalDate endDate) {
         List<HolidayEntity> result = new ArrayList<>();
 
-        if(endDate.isAfter(startDate)) {
-            while (!startDate.isEqual(endDate)) {
+        if (endDate.isAfter(startDate)) {
+            while (!startDate.isEqual(endDate.plusDays(1))) {
                 if (isPublicHoliday(startDate)) {
-                    result.add(checkDate(publicHolidays, startDate));
+                    result.add(findHoliday(publicHolidays, startDate));
                 }
                 startDate = startDate.plusDays(1);
             }
@@ -199,7 +250,7 @@ public class BizCalendar {
     public List<LocalDate> getWorkingDaysInRange(LocalDate startDate, LocalDate endDate) {
         List<LocalDate> result = new ArrayList<>();
 
-        if(endDate.isAfter(startDate)) {
+        if (endDate.isAfter(startDate)) {
             while (!startDate.isEqual(endDate.plusDays(1))) {
                 if (isWorkingDay(startDate)) {
                     result.add(startDate);
@@ -217,18 +268,7 @@ public class BizCalendar {
      * @return True to indicate that the given date falls on another holiday; False otherwise.
      */
     public boolean isOtherHoliday(LocalDate date) {
-        for (HolidayEntity holiday : otherHolidays) {
-            if (holiday.getType() == HolidayEntity.HolidayType.FLOATING) {
-                LocalDate movingDate = movingDateToLocalDate(holiday);
-                if (movingDate.isEqual(date)) {
-                    return true;
-                }
-            }
-            if (date.getMonthValue() == holiday.getMonth() && date.getDayOfMonth() == holiday.getDay()) {
-                return true;
-            }
-        }
-        return false;
+        return findHoliday(otherHolidays, date) != null;
     }
 
     /**
@@ -238,46 +278,9 @@ public class BizCalendar {
      * @return True to indicate that the given date falls on a public holiday; False otherwise.
      */
     public boolean isPublicHoliday(LocalDate date) {
-        for (HolidayEntity holiday : publicHolidays) {
-            if(holiday.isChurchHoliday()) {
-                if (holiday.getChurchHolidayType() == HolidayEntity.ChurchHolidayType.ISLAMIC) {
-                    LocalDate date1 = Converter.fromHijriToLocal(holiday);
-                    if (date1.isEqual(date)) {
-                        return true;
-                    }
-                }
-
-                if(holiday.getChurchHolidayType() == HolidayEntity.ChurchHolidayType.ORTHODOX){
-                    LocalDate date1 = Converter.getFloatingChurchHolidayDate(holiday);
-                    if (date1.equals(date)) {
-                        return true;
-                    }
-                }
-
-                if(holiday.getChurchHolidayType() == HolidayEntity.ChurchHolidayType.CATHOLIC){
-                    LocalDate date1 = Converter.getFloatingChurchHolidayDate(holiday);
-                    if (date1.equals(date)) {
-                        return true;
-                    }
-                }
-               continue;
-            }
-
-            if (holiday.getType() == HolidayEntity.HolidayType.FLOATING) {
-                LocalDate movingDate = movingDateToLocalDate(holiday);
-                if (movingDate.isEqual(date)) {
-                    return true;
-                }
-            }
-
-            if (date.getMonthValue() == holiday.getMonth() && date.getDayOfMonth() == holiday.getDay()) {
-                return true;
-            }
-        }
-        return false;
+        return findHoliday(publicHolidays, date) != null;
     }
 
-    //fixed
     /**
      * Checks if the given date represents a weekend.
      *
@@ -285,7 +288,7 @@ public class BizCalendar {
      * @return True to indicate that the given date falls on a weekend; False otherwise.
      */
     public boolean isWeekend(LocalDate date) {
-        return date.getDayOfWeek() == DayOfWeek.SUNDAY || date.getDayOfWeek() == DayOfWeek.SATURDAY;
+        return weekends.contains(date.getDayOfWeek());
     }
 
     /**
@@ -300,12 +303,12 @@ public class BizCalendar {
         }
 
         if (date.getDayOfWeek() == DayOfWeek.MONDAY) {
-            if (isPublicHoliday(date.minusDays(1))  || isPublicHoliday(date.minusDays(2))) {
+            if (isPublicHoliday(date.minusDays(1)) || isPublicHoliday(date.minusDays(2))) {
                 for (HolidayEntity holidayEntity : publicHolidays) {
                     if (date.minusDays(1).getMonthValue() == holidayEntity.getMonth() &&
                             date.minusDays(1).getDayOfMonth() == holidayEntity.getDay() &&
                             holidayEntity.isSubstitute()) {
-                       return false;
+                        return false;
                     }
                     if (date.minusDays(2).getMonthValue() == holidayEntity.getMonth() &&
                             date.minusDays(2).getDayOfMonth() == holidayEntity.getDay() &&
@@ -326,10 +329,41 @@ public class BizCalendar {
      * @param date            the date to check what public or other holiday it is.
      * @return list oh holidays, whether public or others.
      */
-    private HolidayEntity checkDate(List<HolidayEntity> holidayEntities, LocalDate date) {
-        for (HolidayEntity holidayEntity : holidayEntities) {
-            if (date.getMonthValue() == holidayEntity.getMonth() && date.getDayOfMonth() == holidayEntity.getDay()) {
-                return holidayEntity;
+    private HolidayEntity findHoliday(List<HolidayEntity> holidayEntities, LocalDate date) {
+        for (HolidayEntity holiday : holidayEntities) {
+            if (holiday.isChurchHoliday()) {
+                if (holiday.getChurchHolidayType() == HolidayEntity.ChurchHolidayType.ISLAMIC) {
+                    LocalDate date1 = Converter.fromHijriToLocal(holiday);
+                    if (date1.isEqual(date)) {
+                        return holiday;
+                    }
+                }
+
+                if (holiday.getChurchHolidayType() == HolidayEntity.ChurchHolidayType.ORTHODOX) {
+                    LocalDate date1 = Converter.getFloatingChurchHolidayDate(holiday);
+                    if (date1.equals(date)) {
+                        return holiday;
+                    }
+                }
+
+                if (holiday.getChurchHolidayType() == HolidayEntity.ChurchHolidayType.CATHOLIC) {
+                    LocalDate date1 = Converter.getFloatingChurchHolidayDate(holiday);
+                    if (date1.equals(date)) {
+                        return holiday;
+                    }
+                }
+                continue;
+            }
+
+            if (holiday.getType() == HolidayEntity.HolidayType.FLOATING) {
+                LocalDate movingDate = floatingDateToLocalDate(holiday);
+                if (movingDate.isEqual(date)) {
+                    return holiday;
+                }
+            }
+
+            if (date.getMonthValue() == holiday.getMonth() && date.getDayOfMonth() == holiday.getDay()) {
+                return holiday;
             }
         }
         return null;
@@ -339,9 +373,9 @@ public class BizCalendar {
      * Parses HolidayEntity with {@code HolidayType.MOVING} to {@link LocalDate} object.
      *
      * @param holiday a {@code HolidayEntity} instance with a moving date.
-     * @return {@link LocalDate} object.
+     * @return parsed {@link LocalDate} object.
      */
-    private LocalDate movingDateToLocalDate(HolidayEntity holiday) {
+    private LocalDate floatingDateToLocalDate(HolidayEntity holiday) {
         String[] dates = holiday.getDateOfFloatingHoliday().split(" ");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("E");
         TemporalAccessor accessor = formatter.parse(dates[1]);
@@ -350,48 +384,40 @@ public class BizCalendar {
         return start.with(TemporalAdjusters.dayOfWeekInMonth(Integer.parseInt(dates[0]), DayOfWeek.from(accessor)));
     }
 
+    /**
+     * Parses String to {@link DayOfWeek}
+     *
+     * @param dayOfWeek represents day of week in String type.
+     * @return parsed {@link DayOfWeek} object.
+     */
+    private DayOfWeek fromStringToDayOfWeek(String dayOfWeek) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("E");
+        TemporalAccessor accessor = formatter.parse(dayOfWeek);
+        return DayOfWeek.from(accessor);
+    }
+
+    /**
+     * Gets value of configuration parameter specified in the RPA platform by the given key.
+     *
+     * @param key the key of configuration parameter that need to lookup.
+     * @return string value of configuration parameter with the given key. Returns <code>null</code> if parameter is
+     * not found or {@link RPAServicesAccessor} is not defined.
+     */
+    private String getConfigParam(String key) {
+        String result = null;
+
+        if (rpaServices == null) {
+            return null;
+        }
+
+        try {
+            result = rpaServices.getConfigParam(key);
+        } catch (Exception e) {
+            //do nothing
+        }
+
+        return result;
+    }
 }
-// public boolean isWorkingDay(LocalDate date) {
-//        if (isWeekend(date)) {
-//            return false;
-//        } else {
-//            for (HolidayEntity holidayEntity : holidayEntities) {
-//                if (holidayEntity.getMonth() == date.getMonthValue()
-//                        && holidayEntity.getDay() == date.getDayOfMonth()) {
-//                    if (holidayEntity.isSubstitute()) {
-//                        LocalDate weekendDate = LocalDate.of(date.getYear(), date.getMonthValue(), date.getDayOfMonth());
-//                        while (!isWeekend(weekendDate)) {
-//                            weekendDate = weekendDate.plusDays(1);
-//                        }
-//                    }
-//                    return false;
-//                }
-//            }
-//        }
-//        return true;
-//    }
 
-//    public boolean isOtherHoliday(LocalDate date) {
-//        AtomicBoolean isOtherHoliday = new AtomicBoolean(false);
-//        holidayEntities.forEach(holidayEntity -> {
-//            if(holidayEntity.getMonth() == date.getMonthValue()
-//                    && holidayEntity.getDay() == date.getDayOfMonth()
-//                    && holidayEntity.isCustomHoliday()) {
-//                isOtherHoliday.set(true);
-//            }
-//        });
-//        return isOtherHoliday.get();
-//    }
 
-//    public boolean isPublicHoliday(LocalDate date) {
-//        AtomicBoolean isPublicHoliday = new AtomicBoolean(false);
-//        if(!isOtherHoliday(date)) {
-//            holidayEntities.forEach(holidayEntity -> {
-//                if (holidayEntity.getMonth() == date.getMonthValue()
-//                        && holidayEntity.getDay() == date.getDayOfMonth()) {
-//                    isPublicHoliday.set(true);
-//                }
-//            });
-//        }
-//        return isPublicHoliday.get();
-//    }

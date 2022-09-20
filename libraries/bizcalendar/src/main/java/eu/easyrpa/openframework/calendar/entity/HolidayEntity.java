@@ -72,7 +72,7 @@ public class HolidayEntity {
     /**
      * Special column where the moving date is defined.
      * <p>
-     * For example "3 FRIDAY MAY"
+     * For example "3 Fri MAY".
      */
     @Column("date_of_floating_holiday")
     private String dateOfFloatingHoliday;
