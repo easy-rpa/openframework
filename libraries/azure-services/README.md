@@ -64,41 +64,71 @@ quality of your application's interactions with Microsoft Graph, with no added c
 in control.  The core library also provides support for common tasks such as paging through collections and creating 
 batch requests.
 
-In example below you can see how easily it to send a mail with OutlookEmailService Class
-
+Below you can se the example of using `GraphServiceProvider` class to create an instance of `GraphServiceClient` class and
+sending a mail message.
 ```java
 @Inject
-private OutlookEmailService outlookEmailService;
+private GraphServiceProvider graphServiceProvider;
 
 public void execute() {
-    ...        
-    outlookEmailService.sendMail("Subject","Body Text", "Email recipent");
-    ...
+    
+        Message message = new Message();
+        message.subject = "Meet for lunch?";
+        ItemBody body = new ItemBody();
+        body.contentType = BodyType.TEXT;
+        body.content = "The new cafeteria is open.";
+        message.body = body;
+        LinkedList<Recipient> toRecipientsList = new LinkedList<Recipient>();
+        Recipient toRecipients = new Recipient();
+        EmailAddress emailAddress = new EmailAddress();
+        emailAddress.address = "fannyd@contoso.onmicrosoft.com";
+        toRecipients.emailAddress = emailAddress;
+        toRecipientsList.add(toRecipients);
+        message.toRecipients = toRecipientsList;
+        
+        GraphServiceClient<Request> graphClient = graphServiceProvider.getGraphServiceClient();
+        
+        graphClient.me()
+            .sendMail(UserSendMailParameterSet
+                .newBuilder()
+                .withMessage(message)
+                .build())
+            .buildRequest()
+            .post();
 }
 ```  
-For creating of `OutlookEmailService` there should be provided an information, necessary
-for authentication on Azure Cloud. In case of injection of `OutlookEmailService` using `@Inject` annotation
-this information is expected to be defined in configuration parameters of the RPA process under the following keys:
 
-* `google.services.auth.clientID`.  Name of configuration parameter with clientID of your Azure app registration.
-* `google.services.auth.tenantID`. The Azure Tenant ID is a Global Unique Identifier (GUID) for your Microsoft 365 Tenant
-* `google.services.auth.graphUserScopes`.  Name of configuration parameter with list of necessary API permissions for your app.
+For creating of `GraphServiceProvider` you should provide all information that is necessary for authentication such as 
+client id, tenant id and list of necessary API permissions. In case of injection of `GoogleServicesProvider` using 
+`@Inject` annotation this information is expected to be defined in configuration parameters of the RPA process under the 
+following keys: client id under **`azure.services.auth.client.id`**, tenant id under **`azure.services.auth.tenant.id`**,
+list of API permissions under **`azure.services.graph.permission.list`**.
 
 ```properties
- google.services.auth.clientID=<YOUR CLIENT ID>
+ azure.services.auth.client.id=<YOUR CLIENT ID>
  ``` 
 
  ```properties
- google.services.auth.tenantID=<YOUR TENANT ID>
+  azure.services.auth.tenant.id=<YOUR TENANT ID>
  ``` 
 
 ```properties
- azure.services.graphUserScopes=<YOUR API PERMISSIONS LIST>
- ``` 
+ azure.services.graph.permission.list=<YOUR API PERMISSIONS LIST>
+ ```
+
+To get that information you are required to do the following steps:
+1. [Create personal Microsoft account][create_microsoft_account] if it doesn't exist.
+2. [Register new application in Azure Active Directory][create_project_link].
+3. [Find your Client id and Tenant id][create_project_link], copy and put them under needed keys in *apm_run.properties* file.
+4. On the left menu click on **API permissions** and [add permissions that you want][enable_api]. 
+
+[create_project_link]: https://docs.microsoft.com/en-us/graph/tutorials/java?tabs=aad&tutorial-step=1
+[create_microsoft_account]: https://docs.microsoft.com/en-us/graph/tutorials/java?tabs=aad&tutorial-step=1
+[enable_api]: https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-configure-app-access-web-apis
 
 ### Other examples
 
-Please refer to [Azure Services Examples](../../examples#google-services) to see more examples of using this library.
+Please refer to [Azure Services Examples](../../examples#azure-services) to see more examples of using this library.
 
 ### Configuration parameters
 

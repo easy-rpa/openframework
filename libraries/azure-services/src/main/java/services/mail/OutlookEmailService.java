@@ -1,4 +1,4 @@
-package services;
+package services.mail;
 
 import com.microsoft.graph.models.*;
 import com.microsoft.graph.requests.GraphServiceClient;
@@ -6,6 +6,7 @@ import com.microsoft.graph.requests.MailFolderCollectionPage;
 import com.microsoft.graph.requests.MessageCollectionPage;
 import eu.easyrpa.openframework.core.sevices.RPAServicesAccessor;
 import okhttp3.Request;
+import services.GraphServiceProvider;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -46,8 +47,7 @@ public class OutlookEmailService {
     public OutlookEmailService()   {
         azureAuth = new GraphServiceProvider();
         try {
-            graphServiceClient = azureAuth.getGraphServiceClient(
-                    challenge -> System.out.println(challenge.getMessage()));
+            graphServiceClient = azureAuth.getGraphServiceClient();
         } catch (Exception e) {
             System.out.println("Error");
         }
@@ -304,7 +304,7 @@ public class OutlookEmailService {
      *
      * @return list of {@link Message} objects representing existing email messages.
      */
-    public java.util.List<Message> fetchAllMessages() {
+    public List<Message> fetchAllMessages() {
         MessageCollectionPage messages = graphServiceClient.me().messages()
                 .buildRequest()
                 .top(50)
@@ -320,7 +320,7 @@ public class OutlookEmailService {
      * @param folderName the name of mailbox folder which is necessary to get all messages from.
      * @return list of {@link Message} objects representing existing email messages.
      */
-    public java.util.List<Message> fetchMessages(String folderName) {
+    public List<Message> fetchMessages(String folderName) {
         MailFolder mailFolder = this.getMailFolder(folderName);
         assert mailFolder.id != null;
         MessageCollectionPage messages = graphServiceClient.me().mailFolders(mailFolder.id)
@@ -338,7 +338,7 @@ public class OutlookEmailService {
      *
      * @return list of {@link Message} objects representing existing email messages.
      */
-    public java.util.List<Message> fetchMessages() {
+    public List<Message> fetchMessages() {
         MessageCollectionPage messages = graphServiceClient.me().mailFolders("inbox")
                 .messages()
                 .buildRequest()
@@ -355,7 +355,7 @@ public class OutlookEmailService {
      * @param messages the collection of existing email messages
      * @return list of {@link Message} objects representing existing email messages.
      */
-    private java.util.List<Message> getMessages(MessageCollectionPage messages) {
+    private List<Message> getMessages(MessageCollectionPage messages) {
 
         List<Message> result = new ArrayList<>(messages.getCurrentPage());
 

@@ -79,11 +79,22 @@
             <artifactId>azure-identity</artifactId>
             <version>1.2.5</version>
         </dependency>
+
         <dependency>
             <groupId>eu.easyrpa</groupId>
             <artifactId>easy-rpa-openframework-core</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.ibagroup</groupId>
+            <artifactId>easy-rpa-engine-api</artifactId>
+            <version>2.3.1</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>eu.ibagroup</groupId>
+            <artifactId>easy-rpa-engine</artifactId>
+            <version>2.3.1</version>
         </dependency>
         <dependency>
             <groupId>javax.inject</groupId>

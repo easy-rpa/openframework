@@ -17,8 +17,8 @@
 
     <dependencies>
         <dependency>
-        <groupId>eu.ibagroup</groupId>
-        <artifactId>easy-rpa-engine</artifactId>
+            <groupId>eu.ibagroup</groupId>
+            <artifactId>easy-rpa-engine</artifactId>
         </dependency>
         <dependency>
             <groupId>eu.easyrpa</groupId>

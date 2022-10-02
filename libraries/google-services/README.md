@@ -90,7 +90,7 @@ Read [how Google Workspace APIs authentication and authorization works][auth_ove
 [auth_overview_link]: https://developers.google.com/workspace/guides/auth-overview
 [configure_oauth_consent_link]: https://developers.google.com/workspace/guides/configure-oauth-consent
 [create_credentials_link]: https://developers.google.com/workspace/guides/create-credentials#oauth-client-id
-[best_practices_link]: https://www.google.com/support/enterprise/static/gapps/docs/admin/en/gapps_workspace/Google%20Workspace%20APIs%20-%20Authentication%20Best%20Practices.pdf
+[best_practices_link]: https://www.google.com/support/enterprise/static/gapps/docs/admin/en/gapps_workspace/Google%20Workspace%20APIs%20-%20Authentication%20Best%20Practices.pdf`
 
 After creating of OAuth client ID the corresponding OAuth client JSON can be downloaded by the following way:
 1. Open the [Google Cloud Console](https://console.cloud.google.com)

@@ -1,8 +1,8 @@
-package eu.easyrpa.examples.azure.services.outlook_message_reading.tasks;
+package firstexample.tasks;
 
-import com.microsoft.graph.models.Message;
+import com.microsoft.graph.models.DriveItem;
+import com.microsoft.graph.requests.DriveItemCollectionPage;
 import com.microsoft.graph.requests.GraphServiceClient;
-import com.microsoft.graph.requests.MessageCollectionPage;
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import lombok.extern.slf4j.Slf4j;
@@ -11,28 +11,25 @@ import services.GraphServiceProvider;
 
 import javax.inject.Inject;
 
-@ApTaskEntry(name = "Reading of all messages from Outlook test task")
 @Slf4j
-public class ReadMessagesTask extends ApTask {
+@ApTaskEntry(name = "Getting all files from OneDrive example task")
+public class OneDriveFilesListing extends ApTask {
 
     @Inject
     private GraphServiceProvider graphServiceProvider;
 
     @Override
-    public void execute()  {
+    public void execute() {
         GraphServiceClient<Request> graphClient = graphServiceProvider.getGraphServiceClient();
 
-        MessageCollectionPage messages = graphClient.me()
-                .messages()
+        DriveItemCollectionPage children = graphClient.me().drive().root().children()
                 .buildRequest()
                 .get();
 
-
-        if (messages != null) {
-            for (Message message : messages.getCurrentPage()) {
-                log.info(message.subject);
+        if(children != null) {
+            for(DriveItem child : children.getCurrentPage()){
+                log.info(child.name);
             }
         }
-
     }
 }

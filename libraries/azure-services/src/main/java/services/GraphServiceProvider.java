@@ -77,6 +77,19 @@ public class GraphServiceProvider {
     }
 
     /**
+     * Constructor with parameters for {@code AzureAuth}.
+     *
+     * @param clientId application unique identifier.
+     * @param authTenantId a Global Unique Identifier (GUID) for your Microsoft 365 Tenant.
+     * @param permissionsList a space-separated list of delegated permissions that the app is requesting.
+     */
+    public GraphServiceProvider(String clientId, String authTenantId, String permissionsList){
+        this.clientId = clientId;
+        this.authTenantId = authTenantId;
+        this.permissionList = Arrays.asList(permissionsList.split(","));
+    }
+
+    /**
      * Constructs {@code AzureAuth} with provided {@link RPAServicesAccessor}.
      * <p>
      * This constructor is used in case of injecting of this AzureAuth using {@link Inject} annotation.
@@ -168,14 +181,14 @@ public class GraphServiceProvider {
      *     }
      *  </pre>
      *
-     * @param challenge prints a URL and special device code to sigh.
+     *
      * @return An instance of GraphServiceClient object to make requests against the service.
      */
-    public GraphServiceClient<Request> getGraphServiceClient(Consumer<DeviceCodeInfo> challenge) {
+    public GraphServiceClient<Request> getGraphServiceClient() {
 
         final TokenCredentialAuthProvider authProvider =
                 new TokenCredentialAuthProvider(getPermissionList(),
-                        deviceCodeCredential(challenge));
+                        deviceCodeCredential(challenge -> System.out.println(challenge.getMessage())));
 
         this.userClient = GraphServiceClient.builder()
                 .authenticationProvider(authProvider)

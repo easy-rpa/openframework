@@ -1,9 +1,8 @@
-package services;
+package services.mail;
 
 import com.microsoft.graph.models.*;
 
 import java.util.LinkedList;
-import java.util.List;
 
 public class MessageBuilder {
     private  Message message;
@@ -52,8 +51,6 @@ public class MessageBuilder {
         public  MessageBuilder build(){
             return  MessageBuilder.this;
         }
-
-
 
     }
 }
