@@ -19,7 +19,7 @@ public class ReadMessagesTask extends ApTask {
     private GraphServiceProvider graphServiceProvider;
 
     @Override
-    public void execute()  {
+    public void execute() {
         GraphServiceClient<Request> graphClient = graphServiceProvider.getGraphServiceClient();
 
         MessageCollectionPage messages = graphClient.me()

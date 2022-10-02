@@ -1,4 +1,4 @@
-package firstexample.tasks;
+package eu.easyrpa.examples.azure.services.onedrive_files_listing.tasks;
 
 import com.microsoft.graph.models.DriveItem;
 import com.microsoft.graph.requests.DriveItemCollectionPage;
@@ -26,8 +26,8 @@ public class OneDriveFilesListing extends ApTask {
                 .buildRequest()
                 .get();
 
-        if(children != null) {
-            for(DriveItem child : children.getCurrentPage()){
+        if (children != null) {
+            for (DriveItem child : children.getCurrentPage()) {
                 log.info(child.name);
             }
         }
