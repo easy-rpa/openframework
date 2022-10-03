@@ -24,6 +24,7 @@
             <groupId>eu.ibagroup</groupId>
             <artifactId>easy-rpa-engine</artifactId>
         </dependency>
+
         <dependency>
             <groupId>eu.easyrpa</groupId>
             <artifactId>easy-rpa-adapter-for-openframework</artifactId>

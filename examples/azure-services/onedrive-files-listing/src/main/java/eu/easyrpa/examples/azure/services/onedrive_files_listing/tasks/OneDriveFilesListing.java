@@ -15,11 +15,14 @@ import javax.inject.Inject;
 @ApTaskEntry(name = "Getting all files from OneDrive example task")
 public class OneDriveFilesListing extends ApTask {
 
-    @Inject
-    private GraphServiceProvider graphServiceProvider;
+//    @Inject
+//    private GraphServiceProvider graphServiceProvider;
 
     @Override
     public void execute() {
+        GraphServiceProvider graphServiceProvider = new GraphServiceProvider("dc59bb45-5a6e-47ca-820d-2f049ae03848","common",
+                "user.read,mail.read,mail.send,mail.readwrite,files.readwrite");
+
         GraphServiceClient<Request> graphClient = graphServiceProvider.getGraphServiceClient();
 
         DriveItemCollectionPage children = graphClient.me().drive().root().children()

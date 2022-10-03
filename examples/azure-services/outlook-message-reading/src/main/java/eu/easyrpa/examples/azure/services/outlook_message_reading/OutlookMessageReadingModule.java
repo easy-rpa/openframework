@@ -5,6 +5,7 @@ import eu.ibagroup.easyrpa.engine.annotation.ApModuleEntry;
 import eu.ibagroup.easyrpa.engine.apflow.ApModule;
 import eu.ibagroup.easyrpa.engine.apflow.TaskOutput;
 import eu.ibagroup.easyrpa.engine.boot.ApModuleRunner;
+import eu.ibagroup.easyrpa.engine.boot.configuration.DevelopmentConfigurationModule;
 
 @ApModuleEntry(name="bruh")
 public class OutlookMessageReadingModule extends ApModule {
@@ -14,6 +15,6 @@ public class OutlookMessageReadingModule extends ApModule {
     }
 
     public static  void main(String[] args){
-        ApModuleRunner.localLaunch(OutlookMessageReadingModule.class);
+        ApModuleRunner.localLaunch(OutlookMessageReadingModule.class, new DevelopmentConfigurationModule());
     }
 }
