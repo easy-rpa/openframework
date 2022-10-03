@@ -3,17 +3,36 @@
 This example sends simple Outlook email message.
 
 ```Java
-@Inject
-private EmailSender emailSender;
+    @Inject
+    private GraphServiceProvider graphServiceProvider;
 
-public void execute() {       
-    String subject = "Test message";
-    String body = "Hello World!"; 
+    @Override
+    public void execute()  {
+        GraphServiceClient<Request> graphClient = graphServiceProvider.getGraphServiceClient();
 
-    log.info("Create message with EmailSender and then send it.");
-    new EmailMessage(emailSender).subject(subject).text(body).send();
-}
-```
+        String subject = "Hello!";
+        String body = "Hello world";
+        String recipient = "example@mail.com";
+        
+        final Message message = new Message();
+        message.subject = subject;
+        message.body = new ItemBody();
+        message.body.content = body;
+        message.body.contentType = BodyType.TEXT;
+
+        final Recipient toRecipient = new Recipient();
+        toRecipient.emailAddress = new EmailAddress();
+        toRecipient.emailAddress.address = recipient;
+        message.toRecipients = List.of(toRecipient);
+        
+        graphClient.me()
+                .sendMail(UserSendMailParameterSet.newBuilder()
+                        .withMessage(message)
+                        .build())
+                .buildRequest()
+                .post();
+    }
+ ```
 
 See the full source of this example for more details or check following instructions to run it.
 

@@ -4,14 +4,16 @@ This example reads  Outlook email message.
 
 ```Java
 @Inject
-private EmailSender emailSender;
+private GraphServiceClient graphServiceClient;
 
-public void execute() {       
-    String subject = "Test message";
-    String body = "Hello World!"; 
+public void execute() {
+        GraphServiceClient<Request> graphClient = graphServiceProvider.getGraphServiceClient();
 
-    log.info("Create message with EmailSender and then send it.");
-    new EmailMessage(emailSender).subject(subject).text(body).send();
+        DriveItemCollectionPage children = graphClient.me().drive().root()
+            .children()
+            .buildRequest()
+            .get();
+
 }
 ```
 
@@ -47,7 +49,7 @@ Its a fully workable process. To play around with it and run do the following:
 5. Build it using `mvn clean install` command. This command should be run within directory of this example.
 6. Run `main()` method of `OutlookMessageReadingModule` class.
 
-[down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easy-rpa/openframework/tree/main/examples/azure-services/outlook-message-reading
+[down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easy-rpa/openframework/tree/main/examples/azure-services/onedrive-files-listing
 ### Configuration
 
 All necessary configuration files can be found in `src/main/resources` directory.

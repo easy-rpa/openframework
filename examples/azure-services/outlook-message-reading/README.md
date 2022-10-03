@@ -4,15 +4,17 @@ This example reads  Outlook email message.
 
 ```Java
 @Inject
-private EmailSender emailSender;
+private GraphServiceClient graphServiceClient;
 
-public void execute() {       
-    String subject = "Test message";
-    String body = "Hello World!"; 
+public void execute() {
+        GraphServiceClient<Request> graphClient = graphServiceProvider.getGraphServiceClient();
 
-    log.info("Create message with EmailSender and then send it.");
-    new EmailMessage(emailSender).subject(subject).text(body).send();
-}
+        MessageCollectionPage messages = graphClient.me()
+            .messages()
+            .buildRequest()
+            .get();
+
+        }
 ```
 
 See the full source of this example for more details or check following instructions to run it.
