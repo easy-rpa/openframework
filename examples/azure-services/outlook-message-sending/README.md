@@ -10,20 +10,21 @@ This example sends simple Outlook email message.
     public void execute()  {
         GraphServiceClient<Request> graphClient = graphServiceProvider.getGraphServiceClient();
 
-        String subject = "Hello!";
-        String body = "Hello world";
-        String recipient = "example@mail.com";
-        
-        final Message message = new Message();
+final Message message = new Message();
         message.subject = subject;
         message.body = new ItemBody();
         message.body.content = body;
         message.body.contentType = BodyType.TEXT;
 
-        final Recipient toRecipient = new Recipient();
+        LinkedList<Recipient> toRecipientsList = new LinkedList<>();
+        String[] recipients = simpleEmailRecipients.split(",");
+        for(String emailRecipient: recipients) {
+        Recipient toRecipient = new Recipient();
         toRecipient.emailAddress = new EmailAddress();
-        toRecipient.emailAddress.address = recipient;
-        message.toRecipients = List.of(toRecipient);
+        toRecipient.emailAddress.address = emailRecipient;
+        toRecipientsList.add(toRecipient);
+        }
+        message.toRecipients = toRecipientsList;
         
         graphClient.me()
                 .sendMail(UserSendMailParameterSet.newBuilder()
@@ -102,4 +103,17 @@ All necessary configuration files can be found in `src/main/resources` directory
         <br>
         Exp: user.Read,mail.Read,mail.Send,mail.readwrite 
     </td></tr>
+   <tr><td valign="top"><code>mail.recipients</code></td><td>
+        Name of configuration parameter with email addresses of recipients of this email message.<br>  
+        <br>
+        Exp: user1@email.com,user2@email.com
+    </td></tr>
+      <tr><td valign="top"><code>mail.subject</code></td><td>
+        Name of configuration parameter with subject of your email message.
+      <br>
+    </td></tr>
+     <tr><td valign="top"><code>mail.body</code></td><td>
+        Name of configuration parameter with text body of your email message.
+      <br>  
+     </td></tr>
 </table> 

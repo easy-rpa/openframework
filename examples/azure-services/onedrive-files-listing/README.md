@@ -1,6 +1,6 @@
 # Reading Outlook email messages
 
-This example reads  Outlook email message.
+This example lists all files from OneDrive.
 
 ```Java
 @Inject
@@ -47,7 +47,7 @@ Its a fully workable process. To play around with it and run do the following:
     ```
 
 5. Build it using `mvn clean install` command. This command should be run within directory of this example.
-6. Run `main()` method of `OutlookMessageReadingModule` class.
+6. Run `main()` method of `OnedriveFilesListingModule` class.
 
 [down_git_link]: https://downgit.github.io/#/home?url=https://github.com/easy-rpa/openframework/tree/main/examples/azure-services/onedrive-files-listing
 ### Configuration

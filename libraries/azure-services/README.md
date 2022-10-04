@@ -24,7 +24,7 @@ To start use the library first you need to add corresponding Maven dependency to
 <dependency>
     <groupId>eu.easyrpa</groupId>
     <artifactId>easy-rpa-openframework-azure-services</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 
@@ -123,7 +123,7 @@ To get that information you are required to do the following steps:
 4. On the left menu click on **API permissions** and [add permissions that you want][enable_api]. 
 
 [create_project_link]: https://docs.microsoft.com/en-us/graph/tutorials/java?tabs=aad&tutorial-step=1
-[create_microsoft_account]: https://docs.microsoft.com/en-us/graph/tutorials/java?tabs=aad&tutorial-step=1
+[create_microsoft_account]: https://account.microsoft.com/account?lang=en-hk
 [enable_api]: https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-configure-app-access-web-apis
 
 ### Other examples

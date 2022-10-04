@@ -1,11 +1,20 @@
 # EasyRPA Open Framework Examples
 
+ [Azure Services](#azure-services)
  [Email](#email)  
  [Excel](#excel)  
  [Google Services](#google-services)  
  [Google Drive](#google-drive)  
  [Google Sheets](#google-sheets)  
  [Database](#database)  
+
+## Azure Services
+
+- [Getting of files from OneDrive](azure-services/onedrive-files-listing)
+
+- [Reading messages from Outlook](azure-services/outlook-message-reading)
+
+- [Sending simple Outlook email message](azure-services/outlook-message-sending)
  
 ## Email
 

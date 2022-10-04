@@ -75,6 +75,13 @@ The EasyRPA Open Framework includes following libraries:
         <th align="left">Description</th>
     </tr>
     <tr>
+        <td valign="top"><a href="/libraries/azure-services">Azure Services</a></td>
+        <td><img alt="Maven Central" src="https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-azure-services"></td>
+        <td>
+            Functionality to work with Azure services (OneDrive, Outlook, OneNote etc.).
+        </td>
+    </tr>
+    <tr>
         <td valign="top"><a href="/libraries/database">Database</a></td>
         <td><img alt="Maven Central" src="https://img.shields.io/maven-central/v/eu.easyrpa/easy-rpa-openframework-database"></td>
         <td>
