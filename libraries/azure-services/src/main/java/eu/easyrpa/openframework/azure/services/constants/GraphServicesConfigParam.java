@@ -1,4 +1,4 @@
-package services.constants;
+package eu.easyrpa.openframework.azure.services.constants;
 
 import java.util.List;
 
@@ -10,17 +10,17 @@ public class GraphServicesConfigParam {
     /**
      * Name of configuration parameter with secret information necessary to perform authentication on Azure server.
      */
-    public static final String AUTH_TENANT_ID = "azure.services.auth.tenant.id";
+    public static final String AZURE_TENANT_ID = "azure.services.auth.tenant.id";
 
     /**
      * Name of configuration parameter with clientID of your Azure app registration.
      */
-    public static final String AUTH_CLIENT_ID = "azure.services.auth.client.id";
+    public static final String AZURE_CLIENT_ID = "azure.services.auth.client.id";
 
     /**
      * Name of configuration parameter with list of necessary API permissions for your app.
      */
-    public static final String API_PERMISSION_LIST = "azure.services.graph.permission.list";
+    public static final String AZURE_PERMISSIONS ="azure.services.graph.permission.list";
 
     private GraphServicesConfigParam() {}
 }

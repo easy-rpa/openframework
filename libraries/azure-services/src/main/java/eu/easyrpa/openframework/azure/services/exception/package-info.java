@@ -1,4 +1,4 @@
 /**
  * Exceptions thrown during Azure API services instantiation.
  */
-package services.exception;
+package eu.easyrpa.openframework.azure.services.exception;

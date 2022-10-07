@@ -7,9 +7,8 @@ import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Request;
-import services.GraphServiceProvider;
+import eu.easyrpa.openframework.azure.services.GraphServiceProvider;
 
-import javax.inject.Inject;
 import java.util.LinkedList;
 
 @Slf4j

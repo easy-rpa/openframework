@@ -1,4 +1,4 @@
-package services.mail;
+package eu.easyrpa.openframework.azure.services.mail;
 
 import com.microsoft.graph.models.*;
 import com.microsoft.graph.requests.GraphServiceClient;
@@ -6,7 +6,7 @@ import com.microsoft.graph.requests.MailFolderCollectionPage;
 import com.microsoft.graph.requests.MessageCollectionPage;
 import eu.easyrpa.openframework.core.sevices.RPAServicesAccessor;
 import okhttp3.Request;
-import services.GraphServiceProvider;
+import eu.easyrpa.openframework.azure.services.GraphServiceProvider;
 
 import javax.inject.Inject;
 import java.util.ArrayList;

@@ -99,7 +99,7 @@ public void execute() {
 ```  
 
 For creating of `GraphServiceProvider` you should provide all information that is necessary for authentication such as 
-client id, tenant id and list of necessary API permissions. In case of injection of `GoogleServicesProvider` using 
+client id, tenant id and list of necessary API permissions. In case of injection of `GraphServiceProvider` using 
 `@Inject` annotation this information is expected to be defined in configuration parameters of the RPA process under the 
 following keys: client id under **`azure.services.auth.client.id`**, tenant id under **`azure.services.auth.tenant.id`**,
 list of API permissions under **`azure.services.graph.permission.list`**.

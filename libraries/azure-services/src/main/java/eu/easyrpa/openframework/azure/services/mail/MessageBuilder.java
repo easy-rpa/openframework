@@ -1,4 +1,4 @@
-package services.mail;
+package eu.easyrpa.openframework.azure.services.mail;
 
 import com.microsoft.graph.models.*;
 

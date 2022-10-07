@@ -1,4 +1,4 @@
 /**
  * Constants used during Azure API services instantiation.
  */
-package services.constants;
+package eu.easyrpa.openframework.azure.services.constants;
