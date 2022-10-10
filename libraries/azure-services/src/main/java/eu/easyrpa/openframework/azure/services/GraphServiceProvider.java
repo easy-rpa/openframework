@@ -37,7 +37,7 @@ public class GraphServiceProvider {
     private String azureTenantId;
 
     /**
-     * This parameter is a space-separated list of delegated permissions that the app is requesting.
+     * This parameter is a list of delegated permissions that the app is requesting.
      */
     private List<String> azurePermissions;
 
@@ -57,11 +57,11 @@ public class GraphServiceProvider {
     /**
      * Constructor with parameters for {@code AzureAuth}.
      *
-     * @param azureClientId application unique identifier.
-     * @param azureTenantId a Global Unique Identifier (GUID) for your Microsoft 365 Tenant.
+     * @param azureClientId   application unique identifier.
+     * @param azureTenantId   a Global Unique Identifier (GUID) for your Microsoft 365 Tenant.
      * @param permissionsList a space-separated list of delegated permissions that the app is requesting.
      */
-    public GraphServiceProvider(String azureClientId, String azureTenantId, String permissionsList){
+    public GraphServiceProvider(String azureClientId, String azureTenantId, String permissionsList) {
         this.azureClientId = azureClientId;
         this.azureTenantId = azureTenantId;
         this.azurePermissions = Arrays.asList(permissionsList.split(","));
@@ -136,10 +136,42 @@ public class GraphServiceProvider {
     /**
      * Sets graph api permission list
      *
-     * @param azurePermissions is a space-separated list of delegated permissions that the app is requesting
+     * @param azurePermissions is a String that contains delegated permissions that the app is requesting
      */
     public void setAzurePermissions(String azurePermissions) {
         this.azurePermissions = Arrays.asList(azurePermissions.split(";"));
+    }
+
+    /**
+     * Sets explicitly the alias of secret vault entry with AzureTenantId necessary for authentication on the
+     * Azure server.
+     * <p>
+     * For information regarding how to find your tenant ID see
+     * <a href="https://docs.microsoft.com/en-us/graph/tutorials/java?tabs=aad&tutorial-step=1">Azure app registration</a>
+     *
+     * @param vaultAlias the alias of secret vault entry azureTenantID to use.
+     * @return this object to allow joining of methods calls into chain.
+     */
+    public GraphServiceProvider secret(String vaultAlias) {
+        if (rpaServices != null) {
+            this.setAzureClientId(vaultAlias);
+            this.setAzureTenantId(rpaServices.getSecret(vaultAlias, String.class));
+        }
+        return this;
+    }
+
+    /**
+     * Sets graph api permissions
+     * <p>
+     * For information regarding how to set specific permissions you want, see
+     * <a href="https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-configure-app-access-web-apis">Quickstart: Configure a client application to access a web API</a>
+     *
+     * @param azurePermissions is a string of delegated permissions that the app is requesting.
+     * @return this object to allow joining of methods calls into chain.
+     */
+    public GraphServiceProvider azurePermissions(String azurePermissions) {
+        this.setAzurePermissions(azurePermissions);
+        return this;
     }
 
     /**
@@ -153,12 +185,10 @@ public class GraphServiceProvider {
      *
      *     public void execute() {
      *          ...
-     *         GraphServiceClient<Request> userClient = graphServiceProvider.getGraphServiceClient(
-     *                   challenge -> System.out.println(challenge.getMessage()));
+     *         GraphServiceClient<Request> userClient = graphServiceProvider.getGraphServiceClient();
      *        ...
      *     }
      *  </pre>
-     *
      *
      * @return An instance of GraphServiceClient object to make requests against the service.
      */
@@ -167,18 +197,16 @@ public class GraphServiceProvider {
         final DeviceCodeCredential deviceCodeCredential = new DeviceCodeCredentialBuilder()
                 .clientId(getAzureClientId())
                 .tenantId(getAzureTenantId())
-                .challengeConsumer(challenge-> System.out.println(challenge.getMessage()))
+                .challengeConsumer(challenge -> System.out.println(challenge.getMessage()))
                 .build();
 
         final TokenCredentialAuthProvider authProvider =
-                new TokenCredentialAuthProvider(getAzurePermissions(),deviceCodeCredential);
+                new TokenCredentialAuthProvider(getAzurePermissions(), deviceCodeCredential);
 
-        return  GraphServiceClient.builder()
-                    .authenticationProvider(authProvider)
-                    .buildClient();
-
+        return GraphServiceClient.builder()
+                .authenticationProvider(authProvider)
+                .buildClient();
     }
-
 
     /**
      * Gets value of configuration parameter specified in the RPA platform by the given key.

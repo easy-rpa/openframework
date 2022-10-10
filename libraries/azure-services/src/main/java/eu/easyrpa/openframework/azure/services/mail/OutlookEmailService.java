@@ -17,15 +17,15 @@ import java.util.Objects;
  * This is an Outlook email client service that provides functionality for working with mailbox folders and email
  * messages in them.
  * <p>
- *  The main purpose of this class is to simplify the work with Microsoft Outlook. With its functionality, you can
- *  send, delete, update, read email messages, create different mail folders and all of that you can do by writing one
- *  line of code.
+ * The main purpose of this class is to simplify the work with Microsoft Outlook. With its functionality, you can
+ * send, delete, update, read email messages, create different mail folders and all of that you can do by writing one
+ * line of code.
  */
 public class OutlookEmailService {
 
-   /**
-    * Instance of authentication and authorization helper for Azure API services
-    */
+    /**
+     * Instance of authentication and authorization helper for Azure API services
+     */
     private final GraphServiceProvider azureAuth;
 
     /**
@@ -44,7 +44,7 @@ public class OutlookEmailService {
     /**
      * Default constructor for {@code OutlookEmailService}.
      */
-    public OutlookEmailService()   {
+    public OutlookEmailService() {
         azureAuth = new GraphServiceProvider();
         try {
             graphServiceClient = azureAuth.getGraphServiceClient();
@@ -71,10 +71,10 @@ public class OutlookEmailService {
      * </pre>
      *
      * @param rpaService instance of {@link RPAServicesAccessor} that allows to use provided by RPA platform services
-     *                    like configuration, secret vault etc.
+     *                   like configuration, secret vault etc.
      */
     @Inject
-    public OutlookEmailService(RPAServicesAccessor rpaService){
+    public OutlookEmailService(RPAServicesAccessor rpaService) {
         this.rpaServicesAccessor = rpaService;
         azureAuth = new GraphServiceProvider(rpaService);
     }
@@ -91,7 +91,6 @@ public class OutlookEmailService {
 
         Message message = MessageBuilder.newBuilder()
                 .setMessageContent(body).setMessageSubject(subject).setRecipient(recipient).build().getMessage();
-
         this.graphServiceClient.me()
                 .sendMail(UserSendMailParameterSet.newBuilder()
                         .withMessage(message)
