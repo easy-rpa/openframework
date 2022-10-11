@@ -9,14 +9,15 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.Request;
 import eu.easyrpa.openframework.azure.services.GraphServiceProvider;
 
+import javax.inject.Inject;
 import java.util.LinkedList;
 
 @Slf4j
 @ApTaskEntry(name = "Send Outlook message")
 public class SendOutlookMessage extends ApTask {
 
-//    @Inject
-//    private GraphServiceProvider graphServiceProvider;
+    @Inject
+    private GraphServiceProvider graphServiceProvider;
 
     @Configuration(value = "mail.recipients")
     private String simpleEmailRecipients;
@@ -30,8 +31,6 @@ public class SendOutlookMessage extends ApTask {
     @Override
     public void execute()  {
 
-        GraphServiceProvider graphServiceProvider = new GraphServiceProvider("dc59bb45-5a6e-47ca-820d-2f049ae03848","common",
-                "user.read,mail.read,mail.send,mail.readwrite,files.readwrite");
         GraphServiceClient<Request> graphClient = graphServiceProvider.getGraphServiceClient();
 
         final Message message = new Message();
@@ -41,7 +40,7 @@ public class SendOutlookMessage extends ApTask {
         message.body.contentType = BodyType.TEXT;
 
         LinkedList<Recipient> toRecipientsList = new LinkedList<>();
-        String[] recipients = simpleEmailRecipients.split(",");
+        String[] recipients = simpleEmailRecipients.split(";");
         for(String emailRecipient: recipients) {
             Recipient toRecipient = new Recipient();
             toRecipient.emailAddress = new EmailAddress();

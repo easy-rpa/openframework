@@ -58,14 +58,14 @@ All necessary configuration files can be found in `src/main/resources` directory
 
 <table>
     <tr><th>Parameter</th><th>Value</th></tr>
-    <tr><td valign="top"><code>azure.services.auth.clientID</code></td><td>
+    <tr><td valign="top"><code>azure.services.auth.client.id</code></td><td>
       Name of configuration parameter with clientID of your Azure app registration.<br>
       <br>
       For information regarding how to find your Client ID see 
       <a href="https://docs.microsoft.com/en-us/graph/tutorials/java?tabs=aad&tutorial-step=1">Azure app registration</a><br>
       <br>
     </td></tr>  
-    <tr><td valign="top"><code>azure.services.auth.tenantID</code></td><td>
+    <tr><td valign="top"><code>azure.services.auth.tenant.id</code></td><td>
        The Azure Tenant ID is a Global Unique Identifier (GUID) for your Microsoft 365 Tenant.
         it’s also referred to as the Office 365 Tenant ID.
       The ID is used to identify your tenant, and it’s not your organization name or domain name.<br>
@@ -74,7 +74,7 @@ All necessary configuration files can be found in `src/main/resources` directory
         <a href="https://docs.microsoft.com/en-us/graph/tutorials/java?tabs=aad&tutorial-step=1">Azure app registration</a>
         section<br>        
     </td></tr>    
-    <tr><td valign="top"><code>azure.services.graphUserScopes</code></td><td>
+    <tr><td valign="top"><code>azure.services.graph.permission.list</code></td><td>
         Name of configuration parameter with list of necessary API permissions for your app.<br>  
         <br>
         Here you can read some additional information about Microsoft graph permissions:
@@ -83,6 +83,6 @@ All necessary configuration files can be found in `src/main/resources` directory
         For information regarding how to set specific permissions you want, see
         <a href="https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-configure-app-access-web-apis">Quickstart: Configure a client application to access a web API</a><br>
         <br>
-        Exp: user.Read,mail.Read,mail.Send,mail.readwrite 
+        Exp: user.Read;mail.Read;mail.Send;mail.readwrite 
     </td></tr>
 </table> 

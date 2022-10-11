@@ -2,6 +2,7 @@ package eu.easyrpa.openframework.azure.services;
 
 import com.azure.identity.DeviceCodeCredential;
 import com.azure.identity.DeviceCodeCredentialBuilder;
+import com.azure.identity.DeviceCodeInfo;
 import com.microsoft.graph.authentication.TokenCredentialAuthProvider;
 import com.microsoft.graph.requests.GraphServiceClient;
 import eu.easyrpa.openframework.core.sevices.RPAServicesAccessor;
@@ -12,6 +13,7 @@ import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * Authentication and authorization helper for Azure API services.
@@ -40,6 +42,8 @@ public class GraphServiceProvider {
      * This parameter is a list of delegated permissions that the app is requesting.
      */
     private List<String> azurePermissions;
+
+    private DeviceCodeCredential deviceCodeCredential;
 
     /**
      * Instance of RPA services accessor that allows to get configuration parameters and secret vault entries from
@@ -175,6 +179,43 @@ public class GraphServiceProvider {
     }
 
     /**
+     * Allows to override the way how this code informs the user that it wishes to act on his behalf and obtain
+     * corresponding access token from Google.
+     * <p>
+     * By default, it prints message in console this code is running and locates to OAuth consent page where
+     * user should authorize performing of necessary operations. If this code is running on robot's machine performing
+     * of authorization by this way is not possible since user won't able to see the browser page.
+     * <p>
+     * Using this method is possible to overrides this behavior and specify, lets say, sending of notification email
+     * with link to OAuth consent page to administrator, who is able to perform authorization on behalf of robot's
+     * Google account. In this case robot will be able to access Google services on behalf of his account. Any time
+     * when access token is invalid administrator will get such email and let robot continue his work. E.g.:
+     * <pre>
+     * <code>@Inject</code>
+     * SomeAuthorizationRequiredEmail authorizationRequiredEmail;
+     * ...
+     *
+     * graphServiceProvider.onAuthorization(challenge->{
+     *    authorizationRequiredEmail.setConsentPage(challenge.getUrl()).send();
+     * });
+     *
+     * ...
+     * </pre>
+     *
+     * @param challengeConsumer lambda expression or instance of {@link Consumer<DeviceCodeInfo>} that defines
+     *                               specific behavior of authorization step.
+     * @return this object to allow joining of methods calls into chain.
+     */
+    public GraphServiceProvider onAuthorization(Consumer<DeviceCodeInfo> challengeConsumer) {
+        this.deviceCodeCredential = new DeviceCodeCredentialBuilder()
+                .clientId(getAzureClientId())
+                .tenantId(getAzureTenantId())
+                .challengeConsumer(challengeConsumer)
+                .build();
+        return this;
+    }
+
+    /**
      * Build and return a GraphServiceClient object to make requests against the service.
      *
      * <p>
@@ -194,11 +235,12 @@ public class GraphServiceProvider {
      */
     public GraphServiceClient<Request> getGraphServiceClient() {
 
-        final DeviceCodeCredential deviceCodeCredential = new DeviceCodeCredentialBuilder()
-                .clientId(getAzureClientId())
-                .tenantId(getAzureTenantId())
-                .challengeConsumer(challenge -> System.out.println(challenge.getMessage()))
-                .build();
+        if (this.deviceCodeCredential == null) {
+            this.deviceCodeCredential = new DeviceCodeCredentialBuilder()
+                    .clientId(getAzureClientId())
+                    .tenantId(getAzureTenantId())
+                    .build();
+        }
 
         final TokenCredentialAuthProvider authProvider =
                 new TokenCredentialAuthProvider(getAzurePermissions(), deviceCodeCredential);
