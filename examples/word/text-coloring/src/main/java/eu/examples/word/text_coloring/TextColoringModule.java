@@ -13,6 +13,7 @@ public class TextColoringModule extends ApModule {
 
     public TaskOutput run() throws Exception {
         return execute(getInput(), CreateTextColor.class).get();
+
     }
 
     public static void main(String[] args) {

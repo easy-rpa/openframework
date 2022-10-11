@@ -3,6 +3,7 @@ package eu.examples.word.text_coloring.tasks;
 import eu.easyrpa.openframework.word.TextRange;
 import eu.easyrpa.openframework.word.WordDocument;
 import eu.easyrpa.openframework.word.constants.Colors;
+import eu.easyrpa.openframework.word.constants.FontFamily;
 import eu.ibagroup.easyrpa.engine.annotation.ApTaskEntry;
 import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
@@ -20,6 +21,7 @@ public class CreateTextColor extends ApTask {
 
     @Configuration(value = "output.files.dir")
     private String outputFilesDir;
+
 
     @Override
     public void execute() throws Exception {

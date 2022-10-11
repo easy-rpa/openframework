@@ -2,6 +2,7 @@
 
  [Email](#email)  
  [Excel](#excel)  
+ [Word](#word)  
  [Google Services](#google-services)  
  [Google Drive](#google-drive)  
  [Google Sheets](#google-sheets)  
@@ -100,6 +101,24 @@
  - [Running of macros](excel/macros-running)
  
  - [Running of custom VB script](excel/custom-vbs-running)
+
+## Word
+
+- [Creating of new Word file](word/word-file-creating)
+
+- [Reading data from Word file](word/word-file-reading)
+   * Read values of any paragraphs
+   * Read the list of paragraphs records
+
+- [Inserting image to specific placeholder](word/placeholder-image-inserting)
+
+- [Working with variables in Word file](word/working-with-variables)
+   * Create new variables
+   * Replace variables
+   * Edit variables
+   * Delete variables
+
+- [Coloring text](word/text-coloring)
 
 ## Google Services
 

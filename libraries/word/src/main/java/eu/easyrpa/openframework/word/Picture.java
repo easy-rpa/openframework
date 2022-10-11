@@ -47,20 +47,29 @@ public class Picture{
     }
 
     public String getAltText(){
-        //TODO implement this
+
+
+
+
         return null;
     }
 
     public void replaceWith(String text) {
-        //TODO Implement this.
+
+
+
     }
 
     public void replaceWith(Picture picture) {
-        //TODO Implement this.
+
+
+
     }
 
     public void remove() {
-        //TODO Implement this.
+
+
+
     }
 
     public byte[] getBinaryImage() {

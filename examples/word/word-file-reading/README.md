@@ -1,4 +1,4 @@
-# Reading content of DOCX file
+## Reading data from Word file
 
 This example demonstrates how easily we can read the content of document located at different places and after working with them.
 

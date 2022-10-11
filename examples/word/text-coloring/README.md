@@ -1,4 +1,4 @@
-# Reading content of DOCX file
+## Coloring text
 
 This example demonstrates using a using of Word library functionality to create text color.
 In our case, we tried to make the most suitable business case. 

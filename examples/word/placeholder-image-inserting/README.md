@@ -1,4 +1,4 @@
-# Reading content of DOCX file
+## Inserting image to specific placeholder
 
 This example demonstrates using a using of Word library functionality to insert image in text placeholder value.
 

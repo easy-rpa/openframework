@@ -13,6 +13,7 @@ public class PlaceholderImageInsertingModule extends ApModule {
 
     public TaskOutput run() throws Exception {
         return execute(getInput(), InsertImage.class).get();
+
     }
 
     public static void main(String[] args) {

@@ -1,4 +1,4 @@
-# Reading content of DOCX file
+## Working with variables in Word file
 
 This example demonstrates using of Word library functionality to replace variables in a certain template with arbitrary values.
 

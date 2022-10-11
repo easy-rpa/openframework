@@ -1,4 +1,4 @@
-# Reading content of DOCX file
+## Creating of new Word file
 
 This example demonstrates using a using of Word library functionality to create new Word file with some paragraphs and
 pictures.

@@ -33,6 +33,7 @@ public class InsertImage extends ApTask {
         log.info("Create picture instance.");
         Picture picture = new Picture(sourcePicFile);
 
+
         log.info("First, find text which will be replaced. And then replace with an image.");
         doc.findText(PLACEHOLDER).replaceWith(picture, doc.getOpcPackage());
 

@@ -3,6 +3,8 @@ package eu.easyrpa.openframework.word;
 import eu.easyrpa.openframework.word.constants.Colors;
 import eu.easyrpa.openframework.word.constants.FontFamily;
 import eu.easyrpa.openframework.word.constants.TextAlignment;
+import org.docx4j.fonts.PhysicalFont;
+import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.*;
@@ -34,12 +36,31 @@ public class TextFormat {
      * @return this cell style object to allow joining of methods calls into chain.
      */
     public TextFormat font(FontFamily font) {
-        //TODO implement this
+//        PhysicalFont physicalFont = PhysicalFonts.get(font.getName());
+
+        ObjectFactory factory = new ObjectFactory();
+        RFonts fonts = factory.createRFonts();
+        fonts.setAscii(font.getName());
+
+        fonts.setCs(font.getName());
+        fonts.setHAnsi(font.getName());
+
+        relatedText.getTextRuns().forEach(r -> r.getRPr().setRFonts(fonts));
+
         return this;
     }
 
     public FontFamily getFont() {
-        //TODO implement this
+        try {
+            for(R r : relatedText.getTextRuns()) {
+                String asciiFont = r.getRPr().getRFonts().getAscii();
+                if(!asciiFont.isEmpty()) {
+                    return FontFamily.getValue(asciiFont);
+                }
+            }
+        } catch (NullPointerException e) {
+            return FontFamily.UNSPECIFIED;
+        }
         return null;
     }
 
@@ -98,7 +119,15 @@ public class TextFormat {
      * @return this cell style object to allow joining of methods calls into chain.
      */
     public TextFormat underline(boolean isUnderline) {
-        //TODO implement this
+        ObjectFactory factory = new ObjectFactory();
+
+        U u = factory.createU();
+
+        //This line here will do the trick for you.
+        u.setVal(UnderlineEnumeration.SINGLE);
+
+        relatedText.getTextRuns().forEach(r -> r.getRPr().setU(u));
+
         return this;
     }
 
