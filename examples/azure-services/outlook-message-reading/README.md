@@ -1,10 +1,10 @@
 # Reading Outlook email messages
 
-This example reads  Outlook email message.
+This example reads  Outlook email messages.
 
 ```Java
 @Inject
-private GraphServiceClient graphServiceClient;
+private GraphServiceProvider graphServiceProvider;
 
 public void execute() {
         GraphServiceClient<Request> graphClient = graphServiceProvider.getGraphServiceClient();
