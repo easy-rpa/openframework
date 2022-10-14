@@ -78,23 +78,11 @@ and sending a mail message.
 private GraphServiceProvider graphServiceProvider;
 
 public void execute(){
-
-        Message message=new Message();
-        message.subject="Meet for lunch?";
-        ItemBody body=new ItemBody();
-        body.contentType=BodyType.TEXT;
-        body.content="The new cafeteria is open.";
-        message.body=body;
-        LinkedList<Recipient> toRecipientsList=new LinkedList<Recipient>();
-        Recipient toRecipients=new Recipient();
-        EmailAddress emailAddress=new EmailAddress();
-        emailAddress.address="fannyd@contoso.onmicrosoft.com";
-        toRecipients.emailAddress=emailAddress;
-        toRecipientsList.add(toRecipients);
-        message.toRecipients=toRecipientsList;
-
+    
         GraphServiceClient<Request> graphClient=graphServiceProvider.getGraphServiceClient();
 
+        Message message = new Message();
+        
         graphClient.me()
             .sendMail(UserSendMailParameterSet
                 .newBuilder()

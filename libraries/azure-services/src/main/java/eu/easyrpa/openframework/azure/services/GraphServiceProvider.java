@@ -27,7 +27,7 @@ public class GraphServiceProvider {
 
     /**
      * Application unique identifier that is associated with an application that assists with client / server
-     * OAuth 2.0 authentication
+     * OAuth 2.0 authentication.
      */
     private String azureClientId;
 
@@ -43,6 +43,10 @@ public class GraphServiceProvider {
      */
     private List<String> azurePermissions;
 
+    /**
+     * Enables authentication to Azure Active Directory using a device code that the user can enter
+     * into https://microsoft.com/devicelogin
+     */
     private DeviceCodeCredential deviceCodeCredential;
 
     /**
@@ -56,19 +60,6 @@ public class GraphServiceProvider {
      */
     public GraphServiceProvider() {
 
-    }
-
-    /**
-     * Constructor with parameters for {@code AzureAuth}.
-     *
-     * @param azureClientId   application unique identifier.
-     * @param azureTenantId   a Global Unique Identifier (GUID) for your Microsoft 365 Tenant.
-     * @param permissionsList a space-separated list of delegated permissions that the app is requesting.
-     */
-    public GraphServiceProvider(String azureClientId, String azureTenantId, String permissionsList) {
-        this.azureClientId = azureClientId;
-        this.azureTenantId = azureTenantId;
-        this.azurePermissions = Arrays.asList(permissionsList.split(","));
     }
 
     /**
@@ -96,9 +87,9 @@ public class GraphServiceProvider {
     }
 
     /**
-     * Sets app unique identifier, which is located in AzureActiveDirectory
+     * Sets app unique identifier, which is located in AzureActiveDirectory.
      *
-     * @param azureClientId Application unique identifier that is associated with an application
+     * @param azureClientId Application unique identifier that is associated with an application.
      */
     public void setAzureClientId(String azureClientId) {
         this.azureClientId = azureClientId;
@@ -118,9 +109,9 @@ public class GraphServiceProvider {
     }
 
     /**
-     * Sets authTenantId
+     * Sets authTenantId.
      *
-     * @param azureTenantId is a Global Unique Identifier (GUID) for your Microsoft 365 Tenant
+     * @param azureTenantId is a Global Unique Identifier (GUID) for your Microsoft 365 Tenant.
      */
     public void setAzureTenantId(String azureTenantId) {
         this.azureTenantId = azureTenantId;
@@ -138,9 +129,9 @@ public class GraphServiceProvider {
     }
 
     /**
-     * Sets graph api permission list
+     * Sets graph api permission list.
      *
-     * @param azurePermissions is a String that contains delegated permissions that the app is requesting
+     * @param azurePermissions is a String that contains delegated permissions that the app is requesting.
      */
     public void setAzurePermissions(String azurePermissions) {
         this.azurePermissions = Arrays.asList(azurePermissions.split(";"));
@@ -150,7 +141,7 @@ public class GraphServiceProvider {
      * Sets explicitly the alias of secret vault entry with AzureTenantId necessary for authentication on the
      * Azure server.
      * <p>
-     * For information regarding how to find your tenant ID see
+     * For information regarding how to find your tenant ID see.
      * <a href="https://docs.microsoft.com/en-us/graph/tutorials/java?tabs=aad&tutorial-step=1">Azure app registration</a>
      *
      * @param vaultAlias the alias of secret vault entry azureTenantID to use.
@@ -165,7 +156,7 @@ public class GraphServiceProvider {
     }
 
     /**
-     * Sets graph api permissions
+     * Sets graph api permissions.
      * <p>
      * For information regarding how to set specific permissions you want, see
      * <a href="https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-configure-app-access-web-apis">Quickstart: Configure a client application to access a web API</a>

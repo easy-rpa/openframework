@@ -1,4 +1,4 @@
-package firstexample.tasks;
+package eu.easyrpa.examples.azure.services.outlook_message_sending.tasks;
 
 import com.microsoft.graph.models.*;
 import com.microsoft.graph.requests.GraphServiceClient;

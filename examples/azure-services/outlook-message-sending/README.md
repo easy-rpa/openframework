@@ -15,15 +15,6 @@ This example sends simple Outlook email message.
         message.body = new ItemBody();
         message.body.content = body;
         message.body.contentType = BodyType.TEXT;
-
-        List<Recipient> toRecipientsList = new LinkedList<>();
-        String[] recipients = simpleEmailRecipients.split(";");
-        for(String emailRecipient: recipients) {
-        Recipient toRecipient = new Recipient();
-        toRecipient.emailAddress = new EmailAddress();
-        toRecipient.emailAddress.address = emailRecipient;
-        toRecipientsList.add(toRecipient);
-        }
         message.toRecipients = toRecipientsList;
         
         graphClient.me()

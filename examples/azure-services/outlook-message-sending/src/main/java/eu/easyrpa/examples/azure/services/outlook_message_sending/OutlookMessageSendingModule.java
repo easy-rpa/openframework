@@ -1,6 +1,6 @@
-package firstexample;
+package eu.easyrpa.examples.azure.services.outlook_message_sending;
 
-import firstexample.tasks.SendOutlookMessage;
+import eu.easyrpa.examples.azure.services.outlook_message_sending.tasks.SendOutlookMessage;
 import eu.ibagroup.easyrpa.engine.annotation.ApModuleEntry;
 import eu.ibagroup.easyrpa.engine.apflow.ApModule;
 import eu.ibagroup.easyrpa.engine.apflow.TaskOutput;
