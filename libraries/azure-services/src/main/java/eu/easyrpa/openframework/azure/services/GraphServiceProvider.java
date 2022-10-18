@@ -47,7 +47,7 @@ public class GraphServiceProvider {
      * Enables authentication to Azure Active Directory using a device code that the user can enter
      * into https://microsoft.com/devicelogin
      */
-    private DeviceCodeCredential deviceCodeCredential;
+    private Consumer<DeviceCodeInfo> challengeConsumer;
 
     /**
      * Instance of RPA services accessor that allows to get configuration parameters and secret vault entries from
@@ -194,15 +194,11 @@ public class GraphServiceProvider {
      * </pre>
      *
      * @param challengeConsumer lambda expression or instance of {@link Consumer<DeviceCodeInfo>} that defines
-     *                               specific behavior of authorization step.
+     *                          specific behavior of authorization step.
      * @return this object to allow joining of methods calls into chain.
      */
     public GraphServiceProvider onAuthorization(Consumer<DeviceCodeInfo> challengeConsumer) {
-        this.deviceCodeCredential = new DeviceCodeCredentialBuilder()
-                .clientId(getAzureClientId())
-                .tenantId(getAzureTenantId())
-                .challengeConsumer(challengeConsumer)
-                .build();
+        this.challengeConsumer = challengeConsumer;
         return this;
     }
 
@@ -217,21 +213,24 @@ public class GraphServiceProvider {
      *
      *     public void execute() {
      *          ...
-     *         GraphServiceClient<Request> userClient = graphServiceProvider.getGraphServiceClient();
+     *         GraphServiceClient<Request> userClient = graphServiceProvider.getClient();
      *        ...
      *     }
      *  </pre>
      *
      * @return An instance of GraphServiceClient object to make requests against the service.
      */
-    public GraphServiceClient<Request> getGraphServiceClient() {
+    public GraphServiceClient<Request> getClient() {
 
-        if (this.deviceCodeCredential == null) {
-            this.deviceCodeCredential = new DeviceCodeCredentialBuilder()
-                    .clientId(getAzureClientId())
-                    .tenantId(getAzureTenantId())
-                    .build();
+        DeviceCodeCredentialBuilder builder = new DeviceCodeCredentialBuilder()
+                .tenantId(getAzureTenantId())
+                .clientId(getAzureClientId());
+
+        if (this.challengeConsumer != null) {
+            builder.challengeConsumer(this.challengeConsumer);
         }
+
+        final DeviceCodeCredential deviceCodeCredential = builder.build();
 
         final TokenCredentialAuthProvider authProvider =
                 new TokenCredentialAuthProvider(getAzurePermissions(), deviceCodeCredential);

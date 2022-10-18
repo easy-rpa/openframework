@@ -30,8 +30,8 @@ public class SendOutlookMessage extends ApTask {
 
     @Override
     public void execute()  {
-
-        GraphServiceClient<Request> graphClient = graphServiceProvider.getGraphServiceClient();
+        log.info("Building GraphServiceClient to make a request");
+        GraphServiceClient<Request> graphClient = graphServiceProvider.getClient();
 
         final Message message = new Message();
         message.subject = subject;
@@ -49,6 +49,8 @@ public class SendOutlookMessage extends ApTask {
         }
         message.toRecipients = toRecipientsList;
 
+        log.info("Send simple email message to '{}' with subject '{}' and a body '{}'.",
+                simpleEmailRecipients, message.subject, message.body);
         graphClient.me()
                 .sendMail(UserSendMailParameterSet.newBuilder()
                         .withMessage(message)

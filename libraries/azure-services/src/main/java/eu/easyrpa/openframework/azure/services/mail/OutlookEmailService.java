@@ -47,7 +47,7 @@ public class OutlookEmailService {
     public OutlookEmailService() {
         azureAuth = new GraphServiceProvider();
         try {
-            graphServiceClient = azureAuth.getGraphServiceClient();
+            graphServiceClient = azureAuth.getClient();
         } catch (Exception e) {
             System.out.println("Error");
         }

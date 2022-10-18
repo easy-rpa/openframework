@@ -20,19 +20,23 @@ public class ReadMessagesTask extends ApTask {
 
     @Override
     public void execute() {
-        GraphServiceClient<Request> graphClient = graphServiceProvider.getGraphServiceClient();
+        log.info("Building GraphServiceClient to make a request");
+        GraphServiceClient<Request> graphClient = graphServiceProvider.getClient();
 
+        log.info("Getting all messages from Outlook");
         MessageCollectionPage messages = graphClient.me()
                 .messages()
                 .buildRequest()
                 .get();
 
 
+        log.info("Logging all messages subject into console");
         if (messages != null) {
             for (Message message : messages.getCurrentPage()) {
                 log.info(message.subject);
             }
         }
 
+        log.info("All messages have been logged successfully");
     }
 }

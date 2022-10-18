@@ -7,7 +7,7 @@ This example reads  Outlook email messages.
 private GraphServiceProvider graphServiceProvider;
 
 public void execute() {
-        GraphServiceClient<Request> graphClient = graphServiceProvider.getGraphServiceClient();
+        GraphServiceClient<Request> graphClient = graphServiceProvider.getClient();
 
         MessageCollectionPage messages = graphClient.me()
             .messages()

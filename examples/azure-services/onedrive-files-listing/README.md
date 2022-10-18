@@ -7,7 +7,7 @@ This example lists all files from OneDrive.
 private GraphServiceProvider graphServiceProvider;
 
 public void execute() {
-        GraphServiceClient<Request> graphClient = graphServiceProvider.getGraphServiceClient();
+        GraphServiceClient<Request> graphClient = graphServiceProvider.getClient();
 
         DriveItemCollectionPage children = graphClient.me().drive().root()
             .children()

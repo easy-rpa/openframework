@@ -79,7 +79,7 @@ private GraphServiceProvider graphServiceProvider;
 
 public void execute(){
     
-        GraphServiceClient<Request> graphClient=graphServiceProvider.getGraphServiceClient();
+        GraphServiceClient<Request> graphClient=graphServiceProvider.getClient();
 
         Message message = new Message();
         
@@ -142,7 +142,7 @@ RPA process.
         <a href="https://docs.microsoft.com/en-us/graph/tutorials/java?tabs=aad&tutorial-step=1">Azure app registration</a>
         section<br>        
     </td></tr>    
-    <tr><td valign="top"><code>azure.services.graphUserScopes</code></td><td>
+    <tr><td valign="top"><code>azure.services.graph.permission.list</code></td><td>
         Name of configuration parameter with list of necessary API permissions for your app.<br>  
         <br>
         Here you can read some additional information about Microsoft graph permissions:

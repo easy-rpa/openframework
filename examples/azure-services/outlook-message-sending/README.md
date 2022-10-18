@@ -8,7 +8,7 @@ This example sends simple Outlook email message.
 
     @Override
     public void execute()  {
-        GraphServiceClient<Request> graphClient = graphServiceProvider.getGraphServiceClient();
+        GraphServiceClient<Request> graphClient = graphServiceProvider.getClient();
 
         final Message message = new Message();
         message.subject = subject;

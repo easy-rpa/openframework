@@ -20,16 +20,21 @@ public class OneDriveFilesListing extends ApTask {
 
     @Override
     public void execute() {
-        GraphServiceClient<Request> graphClient = graphServiceProvider.getGraphServiceClient();
+        log.info("Building GraphServiceClient to make a request");
+        GraphServiceClient<Request> graphClient = graphServiceProvider.getClient();
 
+        log.info("Getting all files from OneDrive");
         DriveItemCollectionPage children = graphClient.me().drive().root().children()
                 .buildRequest()
                 .get();
 
+        log.info("Logging files name into console");
         if (children != null) {
             for (DriveItem child : children.getCurrentPage()) {
                 log.info(child.name);
             }
         }
+
+        log.info("All files have been logged successfully");
     }
 }
