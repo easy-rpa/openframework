@@ -88,54 +88,5 @@ public class Picture{
         this.picFile = picFile;
     }
 
-    /**
-     * We create an object factory and use it to create a paragraph and a run.
-     * Then we add the run to the paragraph. Next we create a drawing and
-     * add it to the run. Finally we add the inline object to the drawing and
-     * return the paragraph.
-     *
-     * @param inline the instance of Graphic object that allows to convert picture to paragraph element and add it to hierarchy.
-     */
-    public static P addInlineImage(Inline inline) {
-        // Now add the in-line image to a paragraph
-        ObjectFactory factory = new ObjectFactory();
-        P paragraph = factory.createP();
-        R run = factory.createR();
-        paragraph.getContent().add(run);
-        Drawing drawing = factory.createDrawing();
-        run.getContent().add(drawing);
-        drawing.getAnchorOrInline().add(inline);
-        return paragraph;
-    }
-
-    /**
-     * Helper method to convert file to byte array.
-     *
-     * @param file image file.
-     * @throws RuntimeException if file too large or all bytes hasn't been read.
-     * @throws IOException      if specific file path incorrect or missing.
-     */
-    public static byte[] convertFileToByteArray(File file) throws IOException {
-        byte[] bytes;
-        try (InputStream is = new FileInputStream(file.getAbsolutePath())) {
-            long length = file.length();
-            // You cannot create an array using a long, it needs to be an int.
-            if (length > Integer.MAX_VALUE) {
-                throw new RuntimeException("File too large.");
-            }
-            bytes = new byte[(int) length];
-            int offset = 0;
-            int numRead = 0;
-            while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
-                offset += numRead;
-            }
-            // Ensure all the bytes have been read
-            if (offset < bytes.length) {
-                throw new RuntimeException("Could not completely read file "
-                        + file.getName());
-            }
-        }
-        return bytes;
-    }
 
 }

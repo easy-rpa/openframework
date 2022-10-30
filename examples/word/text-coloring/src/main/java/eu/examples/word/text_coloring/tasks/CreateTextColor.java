@@ -1,5 +1,6 @@
 package eu.examples.word.text_coloring.tasks;
 
+import eu.easyrpa.openframework.word.Picture;
 import eu.easyrpa.openframework.word.TextRange;
 import eu.easyrpa.openframework.word.WordDocument;
 import eu.easyrpa.openframework.word.constants.Colors;
@@ -9,6 +10,7 @@ import eu.ibagroup.easyrpa.engine.annotation.Configuration;
 import eu.ibagroup.easyrpa.engine.apflow.ApTask;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
+import org.docx4j.wml.JcEnumeration;
 
 import java.io.File;
 

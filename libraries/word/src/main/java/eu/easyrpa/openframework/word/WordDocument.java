@@ -1,6 +1,7 @@
 package eu.easyrpa.openframework.word;
 
 import eu.easyrpa.openframework.core.utils.FilePathUtils;
+import eu.easyrpa.openframework.word.util.Docx4jUtils;
 import org.docx4j.Docx4J;
 import org.docx4j.TraversalUtil;
 import org.docx4j.convert.out.HTMLSettings;
@@ -182,31 +183,32 @@ public class WordDocument {
         for (Object o : opcPackageObjList) {
             ArrayListWml<?> listWml = (ArrayListWml<?>) ((P) o).getContent();
             List<R> runList = new ArrayList<>();
-            for (Object o1 : listWml) {
-                try {
-                    R textRun = (R) o1;
+            for (Object nestedObject : listWml) {
+                if(nestedObject instanceof R) {
+                    R textRun = (R) nestedObject;
                     if (textRun.getContent().isEmpty()) {
                         continue;
                     }
-                    try {
+                    if(((JAXBElement<?>) ((ArrayListWml<?>) textRun.getContent())
+                            .get(pictureIndexValidation(textRun))).getValue() instanceof Drawing) {
                         Drawing pic = (Drawing) ((JAXBElement<?>) ((ArrayListWml<?>) textRun.getContent())
                                 .get(pictureIndexValidation(textRun))).getValue();
                         ArrayListWml<?> drawingContent = (ArrayListWml<?>) pic.getAnchorOrInline();
                         Picture picture = new Picture(textRun);
-                        try {
+                        if(drawingContent.get(0) instanceof Anchor) {
                             Anchor anchor = (Anchor) drawingContent.get(0);
                             Graphic anchGraphic = anchor.getGraphic();
                             picture.setBinaryImage(BinaryPartAbstractImage.getImage(opcPackage, anchGraphic));
-                        } catch (ClassCastException e) {
+                        } else {
                             Inline inline = (Inline) drawingContent.get(0);
                             Graphic inlineGraphic = inline.getGraphic();
                             picture.setBinaryImage(BinaryPartAbstractImage.getImage(opcPackage, inlineGraphic));
                         }
                         outputList.add(picture);
-                    } catch (ClassCastException e) {
+                    } else {
                         runList.add(textRun);
                     }
-                } catch (ClassCastException e) {
+                } else {
                     continue;
                 }
             }
@@ -230,18 +232,14 @@ public class WordDocument {
 
     public void append(String text) {
         this.opcPackage.getMainDocumentPart().addParagraphOfText(text);
-
-        //TODO Implement this.
-        // Appends text the end of document.
-        // append as new paragraph
     }
 
     public void append(Picture picture) throws Exception {
         BinaryPartAbstractImage imagePart =
-                BinaryPartAbstractImage.createImagePart(opcPackage, Picture.convertFileToByteArray(picture.getPicFile()));
+                BinaryPartAbstractImage.createImagePart(opcPackage, Docx4jUtils.convertFileToByteArray(picture.getPicFile()));
         Inline inline = imagePart.createImageInline("Default",
                 "Default", 1, 2, false);
-        this.opcPackage.getMainDocumentPart().addObject(Picture.addInlineImage(inline));
+        this.opcPackage.getMainDocumentPart().addObject(Docx4jUtils.addInlineImage(inline));
     }
 
     public void insertBefore(TextRange textRange, String text) {
@@ -281,14 +279,11 @@ public class WordDocument {
     public TextRange findText(String regexp) {
         List<Object> elements = read();
         for (Object element : elements) {
-            try {
-                TextRange textRange = (TextRange) element;
-                if (textRange.text().matches(regexp)) {
-                    return textRange;
+            if(element instanceof TextRange) {
+                if(((TextRange) element).text().matches(regexp)) {
+                    return (TextRange) element;
                 }
-            } catch (ClassCastException e) {
-                break;
-            }
+            } else break;
         }
         return null;
     }

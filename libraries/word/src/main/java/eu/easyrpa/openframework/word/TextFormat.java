@@ -3,20 +3,16 @@ package eu.easyrpa.openframework.word;
 import eu.easyrpa.openframework.word.constants.Colors;
 import eu.easyrpa.openframework.word.constants.FontFamily;
 import eu.easyrpa.openframework.word.constants.TextAlignment;
-import org.docx4j.fonts.PhysicalFont;
-import org.docx4j.fonts.PhysicalFonts;
-import org.docx4j.jaxb.Context;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import eu.easyrpa.openframework.word.util.Docx4jUtils;
 import org.docx4j.wml.*;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.namespace.QName;
-import java.awt.*;
 import java.awt.Color;
-import java.util.ArrayList;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static eu.easyrpa.openframework.word.util.Docx4jUtils.*;
 
 //TODO update javadoc
 
@@ -52,9 +48,9 @@ public class TextFormat {
 
     public FontFamily getFont() {
         try {
-            for(R r : relatedText.getTextRuns()) {
+            for (R r : relatedText.getTextRuns()) {
                 String asciiFont = r.getRPr().getRFonts().getAscii();
-                if(!asciiFont.isEmpty()) {
+                if (!asciiFont.isEmpty()) {
                     return FontFamily.getValue(asciiFont);
                 }
             }
@@ -70,14 +66,28 @@ public class TextFormat {
      * @param fontSize the size of font in points.
      * @return this cell style object to allow joining of methods calls into chain.
      */
-    public TextFormat fontSize(int fontSize) {
-        //TODO implement this
+    public TextFormat fontSize(String fontSize) {
+        HpsMeasure size = new HpsMeasure();
+
+        size.setVal(new BigInteger(fontSize));
+
+        relatedText.getTextRuns().forEach(r -> {
+            if(r.getRPr() == null) {
+                RPr rPr = new RPr();
+                r.setRPr(rPr);
+            }
+            r.getRPr().setSz(size);
+            r.getRPr().setSzCs(size);
+        });
+
         return this;
     }
 
     public Integer getFontSize() {
-        //TODO implement this
-        return null;
+        R run = relatedText.getTextRuns().get(0);
+        if(run.getRPr().getSzCs() != null) {
+            return run.getRPr().getSzCs().getVal().intValue();
+        } else return 0;
     }
 
     /**
@@ -87,13 +97,25 @@ public class TextFormat {
      * @return this cell style object to allow joining of methods calls into chain.
      */
     public TextFormat bold(boolean isBold) {
-        //TODO implement this
+        BooleanDefaultTrue b = new BooleanDefaultTrue();
+
+        b.setVal(isBold);
+
+        relatedText.getTextRuns().forEach(r -> {
+            if(r.getRPr() == null) {
+                RPr rPr = new RPr();
+                r.setRPr(rPr);
+            }
+            r.getRPr().setB(b);
+        });
         return this;
     }
 
     public boolean isBold() {
-        //TODO implement this
-        return false;
+        R run = relatedText.getTextRuns().get(0);
+        if(run.getRPr().getB() != null) {
+            return run.getRPr().getB().isVal();
+        } else return false;
     }
 
     /**
@@ -103,13 +125,25 @@ public class TextFormat {
      * @return this cell style object to allow joining of methods calls into chain.
      */
     public TextFormat italic(boolean isItalic) {
-        //TODO implement this
+        BooleanDefaultTrue i = new BooleanDefaultTrue();
+
+        i.setVal(isItalic);
+
+        relatedText.getTextRuns().forEach(r -> {
+            if(r.getRPr() == null) {
+                RPr rPr = new RPr();
+                r.setRPr(rPr);
+            }
+            r.getRPr().setI(i);
+        });
         return this;
     }
 
     public boolean isItalic() {
-        //TODO implement this
-        return false;
+        R run = relatedText.getTextRuns().get(0);
+        if(run.getRPr().getI() != null) {
+            return run.getRPr().getI().isVal();
+        } else return false;
     }
 
     /**
@@ -132,8 +166,9 @@ public class TextFormat {
     }
 
     public boolean isUnderline() {
-        //TODO implement this
-        return false;
+        R run = relatedText.getTextRuns().get(relatedText.getExpandIndex());
+
+        return run.getRPr().getU() != null;
     }
 
     /**
@@ -144,7 +179,7 @@ public class TextFormat {
      */
     public TextFormat color(Colors color) {
         P parent = (P) relatedText.getTextRuns().get(relatedText.getExpandIndex()).getParent();
-        Text castedText = relatedText.textCast(relatedText.getTextRuns(), relatedText.getExpandIndex());
+        Text castedText = Docx4jUtils.getText(relatedText.getTextRuns(), relatedText.getExpandIndex());
         String textValue = castedText.getValue();
         Pattern pattern = Pattern.compile(TextRange.EXPAND_RIGHT);
         if (relatedText.getStartIndex() == 0) {
@@ -200,47 +235,6 @@ public class TextFormat {
         }
     }
 
-    private R createRun(String text, P parent) {
-        ObjectFactory factory = Context.getWmlObjectFactory();
-        QName qName = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "t", "");
-        Text t = factory.createText();
-        t.setValue(text);
-        R run = factory.createR();
-        run.setParent(parent);
-        JAXBElement<?> element = new JAXBElement(qName, Text.class, R.class, t);
-        run.getContent().add(element);
-        return run;
-    }
-
-    private R createWhitespaceRun(P parent) {
-        ObjectFactory factory = Context.getWmlObjectFactory();
-        QName qName = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "t", "");
-        Text text = factory.createText();
-        text.setValue(" ");
-        text.setSpace("preserve");
-        R run = factory.createR();
-        run.setParent(parent);
-        JAXBElement<?> element = new JAXBElement(qName, Text.class, R.class, text);
-        run.getContent().add(element);
-        return run;
-    }
-
-    private void setWmlRColor(R run, Colors color) {
-        RPr colorRunRPr = run.getRPr();
-        if (colorRunRPr == null) {
-            colorRunRPr = new RPr();
-            run.setRPr(colorRunRPr);
-        }
-        org.docx4j.wml.Color wmlColor = Context.getWmlObjectFactory().createColor();
-        wmlColor.setVal(color.name());
-        colorRunRPr.setColor(wmlColor);
-        run.setRPr(colorRunRPr);
-    }
-
-    public Color getColor() {
-        //TODO implement this
-        return null;
-    }
 
     /**
      * Sets background color of cell.
@@ -261,17 +255,27 @@ public class TextFormat {
     /**
      * Sets horizontal alignment of text in the cell.
      *
-     * @param align the alignment to set.
+     * @param hAlign the alignment to set.
      * @return this cell style object to allow joining of methods calls into chain.
      * @see TextAlignment
      */
-    public TextFormat align(TextAlignment align) {
-        //TODO implement this
+    public TextFormat align(JcEnumeration hAlign) {
+        if(hAlign != null) {
+            Jc align = new Jc();
+            align.setVal(hAlign);
+            if(relatedText.getTextRuns().get(0).getParent() instanceof P) {
+                P parent = (P) relatedText.getTextRuns().get(0).getParent();
+                parent.getPPr().setJc(align);
+            }
+        }
         return this;
     }
 
-    public TextAlignment getAlignment() {
-        //TODO implement this
+    public JcEnumeration getAlignment() {
+        if(relatedText.getTextRuns().get(0).getParent() instanceof P) {
+            P parent = (P) relatedText.getTextRuns().get(0).getParent();
+            return parent.getPPr().getJc().getVal();
+        }
         return null;
     }
 }
