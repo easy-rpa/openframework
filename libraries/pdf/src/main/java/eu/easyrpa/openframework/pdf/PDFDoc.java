@@ -4,17 +4,14 @@ import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
 import org.apache.pdfbox.pdmodel.encryption.StandardProtectionPolicy;
-import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.tools.imageio.ImageIOUtil;
 import org.fit.pdfdom.PDFDomTree;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -25,23 +22,8 @@ public class PDFDoc {
 
     PDDocument pdfDocument;
 
-    public PDFDoc(PDDocument pdfDocument){
-        this.pdfDocument = pdfDocument;
-    }
-
-    public void addText(String text, int x, int y, PDFont font, float fontSize, Color color){
-
-        try {
-            PDPageContentStream contentStream = new PDPageContentStream( pdfDocument, pdfDocument.getPage(0));
-            contentStream.beginText();
-            contentStream.setFont(font, fontSize);
-            contentStream.setNonStrokingColor(color);
-            contentStream.newLineAtOffset(x, y);
-            contentStream.showText(text);
-            contentStream.endText();
-        } catch (IOException e){
-            e.printStackTrace();
-        }
+    public PDFDoc(PDDocument document){
+        this.pdfDocument = document;
     }
 
     public String readPDFDocument() {

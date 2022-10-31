@@ -16,59 +16,45 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * This is an example on how to extract images from pdf.
- */
+
 public class SaveImagesInPdf extends PDFStreamEngine {
-    /**
-     * Default constructor.
-     *
-     * @throws IOException If there is an error loading text stripper properties.
-     */
-    public SaveImagesInPdf() throws IOException {
+
+    public SaveImagesInPdf()  {
     }
 
     public int imageNumber = 1;
 
-    /**
-     * @param args The command line arguments.
-     * @throws IOException If there is an error parsing the document.
-     */
-    public static void main(String[] args) throws IOException {
-        String fileName = "C:\\Users\\Miadzvedzeu_AA\\Downloads\\2010_10_15.pdf";
-        try (PDDocument document = PDDocument.load(new File(fileName))) {
+    public void getImagesFromPDF(PDDocument document){
+        try (document) {
             SaveImagesInPdf printer = new SaveImagesInPdf();
-            int pageNum = 0;
+            int pageNum = 1;
             for (PDPage page : document.getPages()) {
-                pageNum++;
                 System.out.println("Processing page: " + pageNum);
                 printer.processPage(page);
+                pageNum++;
             }
+        } catch (IOException e){
+            e.printStackTrace();
         }
     }
 
-    /**
-     * @param operator The operation to perform.
-     * @param operands The list of arguments.
-     * @throws IOException If there is an error processing the operation.
-     */
     @Override
     protected void processOperator(Operator operator, List<COSBase> operands) throws IOException {
         String operation = operator.getName();
         if ("Do".equals(operation)) {
             COSName objectName = (COSName) operands.get(0);
-            PDXObject xobject = getResources().getXObject(objectName);
-            if (xobject instanceof PDImageXObject) {
-                PDImageXObject image = (PDImageXObject) xobject;
+            PDXObject xObject = getResources().getXObject(objectName);
+            if (xObject instanceof PDImageXObject) {
+                PDImageXObject image = (PDImageXObject) xObject;
 
-                // same image to local
+
                 BufferedImage bImage = image.getImage();
                 ImageIO.write(bImage, "PNG", new File("image_" + imageNumber + ".png"));
                 System.out.println("Image saved.");
                 imageNumber++;
 
-            } else if (xobject instanceof PDFormXObject) {
-                PDFormXObject form = (PDFormXObject) xobject;
+            } else if (xObject instanceof PDFormXObject) {
+                PDFormXObject form = (PDFormXObject) xObject;
                 showForm(form);
             }
         } else {
