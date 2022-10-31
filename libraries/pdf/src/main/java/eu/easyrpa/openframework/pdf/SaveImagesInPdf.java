@@ -19,45 +19,30 @@ import java.util.List;
 /**
  * This is an example on how to extract images from pdf.
  */
-public class SaveImagesInPdf extends PDFStreamEngine
-{
+public class SaveImagesInPdf extends PDFStreamEngine {
     /**
      * Default constructor.
      *
      * @throws IOException If there is an error loading text stripper properties.
      */
-    public SaveImagesInPdf() throws IOException
-    {
+    public SaveImagesInPdf() throws IOException {
     }
 
     public int imageNumber = 1;
 
     /**
      * @param args The command line arguments.
-     *
      * @throws IOException If there is an error parsing the document.
      */
-    public static void main( String[] args ) throws IOException
-    {
-        PDDocument document = null;
+    public static void main(String[] args) throws IOException {
         String fileName = "C:\\Users\\Miadzvedzeu_AA\\Downloads\\2010_10_15.pdf";
-        try
-        {
-            document = PDDocument.load( new File(fileName) );
+        try (PDDocument document = PDDocument.load(new File(fileName))) {
             SaveImagesInPdf printer = new SaveImagesInPdf();
             int pageNum = 0;
-            for( PDPage page : document.getPages() )
-            {
+            for (PDPage page : document.getPages()) {
                 pageNum++;
-                System.out.println( "Processing page: " + pageNum );
+                System.out.println("Processing page: " + pageNum);
                 printer.processPage(page);
-            }
-        }
-        finally
-        {
-            if( document != null )
-            {
-                document.close();
             }
         }
     }
@@ -65,37 +50,29 @@ public class SaveImagesInPdf extends PDFStreamEngine
     /**
      * @param operator The operation to perform.
      * @param operands The list of arguments.
-     *
      * @throws IOException If there is an error processing the operation.
      */
     @Override
-    protected void processOperator( Operator operator, List<COSBase> operands) throws IOException
-    {
+    protected void processOperator(Operator operator, List<COSBase> operands) throws IOException {
         String operation = operator.getName();
-        if( "Do".equals(operation) )
-        {
-            COSName objectName = (COSName) operands.get( 0 );
-            PDXObject xobject = getResources().getXObject( objectName );
-            if( xobject instanceof PDImageXObject)
-            {
-                PDImageXObject image = (PDImageXObject)xobject;
+        if ("Do".equals(operation)) {
+            COSName objectName = (COSName) operands.get(0);
+            PDXObject xobject = getResources().getXObject(objectName);
+            if (xobject instanceof PDImageXObject) {
+                PDImageXObject image = (PDImageXObject) xobject;
 
                 // same image to local
                 BufferedImage bImage = image.getImage();
-                ImageIO.write(bImage,"PNG",new File("image_"+imageNumber+".png"));
+                ImageIO.write(bImage, "PNG", new File("image_" + imageNumber + ".png"));
                 System.out.println("Image saved.");
                 imageNumber++;
 
-            }
-            else if(xobject instanceof PDFormXObject)
-            {
-                PDFormXObject form = (PDFormXObject)xobject;
+            } else if (xobject instanceof PDFormXObject) {
+                PDFormXObject form = (PDFormXObject) xobject;
                 showForm(form);
             }
-        }
-        else
-        {
-            super.processOperator( operator, operands);
+        } else {
+            super.processOperator(operator, operands);
         }
     }
 

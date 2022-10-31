@@ -4,6 +4,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.vandeseer.easytable.TableDrawer;
 import org.vandeseer.easytable.settings.BorderStyle;
 import org.vandeseer.easytable.settings.HorizontalAlignment;
@@ -29,7 +30,7 @@ public class PDFTableTest {
                         .addColumnsOfWidth(200, 200)
                         .padding(2)
                         .addRow(Row.builder()
-                                .add(TextCell.builder().text("One One").borderWidth(4).borderColorLeft(Color.MAGENTA).backgroundColor(Color.WHITE).build())
+                                .add(TextCell.builder().text("One One").borderWidth(4).font(PDType1Font.TIMES_ITALIC).borderColorLeft(Color.MAGENTA).backgroundColor(Color.WHITE).build())
                                 .add(TextCell.builder().text("One Two").borderWidth(0).backgroundColor(Color.YELLOW).build())
                                 .build())
                         .addRow(Row.builder()
