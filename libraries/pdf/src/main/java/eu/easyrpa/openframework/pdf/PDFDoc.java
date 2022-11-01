@@ -1,17 +1,26 @@
 package eu.easyrpa.openframework.pdf;
 
+import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.PDResources;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
 import org.apache.pdfbox.pdmodel.encryption.StandardProtectionPolicy;
+import org.apache.pdfbox.pdmodel.graphics.PDXObject;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.tools.imageio.ImageIOUtil;
 import org.fit.pdfdom.PDFDomTree;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -130,4 +139,48 @@ public class PDFDoc {
         }
         return resultPages;
     }
+
+    //TODO: think how to copy content from one document to another
+    public void mergeAllPagesInDocument() throws IOException {
+        float height = pdfDocument.getPage(0).getMediaBox().getHeight();
+        float width = pdfDocument.getPage(0).getMediaBox().getWidth();
+        PDRectangle rectangle = new PDRectangle(width,height*pdfDocument.getNumberOfPages());
+
+
+        PDPage page2 = pdfDocument.getPage(0);
+        COSDictionary dict = page2.getCOSObject();
+        COSDictionary dict2 = new COSDictionary(dict);
+
+        dict2.removeItem(COSName.ANNOTS);
+
+        PDPage page = new PDPage(dict2);
+
+        PDDocument document = new PDDocument();
+        document.addPage(page);
+
+        PDPageContentStream contentStream = new PDPageContentStream(document,page);
+       // contentStream.
+        document.save("oiwjfkj.pdf");
+
+    }
+
+    public void getValueInCoordinates(float x, float y){
+        //TODO: implement
+    }
+
+    public void getImageFromPdf() throws IOException {
+        int imagesCount = 1;
+        for(PDPage page : pdfDocument.getPages()){
+            System.out.println("process page " + imagesCount);
+            PDResources pdResources = page.getResources();
+            for(COSName cosName: pdResources.getXObjectNames()){
+                PDXObject o = pdResources.getXObject(cosName);
+                if(o instanceof PDImageXObject){
+                    ImageIO.write(((PDImageXObject) o).getImage(),"JPEG", new File("image_" + imagesCount + ".jpeg"));
+                    imagesCount++;
+                }
+            }
+        }
+    }
+
 }

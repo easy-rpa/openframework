@@ -1,6 +1,7 @@
 package eu.easyrpa.openframework.pdf;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.vandeseer.easytable.TableDrawer;
@@ -10,16 +11,16 @@ import java.awt.*;
 import java.io.IOException;
 
 
-public class PDFPage {
+public class PdfCreator {
 
     private PDDocument document;
     private PDPageContentStream contentStream;
 
-    public PDFPage(){
+    public PdfCreator(){
 
     }
 
-    public PDFPage(PDDocument document, PDPageContentStream contentStream){
+    public PdfCreator(PDDocument document, PDPageContentStream contentStream){
         this.document = document;
         this.contentStream = contentStream;
     }
@@ -55,16 +56,27 @@ public class PDFPage {
         }
     }
 
-    public void addTable(Table table){
+    public void addTable(Table table, float startX, float startY){
         TableDrawer tableDrawer = TableDrawer.builder()
                 .contentStream(contentStream)
-                .startX(20f)
-                .startY(document.getPage(0).getMediaBox().getUpperRightY() - 50f)
+                .startX(startX)
+                .startY(startY)
                 .table(table)
                 .build();
 
         tableDrawer.draw();
     }
+
+
+//    public void setDocumentProperties(){
+//        PDDocumentInformation documentInformation = document.getDocumentInformation();
+//        documentInformation.setCreator();
+//        documentInformation.setAuthor();
+//        documentInformation.setCreationDate();
+//        documentInformation.setProducer();
+//        documentInformation.setSubject();
+//        documentInformation.setKeywords();
+//    }
 
     public void safeDocument(String saveDestination){
         try {
@@ -76,5 +88,7 @@ public class PDFPage {
         }
         System.out.println("pdf created");
     }
+
+
 
 }
