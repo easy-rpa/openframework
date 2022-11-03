@@ -1,20 +1,8 @@
 package eu.easyrpa.openframework.pdf.test;
 
 import eu.easyrpa.openframework.pdf.PDFDoc;
-import eu.easyrpa.openframework.pdf.PdfCreator;
-import eu.easyrpa.openframework.pdf.SaveImagesInPdf;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.vandeseer.easytable.settings.BorderStyle;
-import org.vandeseer.easytable.settings.HorizontalAlignment;
-import org.vandeseer.easytable.structure.Row;
-import org.vandeseer.easytable.structure.Table;
-import org.vandeseer.easytable.structure.cell.TextCell;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 
@@ -85,9 +73,9 @@ public class PDFTest {
 //        document4.save("C:\\bruh49944.pdf");
 //        document4.close();
 //
-       // pdfDoc.mergeAllPagesInDocument();
+        pdfDoc.mergeAllPagesInDocument();
 
-        pdfDoc.getImageFromPdf();
+//        pdfDoc.getImageFromPdf();
     }
 
 }

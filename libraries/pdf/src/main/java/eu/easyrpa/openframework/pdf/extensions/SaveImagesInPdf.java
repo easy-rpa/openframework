@@ -1,4 +1,4 @@
-package eu.easyrpa.openframework.pdf;
+package eu.easyrpa.openframework.pdf.extensions;
 
 import org.apache.pdfbox.contentstream.PDFStreamEngine;
 import org.apache.pdfbox.contentstream.operator.Operator;

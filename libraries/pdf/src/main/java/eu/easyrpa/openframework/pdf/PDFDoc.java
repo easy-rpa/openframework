@@ -153,19 +153,19 @@ public class PDFDoc {
 
         dict2.removeItem(COSName.ANNOTS);
 
-        PDPage page = new PDPage(dict2);
+//        PDPage page = new PDPage(dict2);
+        PDStream stream = new PDStream(pdfDocument, page2.getContents());
+        PDPage page = new PDPage(rectangle);
 
         PDDocument document = new PDDocument();
         document.addPage(page);
 
-        PDPageContentStream contentStream = new PDPageContentStream(document,page);
-       // contentStream.
         document.save("oiwjfkj.pdf");
 
     }
 
-    public void getValueInCoordinates(float x, float y){
-        //TODO: implement
+    public void getValueInCoordinates(float x, float y) throws IOException {
+       //TODO:implement it
     }
 
     public void getImageFromPdf() throws IOException {
