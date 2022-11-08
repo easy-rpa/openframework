@@ -1,8 +1,21 @@
 package eu.easyrpa.openframework.pdf.test;
 
 import eu.easyrpa.openframework.pdf.PDFDoc;
+import eu.easyrpa.openframework.pdf.PdfCreator;
+import eu.easyrpa.openframework.pdf.extensions.SaveImagesInPdf;
+import eu.easyrpa.openframework.pdf.extensions.TextPositionPrinter;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.vandeseer.easytable.settings.BorderStyle;
+import org.vandeseer.easytable.settings.HorizontalAlignment;
+import org.vandeseer.easytable.structure.Row;
+import org.vandeseer.easytable.structure.Table;
+import org.vandeseer.easytable.structure.cell.TextCell;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 
@@ -12,9 +25,10 @@ public class PDFTest {
 //        //loading pdf files
         PDDocument document = PDDocument.load(new File("C:\\Users\\Miadzvedzeu_AA\\Downloads\\2010_10_15.pdf"));
         PDDocument document1 = PDDocument.load(new File("C:\\Users\\Miadzvedzeu_AA\\Downloads\\bruh_file.pdf"));
-        PDFDoc pdfDoc = new PDFDoc(document);
-//
-//        //reads all test from file
+        PDDocument document5 = PDDocument.load(new File("C:\\Users\\Miadzvedzeu_AA\\Downloads\\02_2022 ИПА_ОВ_ИС.pdf"));
+        PDFDoc pdfDoc = new PDFDoc(document5);
+////
+////        //reads all test from file
 //        System.out.println(pdfDoc.readPDFDocument());
 //
 //        //saves pdf pages as images
@@ -63,7 +77,7 @@ public class PDFTest {
 //        pageDrawer.safeDocument(saveDestination);
 //
 //        //saving images from pdf
-//        SaveImagesInPdf saveImagesInPdf = new SaveImagesInPdf();
+//       SaveImagesInPdf saveImagesInPdf = new SaveImagesInPdf();
 //        saveImagesInPdf.getImagesFromPDF(document);
 //
 //        //Custom size of a page
@@ -73,9 +87,10 @@ public class PDFTest {
 //        document4.save("C:\\bruh49944.pdf");
 //        document4.close();
 //
-        pdfDoc.mergeAllPagesInDocument();
-
+//        pdfDoc.mergeAllPagesInDocument();
+//
 //        pdfDoc.getImageFromPdf();
+        pdfDoc.getValueInCoordinates(54.99998f, 38.622375f);
     }
 
 }

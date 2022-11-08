@@ -1,12 +1,12 @@
 package eu.easyrpa.openframework.pdf;
 
+import eu.easyrpa.openframework.pdf.extensions.TextPositionPrinter;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.common.PDStream;
@@ -30,6 +30,7 @@ import java.util.List;
 public class PDFDoc {
 
     PDDocument pdfDocument;
+    TextPositionPrinter printer;
 
     public PDFDoc(PDDocument document){
         this.pdfDocument = document;
@@ -165,7 +166,8 @@ public class PDFDoc {
     }
 
     public void getValueInCoordinates(float x, float y) throws IOException {
-       //TODO:implement it
+      this.printer = new TextPositionPrinter(x,y);
+      this.printer.getTextInPosition(this.pdfDocument);
     }
 
     public void getImageFromPdf() throws IOException {
