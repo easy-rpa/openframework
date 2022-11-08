@@ -1,6 +1,6 @@
 package eu.easyrpa.openframework.pdf;
 
-import eu.easyrpa.openframework.pdf.extensions.TextPositionPrinter;
+import eu.easyrpa.openframework.pdf.extensions.TextInCoordinates;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.io.MemoryUsageSetting;
@@ -29,17 +29,16 @@ import java.util.List;
 
 public class PDFDoc {
 
-    PDDocument pdfDocument;
-    TextPositionPrinter printer;
+    private final PDDocument pdfDocument;
 
-    public PDFDoc(PDDocument document){
+    public PDFDoc(PDDocument document) {
         this.pdfDocument = document;
     }
 
     public String readPDFDocument() {
         String resultTextFromPDF = "";
 
-        try  {
+        try {
             PDFTextStripper reader = new PDFTextStripper();
             reader.setSortByPosition(false);
             resultTextFromPDF = reader.getText(pdfDocument);
@@ -56,7 +55,7 @@ public class PDFDoc {
 
     public void getPDFasImage() {
         PDFRenderer pdfRenderer = new PDFRenderer(pdfDocument);
-        try  {
+        try {
             for (int page = 0; page < pdfDocument.getNumberOfPages(); ++page) {
                 BufferedImage bim = pdfRenderer.renderImageWithDPI(page, 300, ImageType.RGB);
                 ImageIOUtil.writeImage(bim, pdfDocument.getDocumentInformation().getSubject() + "-" + (page + 1) + ".jpeg", 300);
@@ -84,7 +83,7 @@ public class PDFDoc {
 
         try {
             for (PDDocument document : documents) {
-                try  {
+                try {
                     mergerUtility.appendDocument(destination, document);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -99,19 +98,19 @@ public class PDFDoc {
     }
 
     public void fromPDFtoHTMLConverter() {
-        try (Writer output = new PrintWriter("pdf.html", String.valueOf(StandardCharsets.UTF_8))) {
+        try (Writer output = new PrintWriter(this.pdfDocument.getDocumentInformation().getTitle() + ".html", String.valueOf(StandardCharsets.UTF_8))) {
             new PDFDomTree().writeText(pdfDocument, output);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void managePDFPassword( String ownerPassword, String userPassword) {
+    public void managePDFPassword(String ownerPassword, String userPassword) {
         AccessPermission accessPermission = new AccessPermission();
         StandardProtectionPolicy sp = new StandardProtectionPolicy(ownerPassword, userPassword, accessPermission);
         sp.setPermissions(accessPermission);
         sp.setEncryptionKeyLength(128);
-        try  {
+        try {
             pdfDocument.protect(sp);
         } catch (IOException e) {
             e.printStackTrace();
@@ -145,7 +144,7 @@ public class PDFDoc {
     public void mergeAllPagesInDocument() throws IOException {
         float height = pdfDocument.getPage(0).getMediaBox().getHeight();
         float width = pdfDocument.getPage(0).getMediaBox().getWidth();
-        PDRectangle rectangle = new PDRectangle(width,height*pdfDocument.getNumberOfPages());
+        PDRectangle rectangle = new PDRectangle(width, height * pdfDocument.getNumberOfPages());
 
 
         PDPage page2 = pdfDocument.getPage(0);
@@ -161,24 +160,31 @@ public class PDFDoc {
         PDDocument document = new PDDocument();
         document.addPage(page);
 
-        document.save("oiwjfkj.pdf");
+        document.save("merged_in_one_page.pdf");
 
     }
 
-    public void getValueInCoordinates(float x, float y) throws IOException {
-      this.printer = new TextPositionPrinter(x,y);
-      this.printer.getTextInPosition(this.pdfDocument);
+    public String getValueInCoordinates(float x, float y) {
+
+        try {
+            TextInCoordinates printer = new TextInCoordinates(x, y);
+            printer.getTextInPosition(pdfDocument);
+            return printer.getResult();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public void getImageFromPdf() throws IOException {
         int imagesCount = 1;
-        for(PDPage page : pdfDocument.getPages()){
+        for (PDPage page : pdfDocument.getPages()) {
             System.out.println("process page " + imagesCount);
             PDResources pdResources = page.getResources();
-            for(COSName cosName: pdResources.getXObjectNames()){
+            for (COSName cosName : pdResources.getXObjectNames()) {
                 PDXObject o = pdResources.getXObject(cosName);
-                if(o instanceof PDImageXObject){
-                    ImageIO.write(((PDImageXObject) o).getImage(),"JPEG", new File("image_" + imagesCount + ".jpeg"));
+                if (o instanceof PDImageXObject) {
+                    ImageIO.write(((PDImageXObject) o).getImage(), "JPEG", new File("image_" + imagesCount + ".jpeg"));
                     imagesCount++;
                 }
             }

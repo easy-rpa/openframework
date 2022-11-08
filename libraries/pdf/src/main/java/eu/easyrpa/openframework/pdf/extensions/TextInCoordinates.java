@@ -11,18 +11,23 @@ import java.io.Writer;
 import java.util.List;
 
 
-public class TextPositionPrinter extends PDFTextStripper {
+public class TextInCoordinates extends PDFTextStripper {
 
     private final float xCoordinate;
     private final float yCoordinate;
+    private String result;
 
-    public TextPositionPrinter(float xCoordinate, float yCoordinate) throws IOException {
+    public TextInCoordinates(float xCoordinate, float yCoordinate) throws IOException {
         super();
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
     }
 
-    public void getTextInPosition(PDDocument document) {
+    public String getResult() {
+        return result;
+    }
+
+    public void  getTextInPosition(PDDocument document) {
         try (document) {
             this.setSortByPosition(true);
             this.setStartPage(0);
@@ -42,6 +47,7 @@ public class TextPositionPrinter extends PDFTextStripper {
                 System.out.println(text.getUnicode() + " [(X=" + text.getX() + ",Y=" +
                         text.getY() + ") height=" + text.getHeightDir() + " width=" +
                         text.getWidthDirAdj() + "]");
+                this.result = text.getUnicode();
             }
 
         }

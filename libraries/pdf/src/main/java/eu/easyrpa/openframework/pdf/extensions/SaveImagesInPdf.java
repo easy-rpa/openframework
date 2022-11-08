@@ -18,12 +18,12 @@ import java.util.List;
 
 public class SaveImagesInPdf extends PDFStreamEngine {
 
-    public SaveImagesInPdf()  {
+    public SaveImagesInPdf() {
     }
 
     public int imageNumber = 1;
 
-    public void getImagesFromPDF(PDDocument document){
+    public void getImagesFromPDF(PDDocument document) {
         try (document) {
             SaveImagesInPdf printer = new SaveImagesInPdf();
             int pageNum = 1;
@@ -32,7 +32,7 @@ public class SaveImagesInPdf extends PDFStreamEngine {
                 printer.processPage(page);
                 pageNum++;
             }
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
