@@ -28,7 +28,7 @@ public class TextInCoordinates extends PDFTextStripper {
     }
 
     public void  getTextInPosition(PDDocument document) {
-        try (document) {
+        try {
             this.setSortByPosition(true);
             this.setStartPage(0);
             this.setEndPage(document.getNumberOfPages());

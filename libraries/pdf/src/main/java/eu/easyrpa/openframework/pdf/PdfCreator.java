@@ -4,11 +4,14 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.vandeseer.easytable.TableDrawer;
 import org.vandeseer.easytable.structure.Table;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Objects;
 
 
 public class PdfCreator {
@@ -67,16 +70,21 @@ public class PdfCreator {
         tableDrawer.draw();
     }
 
+    public void addImage(String imagePath, int x, int y) throws IOException {
+        PDImageXObject image = PDImageXObject.createFromFile(imagePath,document);
+        contentStream.drawImage(image,x,y);
+        contentStream.close();
+    }
 
-//    public void setDocumentProperties(){
-//        PDDocumentInformation documentInformation = document.getDocumentInformation();
-//        documentInformation.setCreator();
-//        documentInformation.setAuthor();
-//        documentInformation.setCreationDate();
-//        documentInformation.setProducer();
-//        documentInformation.setSubject();
-//        documentInformation.setKeywords();
-//    }
+    public void setDocumentProperties(String creator, String author, String producer, String subject, String keywords, Calendar creationDate){
+        PDDocumentInformation documentInformation = Objects.requireNonNull(document).getDocumentInformation();
+        documentInformation.setCreator(creator);
+        documentInformation.setAuthor(author);
+        documentInformation.setCreationDate(creationDate);
+        documentInformation.setProducer(producer);
+        documentInformation.setSubject(subject);
+        documentInformation.setKeywords(keywords);
+    }
 
     public void safeDocument(String saveDestination){
         try {
@@ -88,7 +96,5 @@ public class PdfCreator {
         }
         System.out.println("pdf created");
     }
-
-
 
 }

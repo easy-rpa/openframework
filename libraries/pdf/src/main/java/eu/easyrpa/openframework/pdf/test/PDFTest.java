@@ -10,10 +10,27 @@ public class PDFTest {
 
     public static void main(String[] args) throws IOException {
 //        //loading pdf files
-        PDDocument document = PDDocument.load(new File("C:\\Users\\Miadzvedzeu_AA\\Downloads\\2010_10_15.pdf"));
-        PDDocument document1 = PDDocument.load(new File("C:\\Users\\Miadzvedzeu_AA\\Downloads\\bruh_file.pdf"));
-        PDDocument document5 = PDDocument.load(new File("C:\\Users\\Miadzvedzeu_AA\\Downloads\\02_2022 ИПА_ОВ_ИС.pdf"));
-        PDFDoc pdfDoc = new PDFDoc(document5);
+        PDDocument document = PDDocument.load(new File("C:\\Users\\Miadzvedzeu_AA\\Downloads\\02.2022 Гомель_Парк.pdf"));
+       // PDDocument document1 = PDDocument.load(new File("your_path"));
+        //PDDocument document5 = PDDocument.load(new File("your_path"));
+        PDFDoc pdfDoc = new PDFDoc(document);
+
+//        PDDocument document6 = new PDDocument();
+//        PDPage page = new PDPage(PDRectangle.A4);
+//        document6.addPage(page);
+//        PDPageContentStream contentStream = new PDPageContentStream(document6,page);
+//        contentStream.beginText();
+//        contentStream.setLeading(16.0f);
+//        contentStream.setFont(PDType1Font.TIMES_ITALIC,14);
+//        contentStream.setNonStrokingColor(Color.BLACK);
+//        float ty = page.getTrimBox().getHeight()-20f;
+//        contentStream.newLineAtOffset(14f,ty);
+//
+//        contentStream.showText("This is lkajfpjf fpoijpfjs poaiupoafjspf");
+//        contentStream.endText();
+//        contentStream.close();
+//        document6.save("merged_in_one_page.pdf");
+//        document6.close();
 ////
 ////        //reads all test from file
 //        System.out.println(pdfDoc.readPDFDocument());
@@ -78,6 +95,7 @@ public class PDFTest {
 //
 //        pdfDoc.getImageFromPdf();
         System.out.println(pdfDoc.getValueInCoordinates(54.99998f, 38.622375f));
+        pdfDoc.getValueFromArea();
     }
 
 }
