@@ -3,6 +3,7 @@ package eu.easyrpa.openframework.pdf.test;
 import eu.easyrpa.openframework.pdf.PDFDoc;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 
@@ -94,8 +95,9 @@ public class PDFTest {
 //        pdfDoc.mergeAllPagesInDocument();
 //
 //        pdfDoc.getImageFromPdf();
-        System.out.println(pdfDoc.getValueInCoordinates(54.99998f, 38.622375f));
-        pdfDoc.getValueFromArea();
+//        System.out.println(pdfDoc.getValueInCoordinates(54.99998f, 38.622375f));
+//        Rectangle area = new Rectangle();
+//        pdfDoc.getValueFromArea(area, 0);
     }
 
 }

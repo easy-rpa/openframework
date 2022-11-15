@@ -155,13 +155,13 @@ public class PDFDoc {
 //        dict2.removeItem(COSName.ANNOTS);
 
 //        PDPage page = new PDPage(dict2);
-       // PDStream stream = new PDStream(pdfDocument, page2.getContents());
+        // PDStream stream = new PDStream(pdfDocument, page2.getContents());
         PDPage page = new PDPage(rectangle);
 
         PDDocument document = new PDDocument();
-        PDPageContentStream contentStream = new PDPageContentStream(document,page);
+        PDPageContentStream contentStream = new PDPageContentStream(document, page);
         contentStream.beginText();
-        contentStream.newLineAtOffset(0,0);
+        contentStream.newLineAtOffset(0, 0);
         contentStream.showText("TEDTOP");
         contentStream.endText();
         document.addPage(page);
@@ -182,29 +182,36 @@ public class PDFDoc {
         return null;
     }
 
-    public void getImageFromPdf() throws IOException {
+    public void getImageFromPdf() {
         int imagesCount = 1;
         for (PDPage page : pdfDocument.getPages()) {
             System.out.println("process page " + imagesCount);
             PDResources pdResources = page.getResources();
             for (COSName cosName : pdResources.getXObjectNames()) {
-                PDXObject o = pdResources.getXObject(cosName);
-                if (o instanceof PDImageXObject) {
-                    ImageIO.write(((PDImageXObject) o).getImage(), "JPEG", new File("image_" + imagesCount + ".jpeg"));
-                    imagesCount++;
+                try {
+                    PDXObject o = pdResources.getXObject(cosName);
+                    if (o instanceof PDImageXObject) {
+                        ImageIO.write(((PDImageXObject) o).getImage(), "JPEG", new File("image_" + imagesCount + ".jpeg"));
+                        imagesCount++;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         }
     }
 
-    public void getValueFromArea() throws IOException {
-        PDFTextStripperByArea stripper = new PDFTextStripperByArea();
-        stripper.setSortByPosition(true);
-        PDPage page = pdfDocument.getPage(0);
-        Rectangle rectangle = new Rectangle((int) 54.99998, (int) 38.622375, (int) 8.547001,(int) 15.0095005);
-        stripper.addRegion("cs",rectangle);
-        stripper.extractRegions(page);
-        System.out.println(stripper.getTextForRegion("cs"));
+    public void getValueFromArea(Rectangle area, int pageNumber) {
+        try {
+            PDFTextStripperByArea stripper = new PDFTextStripperByArea();
+            stripper.setSortByPosition(true);
+            PDPage page = pdfDocument.getPage(pageNumber);
+            stripper.addRegion("cs", area);
+            stripper.extractRegions(page);
+            System.out.println(stripper.getTextForRegion("cs"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
