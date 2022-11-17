@@ -36,6 +36,11 @@ public class PDFPageCreator {
         }
     }
 
+    public PDFPageCreator text(PDFText text){
+        this.addText(text);
+        return this;
+    }
+
     public void addMultilineText(PDFText[] textArray) {
         try {
             contentStream.beginText();
@@ -53,6 +58,11 @@ public class PDFPageCreator {
         }
     }
 
+    public PDFPageCreator multilineText(PDFText[] textArray){
+        this.addMultilineText(textArray);
+        return this;
+    }
+
     public void addTable(Table table, float startX, float startY) {
         TableDrawer tableDrawer = TableDrawer.builder()
                 .contentStream(contentStream)
@@ -62,6 +72,11 @@ public class PDFPageCreator {
                 .build();
 
         tableDrawer.draw();
+    }
+
+    public PDFPageCreator table(Table table, float startX, float startY){
+        this.addTable(table, startX, startY);
+        return this;
     }
 
     public void addImage(String imagePath, int x, int y) {
@@ -74,15 +89,10 @@ public class PDFPageCreator {
         }
     }
 
-//    public void setDocumentProperties(String creator, String author, String producer, String subject, String keywords, Calendar creationDate){
-//        PDDocumentInformation documentInformation = Objects.requireNonNull(document).getDocumentInformation();
-//        documentInformation.setCreator(creator);
-//        documentInformation.setAuthor(author);
-//        documentInformation.setCreationDate(creationDate);
-//        documentInformation.setProducer(producer);
-//        documentInformation.setSubject(subject);
-//        documentInformation.setKeywords(keywords);
-//    }
+    public PDFPageCreator image(String imagePath, int x, int y){
+        this.addImage(imagePath, x, y);
+        return this;
+    }
 
     public void safePage() {
         try {

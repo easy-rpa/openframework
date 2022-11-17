@@ -43,11 +43,11 @@ public class PDFTest {
 //        contentStream.close();
 //        document6.save("merged_in_one_page.pdf");
 //        document6.close();
-////
-////        //reads all test from file
+
+//        reads all test from file
 //        System.out.println(pdfUtils.readPDFDocument());
 //
-//        //saves pdf pages as images
+        //saves pdf pages as images
 //        pdfUtils.getPDFasImage();
 //
 //        //return amount of pages in pdf document
@@ -88,15 +88,15 @@ public class PDFTest {
                                 .build())
                         .build())
                 .build();
-//
+
 //        pageDrawer.addTable(myTable, 20f, 20f);
 //        pageDrawer.safeDocument(saveDestination);
-//
-//        //saving images from pdf
+
+        //saving images from pdf
 //       SaveImagesInPdf saveImagesInPdf = new SaveImagesInPdf();
 //        saveImagesInPdf.getImagesFromPDF(document);
 //
-//        //Custom size of a page
+        //Custom size of a page
 //        PDDocument document4 = new PDDocument();
 //        PDPage page3 = new PDPage(new PDRectangle(1700, 2000));
 //        document4.addPage(page3);
@@ -116,6 +116,7 @@ public class PDFTest {
         PDFText text1 = new PDFText();
         PDFText text2 = new PDFText();
         PDFText[] texts = new PDFText[] {text1, text2};
+
         PDFPageCreator pageCreator = doc.addPage(page);
         pageCreator.addText(text1);
         pageCreator.addText(text2);

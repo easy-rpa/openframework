@@ -4,16 +4,18 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 
 import java.awt.*;
 
+
 public class PDFText {
+
     private PDFont font;
     private String text;
     private Color color;
     private int xCoordinate;
     private int yCoordinate;
-    private  float size;
+    private float size;
     private float leading;
 
-    public PDFText(){
+    public PDFText() {
 
     }
 
@@ -33,12 +35,22 @@ public class PDFText {
         this.yCoordinate = yCoordinate;
     }
 
+    public PDFText yCoordinate(int yCoordinate) {
+        this.setYCoordinate(yCoordinate);
+        return this;
+    }
+
     public float getSize() {
         return size;
     }
 
     public void setSize(float size) {
         this.size = size;
+    }
+
+    public PDFText size(float size) {
+        this.setSize(size);
+        return this;
     }
 
     public Color getColor() {
@@ -49,12 +61,22 @@ public class PDFText {
         this.color = color;
     }
 
+    public PDFText color(Color color) {
+        this.setColor(color);
+        return this;
+    }
+
     public String getText() {
         return text;
     }
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public PDFText text(String text) {
+        this.setText(text);
+        return this;
     }
 
     public int getXCoordinate() {
@@ -65,12 +87,22 @@ public class PDFText {
         this.xCoordinate = xCoordinate;
     }
 
+    public PDFText xCoordinate(int xCoordinate) {
+        this.setXCoordinate(xCoordinate);
+        return this;
+    }
+
     public PDFont getFont() {
         return font;
     }
 
     public void setFont(PDFont font) {
         this.font = font;
+    }
+
+    public PDFText font(PDFont font) {
+        this.setFont(font);
+        return this;
     }
 
     public float getLeading() {
@@ -80,4 +112,10 @@ public class PDFText {
     public void setLeading(float leading) {
         this.leading = leading;
     }
+
+    public PDFText leading(float leading) {
+        this.setLeading(leading);
+        return this;
+    }
+
 }

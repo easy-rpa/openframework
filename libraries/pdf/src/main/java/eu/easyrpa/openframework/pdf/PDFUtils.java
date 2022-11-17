@@ -106,18 +106,6 @@ public class PDFUtils {
         }
     }
 
-    public void managePDFPassword(String ownerPassword, String userPassword) {
-        AccessPermission accessPermission = new AccessPermission();
-        StandardProtectionPolicy sp = new StandardProtectionPolicy(ownerPassword, userPassword, accessPermission);
-        sp.setPermissions(accessPermission);
-        sp.setEncryptionKeyLength(128);
-        try {
-            pdfDocument.protect(sp);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public List<PDPage> getPagesBySymbol(String symbol) {
         List<PDPage> resultPages = new ArrayList<>();
         int pageNumber = 1;
