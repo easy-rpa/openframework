@@ -28,11 +28,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PDFDoc {
+public class PDFUtils {
 
     private final PDDocument pdfDocument;
 
-    public PDFDoc(PDDocument document) {
+    public PDFUtils(PDDocument document) {
         this.pdfDocument = document;
     }
 

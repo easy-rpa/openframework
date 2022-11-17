@@ -1,4 +1,5 @@
 package eu.easyrpa.openframework.pdf;
+
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
@@ -13,16 +14,16 @@ public class PDFPageCreator {
     private PDDocument document;
     private PDPageContentStream contentStream;
 
-    public PDFPageCreator(){
+    public PDFPageCreator() {
 
     }
 
-    public PDFPageCreator(PDDocument document, PDPageContentStream contentStream){
+    public PDFPageCreator(PDDocument document, PDPageContentStream contentStream) {
         this.document = document;
         this.contentStream = contentStream;
     }
 
-    public void addText(PDFText text){
+    public void addText(PDFText text) {
         try {
             contentStream.beginText();
             contentStream.setFont(text.getFont(), text.getSize());
@@ -30,15 +31,15 @@ public class PDFPageCreator {
             contentStream.newLineAtOffset(text.getXCoordinate(), text.getYCoordinate());
             contentStream.showText(text.getText());
             contentStream.endText();
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void addMultilineText(PDFText[] textArray){
+    public void addMultilineText(PDFText[] textArray) {
         try {
             contentStream.beginText();
-            for(PDFText text: textArray) {
+            for (PDFText text : textArray) {
                 contentStream.setFont(text.getFont(), text.getSize());
                 contentStream.setNonStrokingColor(text.getColor());
                 contentStream.setLeading(text.getLeading());
@@ -47,12 +48,12 @@ public class PDFPageCreator {
                 contentStream.newLine();
             }
             contentStream.endText();
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void addTable(Table table, float startX, float startY){
+    public void addTable(Table table, float startX, float startY) {
         TableDrawer tableDrawer = TableDrawer.builder()
                 .contentStream(contentStream)
                 .startX(startX)
@@ -68,7 +69,7 @@ public class PDFPageCreator {
             PDImageXObject image = PDImageXObject.createFromFile(imagePath, document);
             contentStream.drawImage(image, x, y);
             contentStream.close();
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -83,10 +84,10 @@ public class PDFPageCreator {
 //        documentInformation.setKeywords(keywords);
 //    }
 
-    public void safePage(){
+    public void safePage() {
         try {
             contentStream.close();
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
