@@ -1,4 +1,4 @@
-package eu.easyrpa.openframework.pdf;
+package eu.easyrpa.openframework.pdf.utils;
 
 import eu.easyrpa.openframework.pdf.extensions.TextInCoordinates;
 import org.apache.pdfbox.cos.COSName;
@@ -9,8 +9,6 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
-import org.apache.pdfbox.pdmodel.encryption.StandardProtectionPolicy;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.rendering.ImageType;
@@ -28,14 +26,25 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *
+ */
 public class PDFUtils {
-
+    /**
+     *
+     */
     private final PDDocument pdfDocument;
 
+    /**
+     * @param document
+     */
     public PDFUtils(PDDocument document) {
         this.pdfDocument = document;
     }
 
+    /**
+     * @return
+     */
     public String readPDFDocument() {
         String resultTextFromPDF = "";
 
@@ -50,10 +59,16 @@ public class PDFUtils {
         return resultTextFromPDF;
     }
 
+    /**
+     * @return
+     */
     public int getPDFPageCount() {
         return pdfDocument.getNumberOfPages();
     }
 
+    /**
+     *
+     */
     public void getPDFasImage() {
         PDFRenderer pdfRenderer = new PDFRenderer(pdfDocument);
         try {
@@ -66,6 +81,10 @@ public class PDFUtils {
         }
     }
 
+    /**
+     * @param destinationFileName
+     * @param documents
+     */
     public void mergePDFiles(String destinationFileName, File... documents) {
         PDFMergerUtility mergerUtility = new PDFMergerUtility();
         try {
@@ -79,6 +98,11 @@ public class PDFUtils {
         }
     }
 
+    /**
+     * @param destination
+     * @param documents
+     * @return
+     */
     public PDDocument mergePDFiles(PDDocument destination, PDDocument... documents) {
         PDFMergerUtility mergerUtility = new PDFMergerUtility();
 
@@ -98,6 +122,9 @@ public class PDFUtils {
         return destination;
     }
 
+    /**
+     *
+     */
     public void fromPDFtoHTMLConverter() {
         try (Writer output = new PrintWriter(this.pdfDocument.getDocumentInformation().getTitle() + ".html", String.valueOf(StandardCharsets.UTF_8))) {
             new PDFDomTree().writeText(pdfDocument, output);
@@ -106,6 +133,10 @@ public class PDFUtils {
         }
     }
 
+    /**
+     * @param symbol
+     * @return
+     */
     public List<PDPage> getPagesBySymbol(String symbol) {
         List<PDPage> resultPages = new ArrayList<>();
         int pageNumber = 1;
@@ -158,18 +189,26 @@ public class PDFUtils {
 
     }
 
-    public String getValueInCoordinates(float x, float y) {
-
+    /**
+     * @param xCoordinate
+     * @param yCoordinate
+     * @return
+     */
+    public String getValueInCoordinates(float xCoordinate, float yCoordinate) {
+        String result = "";
         try {
-            TextInCoordinates printer = new TextInCoordinates(x, y);
+            TextInCoordinates printer = new TextInCoordinates(xCoordinate, yCoordinate);
             printer.getTextInPosition(pdfDocument);
-            return printer.getResult();
+            result = printer.getResult();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+        return result;
     }
 
+    /**
+     *
+     */
     public void getImageFromPdf() {
         int imagesCount = 1;
         for (PDPage page : pdfDocument.getPages()) {
@@ -189,6 +228,10 @@ public class PDFUtils {
         }
     }
 
+    /**
+     * @param area
+     * @param pageNumber
+     */
     public void getValueFromArea(Rectangle area, int pageNumber) {
         try {
             PDFTextStripperByArea stripper = new PDFTextStripperByArea();

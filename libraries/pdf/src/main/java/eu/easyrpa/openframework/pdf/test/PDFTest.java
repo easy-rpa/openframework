@@ -3,7 +3,7 @@ package eu.easyrpa.openframework.pdf.test;
 import eu.easyrpa.openframework.pdf.PDFDocCreator;
 import eu.easyrpa.openframework.pdf.PDFPageCreator;
 import eu.easyrpa.openframework.pdf.PDFText;
-import eu.easyrpa.openframework.pdf.PDFUtils;
+import eu.easyrpa.openframework.pdf.utils.PDFUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
@@ -114,6 +114,7 @@ public class PDFTest {
         PDPage page = new PDPage(PDRectangle.A4);
 
         PDFText text1 = new PDFText();
+        text1.text("kfio").color(Color.ORANGE).font(PDType1Font.TIMES_ITALIC).size(14f).xCoordinate(45).yCoordinate(78);
         PDFText text2 = new PDFText();
         PDFText[] texts = new PDFText[] {text1, text2};
 
@@ -126,6 +127,17 @@ public class PDFTest {
         pageCreator.safePage();
 
         doc.safeDocument("bruh.pdf");
+
+
+        PDFDocCreator doc4 = new PDFDocCreator();
+        PDPage page3 = new PDPage(PDRectangle.A4);
+        doc4.addPage(page3)
+                .text(text1)
+                .text(text2)
+                .multilineText(texts)
+                .table(myTable,45,56)
+                .image("imagePath", 34, 56)
+                .safePage();
 
     }
 
