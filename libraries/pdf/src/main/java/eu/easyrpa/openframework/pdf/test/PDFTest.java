@@ -128,17 +128,31 @@ public class PDFTest {
 
         doc.safeDocument("bruh.pdf");
 
+        PDFText text5 = PDFText.newBuilder()
+                .text("rte")
+                .leading(15f)
+                .color(Color.BLACK)
+                .font(PDType1Font.TIMES_ITALIC)
+                .xCoordinate(34)
+                .yCoordinate(45)
+                .size(14f)
+                .build();
+
 
         PDFDocCreator doc4 = new PDFDocCreator();
         PDPage page3 = new PDPage(PDRectangle.A4);
         doc4.addPage(page3)
                 .text(text1)
                 .text(text2)
+                .text(text5)
                 .multilineText(texts)
                 .table(myTable,45,56)
                 .image("imagePath", 34, 56)
                 .safePage();
 
+
+
+        
     }
 
 }

@@ -1,10 +1,15 @@
 package eu.easyrpa.openframework.pdf;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 
 import java.awt.*;
 
-
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class PDFText {
 
     private PDFont font;
@@ -15,37 +20,9 @@ public class PDFText {
     private float size;
     private float leading;
 
-    public PDFText() {
-
-    }
-
-    public PDFText(String text, Color color, int xCoordinate, int yCoordinate, float size) {
-        this.text = text;
-        this.color = color;
-        this.xCoordinate = xCoordinate;
-        this.yCoordinate = yCoordinate;
-        this.size = size;
-    }
-
-    public int getYCoordinate() {
-        return yCoordinate;
-    }
-
-    public void setYCoordinate(int yCoordinate) {
-        this.yCoordinate = yCoordinate;
-    }
-
     public PDFText yCoordinate(int yCoordinate) {
         this.setYCoordinate(yCoordinate);
         return this;
-    }
-
-    public float getSize() {
-        return size;
-    }
-
-    public void setSize(float size) {
-        this.size = size;
     }
 
     public PDFText size(float size) {
@@ -53,25 +30,9 @@ public class PDFText {
         return this;
     }
 
-    public Color getColor() {
-        return color;
-    }
-
-    public void setColor(Color color) {
-        this.color = color;
-    }
-
     public PDFText color(Color color) {
         this.setColor(color);
         return this;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
     }
 
     public PDFText text(String text) {
@@ -79,25 +40,9 @@ public class PDFText {
         return this;
     }
 
-    public int getXCoordinate() {
-        return xCoordinate;
-    }
-
-    public void setXCoordinate(int xCoordinate) {
-        this.xCoordinate = xCoordinate;
-    }
-
     public PDFText xCoordinate(int xCoordinate) {
         this.setXCoordinate(xCoordinate);
         return this;
-    }
-
-    public PDFont getFont() {
-        return font;
-    }
-
-    public void setFont(PDFont font) {
-        this.font = font;
     }
 
     public PDFText font(PDFont font) {
@@ -105,17 +50,60 @@ public class PDFText {
         return this;
     }
 
-    public float getLeading() {
-        return leading;
-    }
-
-    public void setLeading(float leading) {
-        this.leading = leading;
-    }
-
     public PDFText leading(float leading) {
         this.setLeading(leading);
         return this;
     }
+
+    public static PDFTextBuilder newBuilder(){
+        return new PDFText().new PDFTextBuilder();
+    }
+
+    public class PDFTextBuilder {
+
+        private PDFTextBuilder(){
+
+        }
+
+        public PDFTextBuilder text(String text) {
+            PDFText.this.text = text;
+            return this;
+        }
+
+        public PDFTextBuilder font(PDFont font){
+            PDFText.this.font = font;
+            return this;
+        }
+
+        public PDFTextBuilder size(float size) {
+            PDFText.this.size = size;
+            return this;
+        }
+
+        public PDFTextBuilder leading(float leading) {
+            PDFText.this.leading = leading;
+            return this;
+        }
+
+        public PDFTextBuilder color(Color color) {
+            PDFText.this.color = color;
+            return this;
+        }
+
+        public PDFTextBuilder xCoordinate(int xCoordinate) {
+            PDFText.this.xCoordinate = xCoordinate;
+            return this;
+        }
+
+        public PDFTextBuilder yCoordinate(int yCoordinate) {
+            PDFText.this.yCoordinate = yCoordinate;
+            return this;
+        }
+
+        public PDFText build(){
+            return PDFText.this;
+        }
+    }
+
 
 }
