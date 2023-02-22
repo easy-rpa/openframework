@@ -57,7 +57,7 @@ EasyRPA platform is implemented and supported.
 <dependency>
     <groupId>eu.easyrpa</groupId>
     <artifactId>easy-rpa-adapter-for-openframework</artifactId>
-    <version>2.3.1</version>
+    <version>2.7.0</version>
 </dependency>
 ```
 
