@@ -14,8 +14,4 @@ public class ExcelFileCreatingModule extends ApModule {
     public TaskOutput run() throws Exception {
         return execute(getInput(), CreateNewSpreadsheetDocument.class).get();
     }
-
-    public static void main(String[] args) {
-        ApModuleRunner.localLaunch(ExcelFileCreatingModule.class);
-    }
 }
