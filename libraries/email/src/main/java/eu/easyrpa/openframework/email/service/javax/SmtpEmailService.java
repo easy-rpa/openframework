@@ -103,8 +103,6 @@ public class SmtpEmailService implements OutboundEmailService {
     }
 
     private Properties getConfigurationFor(OutboundEmailProtocol protocol) {
-
-        //TODO move properties definition into  OutboundEmailProtocol
         Properties props = new Properties();
         props.put("mail.transport.protocol", protocol.getProtocolName());
         props.put(String.format("mail.%s.host", protocol.getProtocolName()), host);
