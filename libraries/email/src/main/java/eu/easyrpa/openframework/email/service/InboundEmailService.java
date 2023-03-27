@@ -1,11 +1,11 @@
 package eu.easyrpa.openframework.email.service;
 
 import eu.easyrpa.openframework.email.EmailMessage;
+import eu.easyrpa.openframework.email.search.SearchQuery;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Predicate;
 
 /**
  * Single interface for all inbound email services that provides functionality for working with mailbox based
@@ -29,48 +29,32 @@ public interface InboundEmailService {
      * @param messageId the unique identifier of email message that is necessary to find.
      * @return {@link EmailMessage} object representing found email message or <code>null</code> if nothing is found.
      */
-    EmailMessage fetchMessage(String messageId);
+    EmailMessage getMessage(String messageId);
 
     /**
-     * Gets email messages contained in the mailbox folder with given name and satisfy to specific condition.
+     * Gets all email messages contained in the mailbox folder with given name that satisfy to specific condition.
      *
-     * @param folderName the name of mailbox folder where is necessary to collect email messages.
-     * @param isSatisfy  lambda expression representing specific condition. It should return <code>true</code> to let
-     *                   email message get into results.
+     * @param folderName  the name of mailbox folder where is necessary to collect email messages. If the
+     *                    value is <code>null</code> it searches messages throwout whole mailbox.
+     * @param searchQuery the {@link SearchQuery} object representing specific condition. If the value is
+     *                    <code>null</code> all messages contained in the folder or mailbox are returned.
      * @return list of {@link EmailMessage} objects representing satisfying email messages.
      */
-    List<EmailMessage> fetchMessages(String folderName, Predicate<EmailMessage> isSatisfy);
-
-    /**
-     * Gets all email messages contained in all mailbox folders and satisfy to specific condition.
-     *
-     * @param isSatisfy lambda expression representing specific condition. It should return <code>true</code> to let
-     *                  email message get into results.
-     * @return list of {@link EmailMessage} objects representing satisfying email messages.
-     */
-    List<EmailMessage> fetchAllMessages(Predicate<EmailMessage> isSatisfy);
-
-    /**
-     * Gets unread messages contained in the mailbox folder with given name.
-     *
-     * @param folderName the name of mailbox folder where is necessary to search unread messages.
-     * @param markRead   whether is necessary to mark all found unread messages as read immediately.
-     * @return list of {@link EmailMessage} objects representing unread email messages.
-     */
-    List<EmailMessage> fetchUnreadMessages(String folderName, boolean markRead);
+    List<EmailMessage> fetchMessages(String folderName, SearchQuery searchQuery);
 
     /**
      * Waits appearing of email messages in the mailbox folder with given name that satisfy to specific condition.
      *
-     * @param folderName    the name of mailbox folder where is necessary to check messages.
-     * @param isSatisfy     lambda expression representing specific condition. It should return <code>true</code> to let
-     *                      email message get into results.
+     * @param folderName    the name of mailbox folder where is necessary to collect email messages. If the
+     *                      value is <code>null</code> it searches messages throwout whole mailbox.
+     * @param searchQuery   the {@link SearchQuery} object representing specific condition. If the value is
+     *                      <code>null</code> any messages appeared in the folder or mailbox are returned.
      * @param timeout       the maximum time of waiting necessary messages.
      * @param checkInterval amount of time that defines period of checking newly come messages.
      * @return {@link CompletableFuture} object with list of {@link EmailMessage} objects representing satisfying email
      * messages as result.
      */
-    CompletableFuture<List<EmailMessage>> waitMessages(String folderName, Predicate<EmailMessage> isSatisfy, Duration timeout, Duration checkInterval);
+    CompletableFuture<List<EmailMessage>> waitMessages(String folderName, SearchQuery searchQuery, Duration timeout, Duration checkInterval);
 
     /**
      * Makes a copy of given email message in the specified folder.

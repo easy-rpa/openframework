@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.easyrpa.openframework.core.sevices.RPAServicesAccessor;
 import eu.easyrpa.openframework.email.constants.EmailConfigParam;
-import eu.easyrpa.openframework.email.exception.BreakEmailFetchException;
 import eu.easyrpa.openframework.email.exception.EmailMessagingException;
+import eu.easyrpa.openframework.email.search.SearchQuery;
 import eu.easyrpa.openframework.email.service.EmailServiceFactory;
 import eu.easyrpa.openframework.email.service.EmailServiceSecret;
 import eu.easyrpa.openframework.email.service.InboundEmailProtocol;
@@ -15,7 +15,6 @@ import javax.inject.Inject;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Predicate;
 
 /**
  * This is an email client service that provides functionality for working with mailbox folders and email
@@ -380,9 +379,9 @@ public class EmailClient {
      * @return {@link EmailMessage} object representing found email message or <code>null</code> if nothing is found.
      * @throws EmailMessagingException in case of some errors.
      */
-    public EmailMessage fetchMessage(String messageId) {
+    public EmailMessage getMessage(String messageId) {
         initService();
-        return this.service.fetchMessage(messageId);
+        return this.service.getMessage(messageId);
     }
 
     /**
@@ -393,7 +392,7 @@ public class EmailClient {
      * @return list of {@link EmailMessage} objects representing existing email messages.
      * @throws EmailMessagingException in case of some errors.
      */
-    public List<EmailMessage> fetchMessages() {
+    public List<EmailMessage> getMessages() {
         initService();
         return this.service.fetchMessages(getDefaultFolder(), null);
     }
@@ -405,7 +404,7 @@ public class EmailClient {
      * @return list of {@link EmailMessage} objects representing existing email messages.
      * @throws EmailMessagingException in case of some errors.
      */
-    public List<EmailMessage> fetchMessages(String folderName) {
+    public List<EmailMessage> getMessages(String folderName) {
         initService();
         return this.service.fetchMessages(folderName, null);
     }
@@ -414,156 +413,50 @@ public class EmailClient {
      * Gets email messages contained in the default mailbox folder and satisfy to specific condition.
      * <p>
      * The name of default mailbox folder is taken using {@link #getDefaultFolder()}.
-     * <p>
-     * If it's necessary to interrupt the fetching of messages by some reason the special
-     * {@link BreakEmailFetchException} can be thrown to do it. E.g. when all necessary messages are found and it
-     * doesn't make sense to continue the fetching.
-     * <p>
-     * Here is an example of using this exception:
-     * <pre>
-     * {@code @Inject}
-     *  private EmailClient emailClient;
      *
-     *  public void execute() {
-     *    ...
-     *    log.info("Fetch the first message from default inbox folder that contain attachments.");
-     *   {@code List<EmailMessage>} messages = emailClient.fetchMessages(msg -> {
-     *        if (msg.hasAttachments()) {
-     *           //By throwing this exception it stops further checking of
-     *           //emails and return this message as single result
-     *           throw new BreakEmailCheckException(true);
-     *        }
-     *        return false;
-     *    });
-     *    ...
-     * }
-     * </pre>
-     *
-     * @param isSatisfy lambda expression representing specific condition. It should return <code>true</code> to let
-     *                  email message get into results.
+     * @param searchQuery the {@link SearchQuery} object representing specific condition.
      * @return list of {@link EmailMessage} objects representing satisfying email messages.
      * @throws EmailMessagingException in case of some errors.
      */
-    public List<EmailMessage> fetchMessages(Predicate<EmailMessage> isSatisfy) {
+    public List<EmailMessage> searchMessages(SearchQuery searchQuery) {
         initService();
-        return this.service.fetchMessages(getDefaultFolder(), isSatisfy);
+        return this.service.fetchMessages(getDefaultFolder(), searchQuery);
     }
 
     /**
      * Gets email messages contained in the mailbox folder with given name and satisfy to specific condition.
-     * <p>
-     * If it's necessary to interrupt the fetching of messages by some reason the special
-     * {@link BreakEmailFetchException} can be thrown to do it. E.g. when all necessary messages are found and it
-     * doesn't make sense to continue the fetching.
-     * <p>
-     * Here is an example of using this exception:
-     * <pre>
-     * {@code @Inject}
-     *  private EmailClient emailClient;
      *
-     *  public void execute() {
-     *    ...
-     *    log.info("Fetch the first message from 'Personal' folder that contain attachments.");
-     *   {@code List<EmailMessage>} messages = emailClient.fetchMessages("Personal", msg -> {
-     *        if (msg.hasAttachments()) {
-     *           //By throwing this exception it stops further checking of
-     *           //emails and return this message as single result
-     *           throw new BreakEmailCheckException(true);
-     *        }
-     *        return false;
-     *    });
-     *    ...
-     * }
-     * </pre>
-     *
-     * @param folderName the name of mailbox folder where is necessary to collect email messages.
-     * @param isSatisfy  lambda expression representing specific condition. It should return <code>true</code> to let
-     *                   email message get into results.
+     * @param folderName  the name of mailbox folder where is necessary to collect email messages.
+     * @param searchQuery the {@link SearchQuery} object representing specific condition.
      * @return list of {@link EmailMessage} objects representing satisfying email messages.
      * @throws EmailMessagingException in case of some errors.
      */
-    public List<EmailMessage> fetchMessages(String folderName, Predicate<EmailMessage> isSatisfy) {
+    public List<EmailMessage> searchMessages(String folderName, SearchQuery searchQuery) {
         initService();
-        return this.service.fetchMessages(folderName, isSatisfy);
+        return this.service.fetchMessages(folderName, searchQuery);
     }
 
     /**
      * Gets all email messages contained in all mailbox folders.
-     * <p>
-     * <b>WARNING:</b> This is a heavy operations and can take much time.
      *
      * @return list of {@link EmailMessage} objects representing existing email messages.
      * @throws EmailMessagingException in case of some errors.
      */
-    public List<EmailMessage> fetchAllMessages() {
+    public List<EmailMessage> getAllMessages() {
         initService();
-        return this.service.fetchAllMessages(null);
+        return this.service.fetchMessages(null, null);
     }
 
     /**
      * Gets all email messages contained in all mailbox folders and satisfy to specific condition.
-     * <p>
-     * <b>WARNING:</b> This is a heavy operations and can take much time.
-     * <p>
-     * If it's necessary to interrupt the fetching of messages by some reason the special
-     * {@link BreakEmailFetchException} can be thrown to do it. E.g. when all necessary messages are found and it
-     * doesn't make sense to continue the fetching.
-     * <p>
-     * Here is an example of using this exception:
-     * <pre>
-     * {@code @Inject}
-     *  private EmailClient emailClient;
      *
-     *  public void execute() {
-     *    ...
-     *    log.info("Fetch the first message that contain attachments.");
-     *   {@code List<EmailMessage>} messages = emailClient.fetchAllMessages("msg -> {
-     *        if (msg.hasAttachments()) {
-     *           //By throwing this exception it stops further checking of
-     *           //emails and return this message as single result
-     *           throw new BreakEmailCheckException(true);
-     *        }
-     *        return false;
-     *    });
-     *    ...
-     * }
-     * </pre>
-     *
-     * @param isSatisfy lambda expression representing specific condition. It should return <code>true</code> to let
-     *                  email message get into results.
+     * @param searchQuery the {@link SearchQuery} object representing specific condition.
      * @return list of {@link EmailMessage} objects representing satisfying email messages.
      * @throws EmailMessagingException in case of some errors.
      */
-    public List<EmailMessage> fetchAllMessages(Predicate<EmailMessage> isSatisfy) {
+    public List<EmailMessage> searchAllMessages(SearchQuery searchQuery) {
         initService();
-        return this.service.fetchAllMessages(isSatisfy);
-    }
-
-    /**
-     * Gets unread messages contained in the mailbox.
-     * <p>
-     * It views all mailbox folders to find unread message.
-     *
-     * @param markRead whether is necessary to mark all found unread messages as read immediately.
-     * @return list of {@link EmailMessage} objects representing unread email messages.
-     * @throws EmailMessagingException in case of some errors.
-     */
-    public List<EmailMessage> fetchUnreadMessages(boolean markRead) {
-        initService();
-        return this.service.fetchUnreadMessages(getDefaultFolder(), markRead);
-    }
-
-    /**
-     * Gets unread messages contained in the mailbox folder with given name.
-     *
-     * @param folderName the name of mailbox folder where is necessary to search unread messages.
-     * @param markRead   whether is necessary to mark all found unread messages as read immediately.
-     * @return list of {@link EmailMessage} objects representing unread email messages.
-     * @throws EmailMessagingException in case of some errors.
-     */
-    public List<EmailMessage> fetchUnreadMessages(String folderName, boolean markRead) {
-        initService();
-        return this.service.fetchUnreadMessages(folderName, markRead);
+        return this.service.fetchMessages(null, searchQuery);
     }
 
     /**
@@ -591,15 +484,14 @@ public class EmailClient {
      *     </li>
      * </ol>
      *
-     * @param isSatisfy lambda expression representing specific condition. It should return <code>true</code> to let
-     *                  the email message get into results.
+     * @param searchQuery the {@link SearchQuery} object representing specific condition.
      * @return {@link CompletableFuture} object with list of {@link EmailMessage} objects representing satisfying email
      * messages as result.
      * @throws EmailMessagingException in case of some errors.
      */
-    public CompletableFuture<List<EmailMessage>> waitMessages(Predicate<EmailMessage> isSatisfy) {
+    public CompletableFuture<List<EmailMessage>> waitMessages(SearchQuery searchQuery) {
         initService();
-        return this.service.waitMessages(getDefaultFolder(), isSatisfy, DEFAULT_CHECK_TIMEOUT, DEFAULT_CHECK_INTERVAL);
+        return this.service.waitMessages(getDefaultFolder(), searchQuery, DEFAULT_CHECK_TIMEOUT, DEFAULT_CHECK_INTERVAL);
     }
 
     /**
@@ -627,16 +519,15 @@ public class EmailClient {
      *     </li>
      * </ol>
      *
-     * @param isSatisfy lambda expression representing specific condition. It should return <code>true</code> to let
-     *                  email message get into results.
-     * @param timeout   the maximum time of waiting necessary messages.
+     * @param searchQuery the {@link SearchQuery} object representing specific condition.
+     * @param timeout     the maximum time of waiting necessary messages.
      * @return {@link CompletableFuture} object with list of {@link EmailMessage} objects representing satisfying email
      * messages as result.
      * @throws EmailMessagingException in case of some errors.
      */
-    public CompletableFuture<List<EmailMessage>> waitMessages(Predicate<EmailMessage> isSatisfy, Duration timeout) {
+    public CompletableFuture<List<EmailMessage>> waitMessages(SearchQuery searchQuery, Duration timeout) {
         initService();
-        return this.service.waitMessages(getDefaultFolder(), isSatisfy, timeout, DEFAULT_CHECK_INTERVAL);
+        return this.service.waitMessages(getDefaultFolder(), searchQuery, timeout, DEFAULT_CHECK_INTERVAL);
     }
 
     /**
@@ -664,17 +555,16 @@ public class EmailClient {
      *     </li>
      * </ol>
      *
-     * @param isSatisfy     lambda expression representing specific condition. It should return <code>true</code> to let
-     *                      email message get into results.
+     * @param searchQuery   the {@link SearchQuery} object representing specific condition.
      * @param timeout       the maximum time of waiting necessary messages.
      * @param checkInterval amount of time that defines period of checking newly come messages.
      * @return {@link CompletableFuture} object with list of {@link EmailMessage} objects representing satisfying email
      * messages as result.
      * @throws EmailMessagingException in case of some errors.
      */
-    public CompletableFuture<List<EmailMessage>> waitMessages(Predicate<EmailMessage> isSatisfy, Duration timeout, Duration checkInterval) {
+    public CompletableFuture<List<EmailMessage>> waitMessages(SearchQuery searchQuery, Duration timeout, Duration checkInterval) {
         initService();
-        return this.service.waitMessages(getDefaultFolder(), isSatisfy, timeout, checkInterval);
+        return this.service.waitMessages(getDefaultFolder(), searchQuery, timeout, checkInterval);
     }
 
     /**
@@ -702,16 +592,15 @@ public class EmailClient {
      *     </li>
      * </ol>
      *
-     * @param folderName the name of mailbox folder where is necessary to check messages.
-     * @param isSatisfy  lambda expression representing specific condition. It should return <code>true</code> to let
-     *                   email message get into results.
+     * @param folderName  the name of mailbox folder where is necessary to check messages.
+     * @param searchQuery the {@link SearchQuery} object representing specific condition.
      * @return {@link CompletableFuture} object with list of {@link EmailMessage} objects representing satisfying email
      * messages as result.
      * @throws EmailMessagingException in case of some errors.
      */
-    public CompletableFuture<List<EmailMessage>> waitMessages(String folderName, Predicate<EmailMessage> isSatisfy) {
+    public CompletableFuture<List<EmailMessage>> waitMessages(String folderName, SearchQuery searchQuery) {
         initService();
-        return this.service.waitMessages(folderName, isSatisfy, DEFAULT_CHECK_TIMEOUT, DEFAULT_CHECK_INTERVAL);
+        return this.service.waitMessages(folderName, searchQuery, DEFAULT_CHECK_TIMEOUT, DEFAULT_CHECK_INTERVAL);
     }
 
     /**
@@ -739,17 +628,16 @@ public class EmailClient {
      *     </li>
      * </ol>
      *
-     * @param folderName the name of mailbox folder where is necessary to check messages.
-     * @param isSatisfy  lambda expression representing specific condition. It should return <code>true</code> to let
-     *                   email message get into results.
-     * @param timeout    the maximum time of waiting necessary messages.
+     * @param folderName  the name of mailbox folder where is necessary to check messages.
+     * @param searchQuery the {@link SearchQuery} object representing specific condition.
+     * @param timeout     the maximum time of waiting necessary messages.
      * @return {@link CompletableFuture} object with list of {@link EmailMessage} objects representing satisfying email
      * messages as result.
      * @throws EmailMessagingException in case of some errors.
      */
-    public CompletableFuture<List<EmailMessage>> waitMessages(String folderName, Predicate<EmailMessage> isSatisfy, Duration timeout) {
+    public CompletableFuture<List<EmailMessage>> waitMessages(String folderName, SearchQuery searchQuery, Duration timeout) {
         initService();
-        return this.service.waitMessages(folderName, isSatisfy, timeout, DEFAULT_CHECK_INTERVAL);
+        return this.service.waitMessages(folderName, searchQuery, timeout, DEFAULT_CHECK_INTERVAL);
     }
 
     /**
@@ -778,17 +666,16 @@ public class EmailClient {
      * </ol>
      *
      * @param folderName    the name of mailbox folder where is necessary to check messages.
-     * @param isSatisfy     lambda expression representing specific condition. It should return <code>true</code> to let
-     *                      email message get into results.
+     * @param searchQuery   the {@link SearchQuery} object representing specific condition.
      * @param timeout       the maximum time of waiting necessary messages.
      * @param checkInterval amount of time that defines period of checking newly come messages.
      * @return {@link CompletableFuture} object with list of {@link EmailMessage} objects representing satisfying email
      * messages as result.
      * @throws EmailMessagingException in case of some errors.
      */
-    public CompletableFuture<List<EmailMessage>> waitMessages(String folderName, Predicate<EmailMessage> isSatisfy, Duration timeout, Duration checkInterval) {
+    public CompletableFuture<List<EmailMessage>> waitMessages(String folderName, SearchQuery searchQuery, Duration timeout, Duration checkInterval) {
         initService();
-        return this.service.waitMessages(folderName, isSatisfy, timeout, checkInterval);
+        return this.service.waitMessages(folderName, searchQuery, timeout, checkInterval);
     }
 
     /**

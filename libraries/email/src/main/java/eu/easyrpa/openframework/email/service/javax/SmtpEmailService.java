@@ -13,7 +13,7 @@ import javax.mail.*;
 import java.util.Properties;
 
 /**
- * Implementation of outbound email services that is working based on SMTP protocol.
+ * Implementation of outbound email service that is working based on SMTP protocol.
  */
 public class SmtpEmailService implements OutboundEmailService {
 
@@ -27,7 +27,7 @@ public class SmtpEmailService implements OutboundEmailService {
 
     private final String password;
 
-    private Session session;
+    private final Session session;
 
     private MessageConverter<Message> messageConverter;
 
@@ -103,6 +103,8 @@ public class SmtpEmailService implements OutboundEmailService {
     }
 
     private Properties getConfigurationFor(OutboundEmailProtocol protocol) {
+
+        //TODO move properties definition into  OutboundEmailProtocol
         Properties props = new Properties();
         props.put("mail.transport.protocol", protocol.getProtocolName());
         props.put(String.format("mail.%s.host", protocol.getProtocolName()), host);

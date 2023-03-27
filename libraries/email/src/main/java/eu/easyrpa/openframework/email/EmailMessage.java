@@ -5,11 +5,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.easyrpa.openframework.email.constants.EmailConfigParam;
 import eu.easyrpa.openframework.email.exception.EmailMessagingException;
 import eu.easyrpa.openframework.email.message.EmailAddress;
 import eu.easyrpa.openframework.email.message.EmailAttachment;
 import eu.easyrpa.openframework.email.message.EmailBodyPart;
-import eu.easyrpa.openframework.email.constants.EmailConfigParam;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 
@@ -159,6 +159,12 @@ public class EmailMessage {
      * Charset of this email message body.
      */
     protected String charset;
+
+    /**
+     * Name of template that defines content of this email message and managed within RPA platform where this
+     * library is used.
+     */
+    protected String template;
 
     /**
      * Cached text representation of this email message body.
@@ -937,36 +943,73 @@ public class EmailMessage {
     }
 
     /**
+     * Gets name of template that defines content for this email message.
+     * <p>
+     * The template is expected to be created, managed and compiled within RPA platform. The name is used as
+     * reference to it.
+     * <p>
+     * Properties that should be available within template can be specified using {@link #property(String, Object)}
+     * method.
+     * <p>
+     * If the name of template is not specified explicitly then it will be looked up in configuration parameters
+     * of the RPA platform under the key that depends on the actual {@link #typeName} value:
+     * <pre>
+     * {@code <typeName>.tpl}
+     * </pre>
+     * In case of default <code>typeName</code> the key of configuration parameter is <b>email.tpl</b>.
+     *
+     * @return string with name of template that defines content for this email message.
+     */
+    public String getTemplate() {
+        if (template == null) {
+            template = getConfigParam(EmailConfigParam.TEMPLATE_NAME_TPL);
+        }
+        return template;
+    }
+
+    /**
+     * Sets explicitly the name of template that defines content for this email message.
+     * <p>
+     * The template is expected to be created, managed and compiled within RPA platform. The name is used as
+     * reference to it.
+     * <p>
+     * Properties that should be available within template can be specified using {@link #property(String, Object)}
+     * method.
+     *
+     * @param template string with name of template to set.
+     */
+    public void setTemplate(String template) {
+        this.template = template;
+    }
+
+    /**
+     * Sets explicitly the name of template that defines content for this email message.
+     * <p>
+     * The template is expected to be created, managed and compiled within RPA platform. The name is used as
+     * reference to it.
+     * <p>
+     * Properties that should be available within template can be specified using {@link #property(String, Object)}
+     * method.
+     *
+     * @param template string with name of template to set.
+     * @return this object to allow joining of methods calls into chain.
+     */
+    public EmailMessage template(String template) {
+        setTemplate(template);
+        return this;
+    }
+
+    /**
      * Gets the list of parts that constituents the body of this email message.
      * <p>
-     * The email message body can be in a format of simple text or HTML. For compatibility it can be presented in
-     * both formats at the same. To achieve it the body persisted as list of body parts where each part has
-     * specific format. To get the full body in the text or HTML format methods {@link #getText()} or {@link #getHtml()}
-     * should be used respectively.
-     * <p>
-     * If there are no body parts has been added explicitly this method will try to lookup the body content in
-     * configuration parameters of the RPA platform under the key that depends on the actual {@link #typeName} value:
-     * <pre>
-     * {@code <typeName>.body.tpl}
-     * </pre>
-     * In case of default <code>typeName</code> the key of configuration parameter is <b>email.body.tpl</b>.
-     * <p>
-     * Here can be actual text or HTML or it can be a path to Freemarker Template File (*.ftl) in the resources of
-     * current RPA process module. If such configuration parameter is present the content defined by this parameter
-     * will be added as HTML body part. In results the list with this single body part is returned.
+     * The email message body can be in a format of simple text or HTML. For compatibility, it can be presented in
+     * both formats at the same time. To achieve it the body persisted as list of body parts where each part has
+     * specific format. To get the full body in the text or HTML format methods {@link #getText()} or
+     * {@link #getHtml()} should be used respectively.
      *
      * @return the list of {@link EmailBodyPart} objects representing body parts of this email message.
      */
     public List<EmailBodyPart> getBodyParts() {
-        if (bodyParts == null) {
-            bodyParts = new ArrayList<>();
-            String tpl = getConfigParam(EmailConfigParam.BODY_TEMPLATE_TPL);
-            if (tpl != null) {
-                bodyParts.add(new EmailBodyPart(tpl, EmailBodyPart.CONTENT_TYPE_TEXT_HTML));
-            }
-            this.text = null;
-            this.html = null;
-        }
         return bodyParts;
     }
 

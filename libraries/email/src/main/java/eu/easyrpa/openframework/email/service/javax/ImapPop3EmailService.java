@@ -4,21 +4,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.mail.imap.IMAPFolder;
 import eu.easyrpa.openframework.email.EmailMessage;
-import eu.easyrpa.openframework.email.exception.BreakEmailFetchException;
 import eu.easyrpa.openframework.email.exception.EmailMessagingException;
+import eu.easyrpa.openframework.email.search.SearchQuery;
 import eu.easyrpa.openframework.email.service.EmailServiceSecret;
 import eu.easyrpa.openframework.email.service.InboundEmailProtocol;
 import eu.easyrpa.openframework.email.service.InboundEmailService;
 import eu.easyrpa.openframework.email.service.MessageConverter;
 
 import javax.mail.*;
-import javax.mail.search.FlagTerm;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -44,6 +42,8 @@ public class ImapPop3EmailService implements InboundEmailService {
 
     private MessageConverter<Message> messageConverter;
 
+    private SearchTermConverter searchTermConverter;
+
     private int batchSize = DEFAULT_BATCH_SIZE;
 
     public ImapPop3EmailService(String server, InboundEmailProtocol protocol, String secret) {
@@ -68,7 +68,9 @@ public class ImapPop3EmailService implements InboundEmailService {
         }
 
         this.session = Session.getInstance(getConfigurationFor(protocol), null);
+
         this.messageConverter = new MimeMessageConverter(this.session);
+        this.searchTermConverter = new SearchTermConverter(this.messageConverter);
 
         try {
             this.store = this.session.getStore(protocol.getProtocolName());
@@ -125,7 +127,7 @@ public class ImapPop3EmailService implements InboundEmailService {
     }
 
     @Override
-    public EmailMessage fetchMessage(String messageId) {
+    public EmailMessage getMessage(String messageId) {
         long uid = Long.parseLong(messageId);
         return walkOverAllFolders(folder -> {
             try {
@@ -142,105 +144,36 @@ public class ImapPop3EmailService implements InboundEmailService {
     }
 
     @Override
-    public List<EmailMessage> fetchMessages(String folderName, Predicate<EmailMessage> isSatisfy) {
-        return openFolderAndPerform(folderName, Folder.READ_ONLY, folder -> {
+    public List<EmailMessage> fetchMessages(String folderName, SearchQuery searchQuery) {
+        Function<Folder, List<EmailMessage>> searchAction = folder -> {
             try {
-                List<EmailMessage> result = new ArrayList<>();
-                if (isSatisfy != null) {
-                    int messagesCount = folder.getMessageCount();
-                    int readMessagesCount = 1;
-                    while (readMessagesCount < messagesCount) {
-                        try {
-                            int start = readMessagesCount;
-                            int end = Math.min(readMessagesCount + batchSize - 1, messagesCount);
-                            List<EmailMessage> messages = messageConverter.convertAllToEmailMessages(folder.getMessages(start, end));
-                            for (EmailMessage message : messages) {
-                                try {
-                                    if (isSatisfy.test(message)) {
-                                        result.add(message);
-                                    }
-                                } catch (BreakEmailFetchException e) {
-                                    if (e.isIncludeIntoResult()) {
-                                        result.add(message);
-                                    }
-                                    throw e;
-                                }
-                            }
-                            readMessagesCount += batchSize;
-                        } catch (BreakEmailFetchException e) {
-                            break;
-                        }
-                    }
+                Message[] messages;
+                if (searchQuery != null) {
+                    messages = folder.search(searchTermConverter.convert(searchQuery));
                 } else {
-                    result = messageConverter.convertAllToEmailMessages(folder.getMessages());
-                }
-                return result;
-            } catch (MessagingException e) {
-                throw new EmailMessagingException(e);
-            }
-        });
-    }
-
-    @Override
-    public List<EmailMessage> fetchAllMessages(Predicate<EmailMessage> isSatisfy) {
-        List<EmailMessage> result = new ArrayList<>();
-        walkOverAllFolders(folder -> {
-            try {
-                if (isSatisfy != null) {
-                    int messagesCount = folder.getMessageCount();
-                    int readMessagesCount = 1;
-                    while (readMessagesCount < messagesCount) {
-                        try {
-                            int start = readMessagesCount;
-                            int end = Math.min(readMessagesCount + batchSize - 1, messagesCount);
-                            List<EmailMessage> messages = messageConverter.convertAllToEmailMessages(folder.getMessages(start, end));
-                            for (EmailMessage message : messages) {
-                                try {
-                                    if (isSatisfy.test(message)) {
-                                        result.add(message);
-                                    }
-                                } catch (BreakEmailFetchException e) {
-                                    if (e.isIncludeIntoResult()) {
-                                        result.add(message);
-                                    }
-                                    throw e;
-                                }
-                            }
-                            readMessagesCount += batchSize;
-                        } catch (BreakEmailFetchException e) {
-                            break;
-                        }
-                    }
-                } else {
-                    result.addAll(messageConverter.convertAllToEmailMessages(folder.getMessages()));
-                }
-                return false;
-            } catch (MessagingException e) {
-                throw new EmailMessagingException(e);
-            }
-        });
-        return result;
-    }
-
-    @Override
-    public List<EmailMessage> fetchUnreadMessages(String folderName, boolean markRead) {
-        return openFolderAndPerform(folderName, (markRead ? Folder.READ_WRITE : Folder.READ_ONLY), folder -> {
-            try {
-                Flags seen = new Flags(Flags.Flag.SEEN);
-                FlagTerm term = new FlagTerm(seen, false);
-                Message[] messages = folder.search(term);
-                if (markRead) {
-                    folder.setFlags(messages, seen, true);
+                    messages = folder.getMessages();
                 }
                 return messageConverter.convertAllToEmailMessages(messages);
             } catch (MessagingException e) {
                 throw new EmailMessagingException(e);
             }
+        };
+
+        if (folderName != null) {
+            return openFolderAndPerform(folderName, Folder.READ_ONLY, searchAction);
+        }
+
+        List<EmailMessage> result = new ArrayList<>();
+        walkOverAllFolders(folder -> {
+            result.addAll(searchAction.apply(folder));
+            return false;
         });
+        return result;
     }
 
     @Override
-    public CompletableFuture<List<EmailMessage>> waitMessages(String folderName, Predicate<EmailMessage> isSatisfy, Duration timeout, Duration checkInterval) {
+    public CompletableFuture<List<EmailMessage>> waitMessages(String folderName, SearchQuery searchQuery,
+                                                              Duration timeout, Duration checkInterval) {
         if (timeout == null) {
             throw new IllegalArgumentException("Timeout must be specified.");
         }
@@ -251,41 +184,19 @@ public class ImapPop3EmailService implements InboundEmailService {
             try {
                 long endTime = System.currentTimeMillis() + timeout.toMillis();
 
-                List<EmailMessage> result = fetchMessages(folderName, isSatisfy);
+                List<EmailMessage> result = fetchMessages(folderName, searchQuery);
                 if (!result.isEmpty()) {
                     return result;
                 }
 
+                SearchQuery query = searchQuery != null
+                        ? searchQuery.and().date().after(new Date())
+                        : SearchQuery.date().after(new Date());
+
                 ScheduledExecutorService ex = Executors.newSingleThreadScheduledExecutor();
                 ScheduledFuture<?> scheduledFuture = ex.scheduleAtFixedRate(() -> {
                     if (result.isEmpty()) {
-                        result.addAll(openFolderAndPerform(folderName, Folder.READ_ONLY, folder -> {
-                            try {
-                                List<EmailMessage> messages = new ArrayList<>();
-                                Message[] unreadMsgs = folder.search(new FlagTerm(new Flags(Flags.Flag.SEEN), false));
-                                if (unreadMsgs.length > 0) {
-                                    if (isSatisfy != null) {
-                                        for (EmailMessage message : messageConverter.convertAllToEmailMessages(unreadMsgs)) {
-                                            try {
-                                                if (isSatisfy.test(message)) {
-                                                    messages.add(message);
-                                                }
-                                            } catch (BreakEmailFetchException e) {
-                                                if (e.isIncludeIntoResult()) {
-                                                    messages.add(message);
-                                                }
-                                                break;
-                                            }
-                                        }
-                                    } else {
-                                        messages = messageConverter.convertAllToEmailMessages(unreadMsgs);
-                                    }
-                                }
-                                return messages;
-                            } catch (MessagingException e) {
-                                throw new EmailMessagingException(e);
-                            }
-                        }));
+                        result.addAll(fetchMessages(folderName, query));
                     }
                 }, 0, checkInterval.toMillis(), TimeUnit.MILLISECONDS);
 

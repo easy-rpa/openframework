@@ -9,6 +9,7 @@ import eu.easyrpa.openframework.email.service.EmailServiceFactory;
 import eu.easyrpa.openframework.email.service.EmailServiceSecret;
 import eu.easyrpa.openframework.email.service.OutboundEmailProtocol;
 import eu.easyrpa.openframework.email.service.OutboundEmailService;
+import eu.easyrpa.openframework.email.service.rpaplatform.RPAPlatformEmailService;
 
 import javax.inject.Inject;
 
@@ -57,6 +58,12 @@ public class EmailSender {
      * Secret information necessary to perform authentication to specific mailbox on the server.
      */
     private String secret;
+
+    /**
+     * Name of channel configured and managed within RPA platform. Channels define recipients of email message
+     * and way of sending.
+     */
+    private String channel;
 
     /**
      * Specific instance of outbound email service that depends on protocol used by outbound email server.
@@ -295,6 +302,50 @@ public class EmailSender {
     }
 
     /**
+     * Gets name of channel that defines recipients of email message and way of sending.
+     * <p>
+     * The channel is expected to be configured and managed within RPA platform. The name is used as
+     * reference to it.
+     * <p>
+     * If the name of channel is not specified explicitly then it will be looked up in configurations parameters of the
+     * RPA platform under the key <b><code>outbound.email.channel</code></b>.
+     *
+     * @return string with name of channel.
+     */
+    public String getChannel() {
+        if (channel == null) {
+            channel = getConfigParam(EmailConfigParam.OUTBOUND_EMAIL_CHANNEL);
+        }
+        return channel;
+    }
+
+    /**
+     * Sets explicitly name of channel that defines recipients of email message and way of sending.
+     * <p>
+     * The channel is expected to be configured and managed within RPA platform. The name is used as
+     * reference to it.
+     *
+     * @param channel string with name of channel to set.
+     */
+    public void setChannel(String channel) {
+        this.channel = channel;
+    }
+
+    /**
+     * Sets explicitly name of channel that defines recipients of email message and way of sending.
+     * <p>
+     * The channel is expected to be configured and managed within RPA platform. The name is used as
+     * reference to it.
+     *
+     * @param channel string with name of channel to set.
+     * @return this object to allow joining of methods calls into chain.
+     */
+    public EmailSender channel(String channel) {
+        setChannel(channel);
+        return this;
+    }
+
+    /**
      * Sends given email message.
      *
      * @param message the email message to send.
@@ -347,7 +398,11 @@ public class EmailSender {
      */
     private void initService() {
         if (this.service == null) {
-            this.service = EmailServiceFactory.getInstance().getOutboundService(getServer(), getProtocol(), getSecret());
+            if (getChannel() != null) {
+                this.service = new RPAPlatformEmailService(getChannel(), rpaServices);
+            } else {
+                this.service = EmailServiceFactory.getInstance().getOutboundService(getServer(), getProtocol(), getSecret());
+            }
         }
     }
 }

@@ -3,8 +3,10 @@ package eu.easyrpa.openframework.email.message;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import eu.easyrpa.openframework.core.model.FileData;
 import org.apache.commons.io.IOUtils;
 
+import javax.mail.internet.MimeUtility;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +18,7 @@ import java.util.regex.Pattern;
 /**
  * Represents email attachment. It keeps data of file attached to specific email message.
  */
-public class EmailAttachment {
+public class EmailAttachment extends FileData {
 
     /**
      * Regex that helps to locate places in the text of email message body with inline images.
@@ -58,21 +60,6 @@ public class EmailAttachment {
     }
 
     /**
-     * The file name of this attachment.
-     */
-    private String fileName;
-
-    /**
-     * The MIME type of this attachment.
-     */
-    private String mimeType;
-
-    /**
-     * The file content of this attachment.
-     */
-    private byte[] content;
-
-    /**
      * Constructs a mew EmailAttachment with provided file data.
      *
      * @param fileName      the name of file.
@@ -80,8 +67,8 @@ public class EmailAttachment {
      * @param mimeType      the MIME type of file.
      */
     public EmailAttachment(String fileName, InputStream contentSource, String mimeType) {
-        this.fileName = fileName;
         try {
+            this.fileName = MimeUtility.decodeText(fileName);
             this.content = IOUtils.toByteArray(contentSource);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -127,41 +114,15 @@ public class EmailAttachment {
     }
 
     /**
-     * Gets the file name of this attachment.
-     *
-     * @return string with file name.
-     */
-    public String getFileName() {
-        return this.fileName;
-    }
-
-    /**
      * Gets the file content of this attachment as stream.
      *
      * @return {@link ByteArrayInputStream} with file content of this attachment.
      */
     @JsonIgnore
     public InputStream getInputStream() {
-        return new ByteArrayInputStream(this.content);
+        return super.getInputStream();
     }
 
-    /**
-     * Gets the file content of this attachment.
-     *
-     * @return the byte array with file content of this attachment.
-     */
-    public byte[] getContent() {
-        return this.content;
-    }
-
-    /**
-     * Gets MIME type of this attachment.
-     *
-     * @return string with MIME type of this attachment.
-     */
-    public String getMimeType() {
-        return this.mimeType;
-    }
 
     public String toString() {
         return "EmailAttachment [name=" + this.fileName + ", content size=" + this.content.length + ", mimeType=" + this.mimeType + ']';

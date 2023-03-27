@@ -12,6 +12,8 @@ public class EmailConfigParam {
 
     public static final String OUTBOUND_EMAIL_SECRET = "outbound.email.secret";
 
+    public static final String OUTBOUND_EMAIL_CHANNEL = "outbound.email.channel";
+
     public static final String INBOUND_EMAIL_SERVER = "inbound.email.server";
 
     public static final String INBOUND_EMAIL_PROTOCOL = "inbound.email.protocol";
@@ -34,7 +36,7 @@ public class EmailConfigParam {
 
     public static final String SUBJECT_TPL = "%s.subject";
 
-    public static final String BODY_TEMPLATE_TPL = "%s.body.tpl";
+    public static final String TEMPLATE_NAME_TPL = "%s.tpl";
 
     public static final String CHARSET_TPL = "%s.charset";
 
