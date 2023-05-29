@@ -1010,6 +1010,9 @@ public class EmailMessage {
      * @return the list of {@link EmailBodyPart} objects representing body parts of this email message.
      */
     public List<EmailBodyPart> getBodyParts() {
+        if (bodyParts == null) {
+            bodyParts = new ArrayList<>();
+        }
         return bodyParts;
     }
 

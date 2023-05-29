@@ -507,6 +507,7 @@ public class ImapPop3EmailService implements InboundEmailService {
         } else if (protocol == InboundEmailProtocol.POP3S || protocol == InboundEmailProtocol.IMAPS) {
             props.put(String.format("mail.%s.auth", protocol.getProtocolName()), "true");
             props.put(String.format("mail.%s.ssl.enable", protocol.getProtocolName()), "true");
+            props.put(String.format("mail.%s.ssl.protocols", protocol.getProtocolName()), "TLSv1.2");
             props.put(String.format("mail.%s.socketFactory.class", protocol.getProtocolName()), "javax.net.ssl.SSLSocketFactory");
             props.put(String.format("mail.%s.socketFactory.fallback", protocol.getProtocolName()), "false");
             props.put(String.format("mail.%s.socketFactory.port", protocol.getProtocolName()), port);
