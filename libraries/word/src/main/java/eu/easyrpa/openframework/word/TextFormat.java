@@ -2,8 +2,7 @@ package eu.easyrpa.openframework.word;
 
 import eu.easyrpa.openframework.word.constants.Colors;
 import eu.easyrpa.openframework.word.constants.FontFamily;
-import eu.easyrpa.openframework.word.constants.TextAlignment;
-import eu.easyrpa.openframework.word.util.Docx4jUtils;
+import eu.easyrpa.openframework.word.utils.Docx4jUtils;
 import org.docx4j.wml.*;
 
 import java.awt.Color;
@@ -12,7 +11,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static eu.easyrpa.openframework.word.util.Docx4jUtils.*;
+import static eu.easyrpa.openframework.word.utils.Docx4jUtils.*;
 
 //TODO update javadoc
 
@@ -187,10 +186,10 @@ public class TextFormat {
             if (matcher.find()) {
                 String coloredText = textValue.substring(0, matcher.start() - 1);
                 R coloredRun = createRun(coloredText, parent);
-                setWmlRColor(coloredRun, color);
+                Docx4jUtils.setWmlRColor(coloredRun, color);
                 String endTextRun = textValue.substring(matcher.start());
                 R endRun = createRun(endTextRun, parent);
-                R whitespaceRun = createWhitespaceRun(parent);
+                R whitespaceRun = Docx4jUtils.createWhitespaceRun(parent);
                 int indexOfColorRun = parent.getContent().indexOf(relatedText.getTextRuns().get(relatedText.getExpandIndex()));
                 parent.getContent().set(indexOfColorRun, coloredRun);
                 parent.getContent().add(indexOfColorRun + 1, whitespaceRun);
@@ -209,10 +208,10 @@ public class TextFormat {
         if (matcher.find()) {
             String coloredText = mainRunText.substring(0, matcher.start() - 1); // middle run
             R coloredRun = createRun(coloredText, parent);
-            setWmlRColor(coloredRun, color);
+            Docx4jUtils.setWmlRColor(coloredRun, color);
             String endTextRun = mainRunText.substring(matcher.start());  // last run
             R endRun = createRun(endTextRun, parent);
-            R whitespaceRun = createWhitespaceRun(parent);
+            R whitespaceRun = Docx4jUtils.createWhitespaceRun(parent);
             int indexOfColorRun = parent.getContent().indexOf(relatedText.getTextRuns().get(relatedText.getExpandIndex()));
             parent.getContent().set(indexOfColorRun, startRun);
             parent.getContent().add(indexOfColorRun + 1, whitespaceRun);
@@ -257,7 +256,6 @@ public class TextFormat {
      *
      * @param hAlign the alignment to set.
      * @return this cell style object to allow joining of methods calls into chain.
-     * @see TextAlignment
      */
     public TextFormat align(JcEnumeration hAlign) {
         if(hAlign != null) {

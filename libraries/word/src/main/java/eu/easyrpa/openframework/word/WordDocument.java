@@ -1,9 +1,8 @@
 package eu.easyrpa.openframework.word;
 
 import eu.easyrpa.openframework.core.utils.FilePathUtils;
-import eu.easyrpa.openframework.word.util.Docx4jUtils;
+import eu.easyrpa.openframework.word.utils.Docx4jUtils;
 import org.docx4j.Docx4J;
-import org.docx4j.TraversalUtil;
 import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.dml.Graphic;
 import org.docx4j.dml.wordprocessingDrawing.Anchor;
@@ -184,18 +183,18 @@ public class WordDocument {
             ArrayListWml<?> listWml = (ArrayListWml<?>) ((P) o).getContent();
             List<R> runList = new ArrayList<>();
             for (Object nestedObject : listWml) {
-                if(nestedObject instanceof R) {
+                if (nestedObject instanceof R) {
                     R textRun = (R) nestedObject;
                     if (textRun.getContent().isEmpty()) {
                         continue;
                     }
-                    if(((JAXBElement<?>) ((ArrayListWml<?>) textRun.getContent())
+                    if (((JAXBElement<?>) ((ArrayListWml<?>) textRun.getContent())
                             .get(pictureIndexValidation(textRun))).getValue() instanceof Drawing) {
                         Drawing pic = (Drawing) ((JAXBElement<?>) ((ArrayListWml<?>) textRun.getContent())
                                 .get(pictureIndexValidation(textRun))).getValue();
                         ArrayListWml<?> drawingContent = (ArrayListWml<?>) pic.getAnchorOrInline();
                         Picture picture = new Picture(textRun);
-                        if(drawingContent.get(0) instanceof Anchor) {
+                        if (drawingContent.get(0) instanceof Anchor) {
                             Anchor anchor = (Anchor) drawingContent.get(0);
                             Graphic anchGraphic = anchor.getGraphic();
                             picture.setBinaryImage(BinaryPartAbstractImage.getImage(opcPackage, anchGraphic));
@@ -279,8 +278,8 @@ public class WordDocument {
     public TextRange findText(String regexp) {
         List<Object> elements = read();
         for (Object element : elements) {
-            if(element instanceof TextRange) {
-                if(((TextRange) element).text().matches(regexp)) {
+            if (element instanceof TextRange) {
+                if (((TextRange) element).text().matches(regexp)) {
                     return (TextRange) element;
                 }
             } else break;

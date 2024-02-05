@@ -1,20 +1,19 @@
 package eu.easyrpa.openframework.word;
 
-import eu.easyrpa.openframework.word.util.Docx4jUtils;
+import eu.easyrpa.openframework.word.utils.Docx4jUtils;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
-import org.docx4j.wml.*;
+import org.docx4j.wml.P;
+import org.docx4j.wml.R;
+import org.docx4j.wml.Text;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class TextRange {
 
@@ -224,11 +223,11 @@ public class TextRange {
     }
 
     public void replaceWith(String text) {
-        if(textRuns.get(0).getParent() instanceof P) {
+        if (textRuns.get(0).getParent() instanceof P) {
             P parent = (P) textRuns.get(0).getParent();
             R run = Docx4jUtils.createRun(text, parent);
             int index = parent.getContent().indexOf(textRuns.get(expandIndex));
-            if(index != -1) {
+            if (index != -1) {
                 parent.getContent().set(index, run);
             }
             textRuns.set(expandIndex, run);
