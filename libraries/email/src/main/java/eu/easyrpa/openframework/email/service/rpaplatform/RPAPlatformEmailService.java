@@ -10,26 +10,24 @@ import eu.easyrpa.openframework.email.service.OutboundEmailService;
  */
 public class RPAPlatformEmailService implements OutboundEmailService {
 
-    private String channel;
+    private final RPAServicesAccessor rpaServices;
 
-    private RPAServicesAccessor rpaServices;
-
-    public RPAPlatformEmailService(String channel, RPAServicesAccessor rpaServices) {
-        this.channel = channel;
+    public RPAPlatformEmailService(RPAServicesAccessor rpaServices) {
         this.rpaServices = rpaServices;
-    }
-
-    public String getChannel() {
-        return channel;
     }
 
     @Override
     public void send(EmailMessage message) {
-        if (message.getTemplate() != null) {
-            rpaServices.sendMessage(channel, message.getTemplate(), message.getBodyProperties(), message.getAttachments());
-        } else {
-            String content = message.hasHtml() ? message.getHtml() : message.getText();
-            rpaServices.sendMessage(channel, message.getSubject(), content, message.getAttachments());
+        if (message.getChannel() != null) {
+            if (message.getTemplate() != null) {
+                rpaServices.sendMessage(
+                        message.getChannel(), message.getTemplate(),
+                        message.getBodyProperties(), message.getAttachments()
+                );
+            } else {
+                String content = message.hasHtml() ? message.getHtml() : message.getText();
+                rpaServices.sendMessage(message.getChannel(), message.getSubject(), content, message.getAttachments());
+            }
         }
     }
 }

@@ -838,7 +838,9 @@ public class EmailClient {
      */
     private void initService() {
         if (this.service == null) {
-            this.service = EmailServiceFactory.getInstance().getInboundService(getServer(), getProtocol(), getSecret());
+            this.service = EmailServiceFactory.getInstance().getInboundService(
+                    rpaServices, getServer(), getProtocol(), getSecret()
+            );
         }
     }
 }

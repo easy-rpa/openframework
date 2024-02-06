@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.easyrpa.openframework.core.sevices.RPAServicesAccessor;
 import eu.easyrpa.openframework.email.constants.EmailConfigParam;
 import eu.easyrpa.openframework.email.exception.EmailMessagingException;
 import eu.easyrpa.openframework.email.message.EmailAddress;
@@ -17,9 +18,10 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -129,6 +131,12 @@ public class EmailMessage {
      * Email address displayed in the filed <code>From:</code> of this email message.
      */
     protected EmailAddress from;
+
+    /**
+     * Name of channel configured and managed within RPA platform. Channels define recipients of email message
+     * and way of sending.
+     */
+    private String channel;
 
     /**
      * List of email addresses who are recipients of this email message.
@@ -370,14 +378,14 @@ public class EmailMessage {
     /**
      * Gets the date of this email message.
      * <p>
-     * It provides the same date that is {@link #getDate()} but as {@link ZonedDateTime} value.
+     * It provides the same date that is {@link #getDate()} but as {@link LocalDateTime} value.
      *
-     * @return {@link ZonedDateTime} object representing received or sent date of this email message.
+     * @return {@link LocalDateTime} object representing received or sent date of this email message.
      * @throws EmailMessagingException in case of some errors.
      */
     @JsonIgnore
-    public ZonedDateTime getDateTime() {
-        return getDate() != null ? ZonedDateTime.ofInstant(getDate().toInstant(), ZoneId.systemDefault()) : null;
+    public LocalDateTime getDateTime() {
+        return getDate() != null ? LocalDateTime.ofInstant(getDate().toInstant(), ZoneId.systemDefault()) : null;
     }
 
 
@@ -570,6 +578,56 @@ public class EmailMessage {
      */
     public EmailMessage from(String fromAddress) {
         setFrom(fromAddress);
+        return this;
+    }
+
+    /**
+     * Gets name of channel that defines recipients of email message and way of sending.
+     * <p>
+     * The channel is expected to be configured and managed within RPA platform. The name is used as
+     * reference to it.
+     * <p>
+     * If the name of channel is not specified explicitly then it will be looked up in configuration parameters of
+     * the RPA platform under the key that depends on the actual {@link #typeName} value:
+     * <pre>
+     * {@code <typeName>.channel}
+     * </pre>
+     * In case of default <code>typeName</code> the key of configuration parameter is <b>email.channel</b>.
+     * <p>
+     * The email will be sent using RPA platform capabilities <b>only when this channel name is specified</b>.
+     *
+     * @return string with name of channel.
+     */
+    public String getChannel() {
+        if (channel == null) {
+            channel = getConfigParam(EmailConfigParam.CHANNEL_TPL);
+        }
+        return channel;
+    }
+
+    /**
+     * Sets explicitly name of channel that defines recipients of email message and way of sending.
+     * <p>
+     * The channel is expected to be configured and managed within RPA platform. The name is used as
+     * reference to it.
+     *
+     * @param channel string with name of channel to set.
+     */
+    public void setChannel(String channel) {
+        this.channel = channel;
+    }
+
+    /**
+     * Sets explicitly name of channel that defines recipients of email message and way of sending.
+     * <p>
+     * The channel is expected to be configured and managed within RPA platform. The name is used as
+     * reference to it.
+     *
+     * @param channel string with name of channel to set.
+     * @return this object to allow joining of methods calls into chain.
+     */
+    public EmailMessage channel(String channel) {
+        setChannel(channel);
         return this;
     }
 
@@ -1600,6 +1658,31 @@ public class EmailMessage {
     }
 
     /**
+     * Internal implementation of before send method.
+     * <p>
+     * This method is used to perform some preparation steps where access to RPA platform services is necessary.
+     *
+     * @param rpaServices instance of RPA services accessor that allows to access RPA platform services like secret vault or
+     *                    templates management
+     */
+    /*package*/ void beforeSend(RPAServicesAccessor rpaServices) {
+        if (rpaServices != null && !hasHtml() && !hasText() && getTemplate() != null) {
+            try {
+                byte[] content = rpaServices.evaluateTemplate(getTemplate(), getBodyProperties());
+                String charset = getCharset();
+                charset = charset == null || charset.trim().isEmpty() ? StandardCharsets.UTF_8.name() : charset;
+                html(new String(content, charset));
+            } catch (Exception e) {
+                throw new EmailMessagingException(String.format(
+                        "Compiling of email message content based on template '%s' has failed.",
+                        getTemplate()
+                ), e);
+            }
+        }
+        beforeSend();
+    }
+
+    /**
      * Gets value of configuration parameter specified in the RPA platform by the key that depends on the actual
      * value of {@link #typeName}.
      *
@@ -1617,7 +1700,7 @@ public class EmailMessage {
         result = emailSender.getConfigParam(String.format(template, typeName));
 
         if (result == null && !DEFAULT_EMAIL_TYPE_NAME.equals(typeName)) {
-            emailSender.getConfigParam(String.format(template, DEFAULT_EMAIL_TYPE_NAME));
+            result = emailSender.getConfigParam(String.format(template, DEFAULT_EMAIL_TYPE_NAME));
         }
 
         return result;

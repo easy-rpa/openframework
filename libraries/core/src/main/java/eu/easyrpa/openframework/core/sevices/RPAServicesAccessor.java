@@ -55,4 +55,13 @@ public interface RPAServicesAccessor {
      * @param files       list of {@link FileData} representing files that should be sent together with the message.
      */
     void sendMessage(String channelName, String subject, String content, List<? extends FileData> files);
+
+    /**
+     * Evaluates template managed within RPA platform.
+     *
+     * @param templateName string with name of template that should be evaluated.
+     * @param params       map with parameters that are used within template and necessary to properly compile it.
+     * @return the array of byte for processed template.
+     */
+    byte[] evaluateTemplate(String templateName, Map<String, ?> params);
 }

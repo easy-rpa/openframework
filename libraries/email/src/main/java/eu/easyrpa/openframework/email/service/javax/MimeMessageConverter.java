@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.mail.*;
 import javax.mail.internet.*;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -287,7 +288,7 @@ public class MimeMessageConverter extends MessageConverter<Message> {
         EmailAddress from = subMessage.getFrom() != null ? subMessage.getFrom() : subMessage.getSender();
         header.add(String.format("From: %s", isHtml ? from.toHtml() : from.toString()));
 
-        ZonedDateTime date = subMessage.getDateTime();
+        LocalDateTime date = subMessage.getDateTime();
         if (date != null) {
             header.add(String.format("Date: %s", date.format(DateTimeFormatter.ofPattern(EmailMessage.USED_DATE_TME_FORMAT_PATTERN))));
         }

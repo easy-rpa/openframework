@@ -8,7 +8,7 @@ public class LogicalCondition implements SearchCondition {
     private final LogicalType logicalType;
 
     public enum LogicalType {
-        AND, OR, NOT
+        AND, OR
     }
 
     LogicalCondition(SearchQuery query, LogicalType logicalType) {
