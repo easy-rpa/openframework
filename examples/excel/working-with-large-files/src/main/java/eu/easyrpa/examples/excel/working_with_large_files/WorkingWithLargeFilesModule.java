@@ -1,11 +1,10 @@
 package eu.easyrpa.examples.excel.working_with_large_files;
 
+import eu.easyrpa.examples.excel.working_with_large_files.tasks.EditLargeFile;
+import eu.easyrpa.examples.excel.working_with_large_files.tasks.ReadLargeFile;
 import eu.ibagroup.easyrpa.engine.annotation.ApModuleEntry;
 import eu.ibagroup.easyrpa.engine.apflow.ApModule;
 import eu.ibagroup.easyrpa.engine.apflow.TaskOutput;
-import eu.ibagroup.easyrpa.engine.boot.ApModuleRunner;
-import eu.easyrpa.examples.excel.working_with_large_files.tasks.EditLargeFile;
-import eu.easyrpa.examples.excel.working_with_large_files.tasks.ReadLargeFile;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -16,9 +15,5 @@ public class WorkingWithLargeFilesModule extends ApModule {
         return execute(getInput(), ReadLargeFile.class)
                 .thenCompose(execute(EditLargeFile.class))
                 .get();
-    }
-
-    public static void main(String[] args) {
-        ApModuleRunner.localLaunch(WorkingWithLargeFilesModule.class);
     }
 }

@@ -22,7 +22,18 @@
     <dependencies>
         <dependency>
             <groupId>eu.ibagroup</groupId>
+            <artifactId>easy-rpa-engine-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>eu.ibagroup</groupId>
             <artifactId>easy-rpa-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>eu.ibagroup</groupId>
+            <artifactId>easy-rpa-engine</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>eu.easyrpa</groupId>
@@ -32,7 +43,7 @@
         <dependency>
             <groupId>eu.easyrpa</groupId>
             <artifactId>easy-rpa-openframework-excel</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
         </dependency>
     </dependencies>
 </project>
