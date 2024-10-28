@@ -2,7 +2,13 @@ package eu.easyrpa.openframework.excel;
 
 import eu.easyrpa.openframework.excel.internal.poi.POIElementsCache;
 import eu.easyrpa.openframework.excel.style.ExcelCellStyle;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.BuiltinFormats;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.CellValue;
+import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 import java.util.Date;
@@ -195,7 +201,7 @@ public class Cell {
             poiCell.setCellValue((Boolean) value);
 
         } else if (value instanceof String && value.toString().startsWith("=")) {
-            poiCell.setCellFormula((String) value);
+            poiCell.setCellFormula(((String) value).substring(1));
 
         } else {
             poiCell.setCellValue(value.toString());
