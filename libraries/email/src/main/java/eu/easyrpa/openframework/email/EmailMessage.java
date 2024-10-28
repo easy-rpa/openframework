@@ -11,7 +11,6 @@ import eu.easyrpa.openframework.email.exception.EmailMessagingException;
 import eu.easyrpa.openframework.email.message.EmailAddress;
 import eu.easyrpa.openframework.email.message.EmailAttachment;
 import eu.easyrpa.openframework.email.message.EmailBodyPart;
-import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 
 import javax.inject.Inject;
@@ -22,7 +21,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -224,6 +230,10 @@ public class EmailMessage {
      */
     @JsonIgnore
     protected EmailSender emailSender;
+
+    private final Pattern htmlTagExtractor = Pattern.compile("<html([^>]*)>([\\w\\W]*)</html>", Pattern.CASE_INSENSITIVE);
+    private final Pattern headTagExtractor = Pattern.compile("<head([^>]*)>([\\w\\W]*)</head>", Pattern.CASE_INSENSITIVE);
+    private final Pattern bodyTagExtractor = Pattern.compile("<body([^>]*)>([\\w\\W]*)</body>", Pattern.CASE_INSENSITIVE);
 
     /**
      * Constructs a new instance of EmailMessage with default type name.
@@ -1185,7 +1195,7 @@ public class EmailMessage {
      * @see EmailBodyPart#isHtml()
      */
     public boolean hasHtml() {
-        return getBodyParts().stream().anyMatch(EmailBodyPart::isHtml);
+        return getBodyParts().stream().anyMatch(part -> part.isHtml() || part.isRtf());
     }
 
     /**
@@ -1195,7 +1205,7 @@ public class EmailMessage {
      * @see EmailBodyPart#isText()
      */
     public boolean hasText() {
-        return getBodyParts().stream().anyMatch(EmailBodyPart::isText);
+        return getBodyParts().stream().anyMatch(part -> part.isText() || part.isRtf());
     }
 
     /**
@@ -1211,7 +1221,7 @@ public class EmailMessage {
         if (text == null) {
             if (hasText()) {
                 text = getBodyParts().stream()
-                        .map(part -> part.isText() ? part.getContent(bodyProperties) : null)
+                        .map(part -> part.isText() || part.isRtf() ? part.getContent(bodyProperties) : null)
                         .filter(Objects::nonNull)
                         .collect(Collectors.joining("\n")).trim();
             } else if (hasHtml()) {
@@ -1234,7 +1244,7 @@ public class EmailMessage {
             List<String> parts = new ArrayList<>();
             if (hasHtml()) {
                 parts = getBodyParts().stream()
-                        .map(part -> part.isHtml() ? part.getContent(bodyProperties) : null)
+                        .map(part -> part.isHtml() || part.isRtf() ? part.getContent(bodyProperties) : null)
                         .filter(Objects::nonNull).collect(Collectors.toList());
             } else if (hasText()) {
                 parts = getBodyParts().stream()
@@ -1242,31 +1252,53 @@ public class EmailMessage {
                         .filter(Objects::nonNull).collect(Collectors.toList());
             }
 
-            String head = parts.stream().map(p -> {
-                if (p.contains("<head>")) {
-                    return StringUtils.substringBetween(p, "<head>", "</head>");
-                }
-                if (p.contains("<HEAD>")) {
-                    return StringUtils.substringBetween(p, "<HEAD>", "</HEAD>");
-                }
-                return null;
-            }).filter(Objects::nonNull).collect(Collectors.joining("\n"));
-            String body = parts.stream().map(p -> {
-                if (p.contains("<body>")) {
-                    return StringUtils.substringBetween(p, "<body>", "</body>");
-                }
-                if (p.contains("<BODY>")) {
-                    return StringUtils.substringBetween(p, "<BODY>", "</BODY>");
-                }
-                return p.startsWith("<") ? p : String.format("<div>%s</div>", p);
-            }).collect(Collectors.joining("\n"));
+            List<String> htmlAttrs = new ArrayList<>();
+            List<String> headAttrs = new ArrayList<>();
+            List<String> heads = new ArrayList<>();
+            List<String> bodyAttrs = new ArrayList<>();
+            List<String> bodies = new ArrayList<>();
 
-            if (head.trim().length() > 0) {
-                html = String.format("<html><head>\n%s\n</head><body>\n%s\n</body></html>", head, body);
-            } else if (body.trim().length() > 0) {
-                html = String.format("<html><body>\n%s\n</body></html>", body);
+            for (String part : parts) {
+                Matcher m = htmlTagExtractor.matcher(part);
+                if (m.find()) {
+                    if (!m.group(1).isEmpty()) {
+                        htmlAttrs.add(m.group(1));
+                    }
+                }
+                m = headTagExtractor.matcher(part);
+                if (m.find()) {
+                    if (!m.group(1).isEmpty()) {
+                        headAttrs.add(m.group(1));
+                    }
+                    if (!m.group(2).isEmpty()) {
+                        heads.add(m.group(2));
+                    }
+                }
+                m = bodyTagExtractor.matcher(part);
+                if (m.find()) {
+                    if (!m.group(1).isEmpty()) {
+                        bodyAttrs.add(m.group(1));
+                    }
+                    if (!m.group(2).isEmpty()) {
+                        bodies.add(m.group(2));
+                    }
+                }
+            }
+
+            if (heads.size() > 0) {
+                html = String.format("<html%s><head%s>%s</head><body%s>%s</body></html>",
+                        String.join(" ", htmlAttrs),
+                        String.join(" ", headAttrs),
+                        String.join("\n", heads),
+                        String.join(" ", bodyAttrs),
+                        String.join("\n", bodies)
+                );
             } else {
-                html = "";
+                html = String.format("<html%s><body%s>%s</body></html>",
+                        String.join(" ", htmlAttrs),
+                        String.join(" ", bodyAttrs),
+                        String.join("\n", bodies)
+                );
             }
         }
         return html;

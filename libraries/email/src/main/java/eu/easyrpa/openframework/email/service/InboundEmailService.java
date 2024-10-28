@@ -31,6 +31,16 @@ public interface InboundEmailService {
      */
     EmailMessage getMessage(String messageId);
 
+
+    /**
+     * Searches email message in the given mailbox folder with given message ID.
+     *
+     * @param messageId the unique identifier of email message that is necessary to find.
+     * @param folderName the name of mailbox folder where is necessary to find a message.
+     * @return {@link EmailMessage} object representing found email message or <code>null</code> if nothing is found.
+     */
+    EmailMessage getMessage(String messageId, String folderName);
+
     /**
      * Gets all email messages contained in the mailbox folder with given name that satisfy to specific condition.
      *
@@ -55,6 +65,15 @@ public interface InboundEmailService {
      * messages as result.
      */
     CompletableFuture<List<EmailMessage>> waitMessages(String folderName, SearchQuery searchQuery, Duration timeout, Duration checkInterval);
+
+    /**
+     * Add an email message to specified folder.
+     *
+     * @param message      the email message that should be added.
+     * @param targetFolder the name of mailbox folder where the email message should be added.
+     * @return {@link EmailMessage} object representing added message.
+     */
+    EmailMessage addMessage(EmailMessage message, String targetFolder);
 
     /**
      * Makes a copy of given email message in the specified folder.

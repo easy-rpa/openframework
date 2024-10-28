@@ -385,6 +385,19 @@ public class EmailClient {
     }
 
     /**
+     * Searches email message in the given mailbox folder with given message ID.
+     *
+     * @param messageId  the unique identifier of email message that is necessary to find.
+     * @param folderName the name of mailbox folder where is necessary to find a message.
+     * @return {@link EmailMessage} object representing found email message or <code>null</code> if nothing is found.
+     * @throws EmailMessagingException in case of some errors.
+     */
+    public EmailMessage getMessage(String messageId, String folderName) {
+        initService();
+        return this.service.getMessage(messageId, folderName);
+    }
+
+    /**
      * Gets all email messages contained in the default mailbox folder.
      * <p>
      * The name of default mailbox folder is taken using {@link #getDefaultFolder()}.
@@ -677,6 +690,20 @@ public class EmailClient {
         initService();
         return this.service.waitMessages(folderName, searchQuery, timeout, checkInterval);
     }
+
+    /**
+     * Add an email message to specified folder.
+     *
+     * @param message      the email message that should be added.
+     * @param targetFolder the name of mailbox folder where the email message should be added.
+     * @return {@link EmailMessage} object representing added message.
+     * @throws EmailMessagingException in case of some errors.
+     */
+    public EmailMessage addMessage(EmailMessage message, String targetFolder) {
+        initService();
+        return this.service.addMessage(message, targetFolder);
+    }
+
 
     /**
      * Makes a copy of given email message in the specified folder.

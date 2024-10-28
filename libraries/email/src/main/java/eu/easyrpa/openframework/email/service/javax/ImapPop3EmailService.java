@@ -11,10 +11,26 @@ import eu.easyrpa.openframework.email.service.InboundEmailProtocol;
 import eu.easyrpa.openframework.email.service.InboundEmailService;
 import eu.easyrpa.openframework.email.service.MessageConverter;
 
-import javax.mail.*;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.NoSuchProviderException;
+import javax.mail.Session;
+import javax.mail.Store;
+import javax.mail.UIDFolder;
 import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -36,13 +52,13 @@ public class ImapPop3EmailService implements InboundEmailService {
 
     private final String password;
 
-    private Store store;
+    private final Store store;
 
-    private Session session;
+    private final Session session;
 
     private MessageConverter<Message> messageConverter;
 
-    private SearchTermConverter searchTermConverter;
+    private final SearchTermConverter searchTermConverter;
 
     private int batchSize = DEFAULT_BATCH_SIZE;
 
@@ -144,6 +160,23 @@ public class ImapPop3EmailService implements InboundEmailService {
     }
 
     @Override
+    public EmailMessage getMessage(String messageId, String folderName) {
+        long uid = Long.parseLong(messageId);
+        return openFolderAndPerform(folderName, Folder.READ_ONLY, folder -> {
+            try {
+                UIDFolder uidFolder = (UIDFolder) folder;
+                Message message = uidFolder.getMessageByUID(uid);
+                if (message != null) {
+                    return messageConverter.convertToEmailMessage(message);
+                }
+                return null;
+            } catch (MessagingException e) {
+                throw new EmailMessagingException(e);
+            }
+        });
+    }
+
+    @Override
     public List<EmailMessage> fetchMessages(String folderName, SearchQuery searchQuery) {
         Function<Folder, List<EmailMessage>> searchAction = folder -> {
             try {
@@ -210,6 +243,22 @@ public class ImapPop3EmailService implements InboundEmailService {
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Override
+    public EmailMessage addMessage(EmailMessage message, String targetFolder) {
+        return openFolderAndPerform(targetFolder, Folder.READ_WRITE, folder -> {
+            try {
+                IMAPFolder imapFolder = (IMAPFolder) folder;
+                Message[] added = imapFolder.addMessages(new Message[]{messageConverter.convertToNativeMessage(message)});
+                if (added.length == 1) {
+                    return messageConverter.convertToEmailMessage(added[0]);
+                }
+                return null;
+            } catch (MessagingException e) {
+                throw new EmailMessagingException(e);
             }
         });
     }

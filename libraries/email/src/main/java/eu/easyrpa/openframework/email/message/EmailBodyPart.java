@@ -3,8 +3,9 @@ package eu.easyrpa.openframework.email.message;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import eu.easyrpa.openframework.email.message.templates.FreeMarkerTemplate;
 import eu.easyrpa.openframework.email.exception.EmailMessagingException;
+import eu.easyrpa.openframework.email.message.rtf.RtfConverter;
+import eu.easyrpa.openframework.email.message.templates.FreeMarkerTemplate;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -28,6 +29,11 @@ public class EmailBodyPart {
      * The MIME type of email body part in HTML format.
      */
     public static final String CONTENT_TYPE_TEXT_HTML = "text/html";
+
+    /**
+     * The MIME type of email body part in RTF format.
+     */
+    public static final String CONTENT_TYPE_TEXT_RTF = "text/rtf";
 
     /**
      * The MIME type of this email body part content.
@@ -91,7 +97,11 @@ public class EmailBodyPart {
      */
     public String getContent(Map<String, Object> properties) {
         try {
-            return new FreeMarkerTemplate(content, properties).compile();
+            String contentToCompile = content;
+            if (contentType.equals(CONTENT_TYPE_TEXT_RTF)) {
+                contentToCompile = new RtfConverter().convertToText(content);
+            }
+            return new FreeMarkerTemplate(contentToCompile, properties).compile();
         } catch (Exception e) {
             throw new EmailMessagingException("Email message body compilation has failed.", e);
         }
@@ -137,6 +147,17 @@ public class EmailBodyPart {
     @JsonIgnore
     public boolean isHtml() {
         return CONTENT_TYPE_TEXT_HTML.equals(contentType);
+    }
+
+    /**
+     * Checks whether the content of this email body part has RTF format.
+     *
+     * @return <code>true</code> if the content for this email body part has RTF format and <code>false</code>
+     * otherwise.
+     */
+    @JsonIgnore
+    public boolean isRtf() {
+        return CONTENT_TYPE_TEXT_RTF.equals(contentType);
     }
 
     @Override

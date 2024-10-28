@@ -7,16 +7,32 @@ import eu.easyrpa.openframework.email.exception.EmailMessagingException;
 import eu.easyrpa.openframework.email.message.EmailAddress;
 import eu.easyrpa.openframework.email.message.EmailAttachment;
 import eu.easyrpa.openframework.email.message.EmailBodyPart;
+import net.freeutils.tnef.TNEFInputStream;
+import net.freeutils.tnef.TNEFUtils;
+import net.freeutils.tnef.mime.TNEFMime;
 
-import javax.mail.*;
+import javax.mail.Address;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Header;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.UIDFolder;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.*;
-import java.util.function.Supplier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Special implementation of {@link EmailMessage} that wraps related {@link MimeMessage} and provides read-only
@@ -24,362 +40,495 @@ import java.util.function.Supplier;
  */
 public class MimeMessageWrapper extends EmailMessage {
 
-    private static final String CHARSET_KEY = "charset=";
-    private static final String MIME_MULTIPART = "multipart";
-    private static final String MIME_TEXT_PLAIN = "text/plain";
-    private static final String MIME_TEXT_HTML = "text/html";
-
     @JsonIgnore
     private MimeMessage mimeMessage;
+    @JsonIgnore
+    private MimeMessage tnefMimeMessage;
 
-    public MimeMessageWrapper(MimeMessage mimeMessage) {
-        this.mimeMessage = mimeMessage;
-    }
+    public MimeMessageWrapper(MimeMessage message) {
+        try {
+            Folder folder = message.getFolder();
+            if (folder instanceof UIDFolder) {
+                id = String.valueOf(((UIDFolder) folder).getUID(message));
+                parentFolder = folder.getFullName();
+            }
+            this.mimeMessage = new MimeMessage(message);
 
-    @Override
-    public String getId() {
-        if (id == null) {
-            id = openFolderAndPerform(Folder.READ_ONLY, () -> {
-                try {
-                    Folder folder = mimeMessage.getFolder();
-                    return folder instanceof UIDFolder ? String.valueOf(((UIDFolder) folder).getUID(mimeMessage)) : null;
-                } catch (MessagingException e) {
-                    throw new EmailMessagingException(e);
-                }
-            });
+            List<EmailAttachment> attachments = MimeMessageConverter.extractAttachments(this.mimeMessage);
+            if (attachments.size() == 1 && TNEFUtils.isTNEFMimeType(attachments.get(0).getMimeType())) {
+                //TODO implement converter for "IPM.Microsoft Mail.Note"
+                this.mimeMessage = TNEFMime.convert(message.getSession(),
+                        new TNEFInputStream(attachments.get(0).getInputStream()));
+            }
+        } catch (Exception e) {
+            throw new EmailMessagingException(e);
         }
-        return id;
     }
 
     @Override
     public Date getDate() {
         if (date == null) {
-            date = openFolderAndPerform(Folder.READ_ONLY, () -> {
-                try {
-                    Date messageDate = mimeMessage.getReceivedDate();
-                    if (messageDate == null) {
-                        messageDate = mimeMessage.getSentDate();
-                    }
-                    return messageDate;
-                } catch (MessagingException e) {
-                    throw new EmailMessagingException(e);
+            try {
+                date = mimeMessage.getReceivedDate();
+                if (date == null) {
+                    date = mimeMessage.getSentDate();
                 }
-            });
+            } catch (MessagingException e) {
+                throw new EmailMessagingException(e);
+            }
         }
         return date;
     }
 
     @Override
-    public String getParentFolder() {
-        if (parentFolder == null) {
-            Folder folder = mimeMessage.getFolder();
-            if (folder != null) {
-                parentFolder = folder.getFullName();
-            }
-        }
-        return parentFolder;
-    }
-
-    @Override
     public Map<String, String> getHeaders() {
         if (headers == null) {
-            headers = openFolderAndPerform(Folder.READ_ONLY, () -> {
-                try {
-                    Map<String, String> headers = new HashMap<>();
-                    Enumeration<Header> xHeaders = mimeMessage.getAllHeaders();
-                    while (xHeaders.hasMoreElements()) {
-                        Header header = xHeaders.nextElement();
-                        headers.put(header.getName(), header.getValue());
-                    }
-                    return headers;
-                } catch (MessagingException e) {
-                    throw new EmailMessagingException(e);
+            try {
+                headers = new HashMap<>();
+                Enumeration<Header> xHeaders = mimeMessage.getAllHeaders();
+                while (xHeaders.hasMoreElements()) {
+                    Header header = xHeaders.nextElement();
+                    headers.put(header.getName(), header.getValue());
                 }
-            });
+            } catch (MessagingException e) {
+                throw new EmailMessagingException(e);
+            }
         }
         return headers;
     }
 
     @Override
     public void setHeaders(Map<String, String> headers) {
-        throw new UnsupportedOperationException("Headers cannot be changed for retrieved from mailbox message.");
+        try {
+            Enumeration<Header> existingHeaders = mimeMessage.getAllHeaders();
+            while (existingHeaders.hasMoreElements()) {
+                mimeMessage.removeHeader(existingHeaders.nextElement().getName());
+            }
+            for (Map.Entry<String, String> header : headers.entrySet()) {
+                mimeMessage.setHeader(header.getKey(), header.getValue());
+            }
+        } catch (MessagingException e) {
+            throw new EmailMessagingException(e);
+        }
     }
 
     @Override
     public EmailMessage header(String key, String value) {
-        throw new UnsupportedOperationException("Headers cannot be changed for retrieved from mailbox message.");
+        try {
+            mimeMessage.setHeader(key, value);
+        } catch (MessagingException e) {
+            throw new EmailMessagingException(e);
+        }
+        return this;
     }
 
     @Override
     public EmailAddress getSender() {
         if (sender == null) {
-            super.setSender(openFolderAndPerform(Folder.READ_ONLY, () -> {
-                try {
-                    return convertToEmailAddress(mimeMessage.getSender());
-                } catch (MessagingException e) {
-                    throw new EmailMessagingException(e);
-                }
-            }));
+            try {
+                sender = convertToEmailAddress(mimeMessage.getSender());
+            } catch (MessagingException e) {
+                throw new EmailMessagingException(e);
+            }
         }
         return sender;
     }
 
     @Override
     public void setSender(EmailAddress sender) {
-        throw new UnsupportedOperationException("The field 'sender' cannot be changed for retrieved from mailbox message.");
+        try {
+            mimeMessage.setSender(convertToInternetAddress(sender));
+            this.sender = null;
+        } catch (MessagingException e) {
+            throw new EmailMessagingException(e);
+        }
     }
 
     @Override
     public void setSender(String senderAddress) {
-        throw new UnsupportedOperationException("The field 'sender' cannot be changed for retrieved from mailbox message.");
+        try {
+            mimeMessage.setSender(parseInternetAddress(senderAddress));
+            this.sender = null;
+        } catch (MessagingException e) {
+            throw new EmailMessagingException(e);
+        }
     }
 
     @Override
     public String getSenderName() {
-        if (senderName == null) {
-            getSender();
-        }
-        return senderName;
+        return getSender().getPersonal();
     }
 
     @Override
     public void setSenderName(String senderName) {
-        throw new UnsupportedOperationException("The field 'senderName' cannot be changed for retrieved from mailbox message.");
+        setSender(new EmailAddress(getSender().getAddress(), senderName));
     }
 
     @Override
     public EmailAddress getFrom() {
         if (from == null) {
-            from = openFolderAndPerform(Folder.READ_ONLY, () -> {
-                try {
-                    List<EmailAddress> fromAddress = convertToEmailAddresses(mimeMessage.getFrom());
-                    return fromAddress.size() > 0 ? fromAddress.get(0) : null;
-                } catch (MessagingException e) {
-                    throw new EmailMessagingException(e);
-                }
-            });
+            try {
+                List<EmailAddress> fromAddress = convertToEmailAddresses(mimeMessage.getFrom());
+                from = fromAddress.size() > 0 ? fromAddress.get(0) : null;
+            } catch (MessagingException e) {
+                throw new EmailMessagingException(e);
+            }
         }
         return from;
     }
 
     @Override
     public void setFrom(EmailAddress from) {
-        throw new UnsupportedOperationException("The field 'from' cannot be changed for retrieved from mailbox message.");
+        try {
+            mimeMessage.setFrom(convertToInternetAddress(from));
+            this.from = null;
+        } catch (MessagingException e) {
+            throw new EmailMessagingException(e);
+        }
     }
 
     @Override
     public void setFrom(String fromAddress) {
-        throw new UnsupportedOperationException("The field 'from' cannot be changed for retrieved from mailbox message.");
+        try {
+            mimeMessage.setFrom(parseInternetAddress(fromAddress));
+            this.from = null;
+        } catch (MessagingException e) {
+            throw new EmailMessagingException(e);
+        }
     }
 
     @Override
     public List<EmailAddress> getRecipients() {
         if (recipients == null) {
-            recipients = openFolderAndPerform(Folder.READ_ONLY, () -> {
-                try {
-                    return convertToEmailAddresses(mimeMessage.getRecipients(Message.RecipientType.TO));
-                } catch (MessagingException e) {
-                    throw new EmailMessagingException(e);
-                }
-            });
+            try {
+                recipients = convertToEmailAddresses(mimeMessage.getRecipients(Message.RecipientType.TO));
+            } catch (MessagingException e) {
+                throw new EmailMessagingException(e);
+            }
         }
         return recipients;
     }
 
     @Override
     public void setRecipients(List<EmailAddress> recipientsList) {
-        throw new UnsupportedOperationException("The field 'recipients' cannot be changed for retrieved from mailbox message.");
+        try {
+            mimeMessage.setRecipients(Message.RecipientType.TO, recipientsList.stream().map(emailAddress -> {
+                try {
+                    return convertToInternetAddress(emailAddress);
+                } catch (MessagingException e) {
+                    throw new EmailMessagingException(e);
+                }
+            }).toArray(InternetAddress[]::new));
+            this.recipients = null;
+        } catch (MessagingException e) {
+            throw new EmailMessagingException(e);
+        }
     }
 
     @Override
     public EmailMessage recipients(String... recipientsSequence) {
-        throw new UnsupportedOperationException("The field 'recipients' cannot be changed for retrieved from mailbox message.");
+        try {
+            mimeMessage.setRecipients(Message.RecipientType.TO, Arrays.stream(recipientsSequence).map(address -> {
+                try {
+                    return parseInternetAddress(address);
+                } catch (MessagingException e) {
+                    throw new EmailMessagingException(e);
+                }
+            }).toArray(InternetAddress[]::new));
+            this.recipients = null;
+        } catch (MessagingException e) {
+            throw new EmailMessagingException(e);
+        }
+        return this;
     }
 
     @Override
     public List<EmailAddress> getCcRecipients() {
         if (ccRecipients == null) {
-            ccRecipients = openFolderAndPerform(Folder.READ_ONLY, () -> {
-                try {
-                    return convertToEmailAddresses(mimeMessage.getRecipients(Message.RecipientType.CC));
-                } catch (MessagingException e) {
-                    throw new EmailMessagingException(e);
-                }
-            });
+            try {
+                ccRecipients = convertToEmailAddresses(mimeMessage.getRecipients(Message.RecipientType.CC));
+            } catch (MessagingException e) {
+                throw new EmailMessagingException(e);
+            }
         }
         return ccRecipients;
     }
 
     @Override
     public void setCcRecipients(List<EmailAddress> recipientsList) {
-        throw new UnsupportedOperationException("The field 'ccRecipients' cannot be changed for retrieved from mailbox message.");
+        try {
+            mimeMessage.setRecipients(Message.RecipientType.CC, recipientsList.stream().map(emailAddress -> {
+                try {
+                    return convertToInternetAddress(emailAddress);
+                } catch (MessagingException e) {
+                    throw new EmailMessagingException(e);
+                }
+            }).toArray(InternetAddress[]::new));
+            this.ccRecipients = null;
+        } catch (MessagingException e) {
+            throw new EmailMessagingException(e);
+        }
     }
 
     @Override
     public EmailMessage ccRecipients(String... recipientsSequence) {
-        throw new UnsupportedOperationException("The field 'ccRecipients' cannot be changed for retrieved from mailbox message.");
+        try {
+            mimeMessage.setRecipients(Message.RecipientType.CC, Arrays.stream(recipientsSequence).map(address -> {
+                try {
+                    return parseInternetAddress(address);
+                } catch (MessagingException e) {
+                    throw new EmailMessagingException(e);
+                }
+            }).toArray(InternetAddress[]::new));
+            this.ccRecipients = null;
+        } catch (MessagingException e) {
+            throw new EmailMessagingException(e);
+        }
+        return this;
     }
 
     @Override
     public List<EmailAddress> getBccRecipients() {
         if (bccRecipients == null) {
-            bccRecipients = openFolderAndPerform(Folder.READ_ONLY, () -> {
-                try {
-                    return convertToEmailAddresses(mimeMessage.getRecipients(Message.RecipientType.BCC));
-                } catch (MessagingException e) {
-                    throw new EmailMessagingException(e);
-                }
-            });
+            try {
+                bccRecipients = convertToEmailAddresses(mimeMessage.getRecipients(Message.RecipientType.BCC));
+            } catch (MessagingException e) {
+                throw new EmailMessagingException(e);
+            }
         }
         return bccRecipients;
     }
 
     @Override
     public void setBccRecipients(List<EmailAddress> recipientsList) {
-        throw new UnsupportedOperationException("The field 'bccRecipients' cannot be changed for retrieved from mailbox message.");
+        try {
+            mimeMessage.setRecipients(Message.RecipientType.BCC, recipientsList.stream().map(emailAddress -> {
+                try {
+                    return convertToInternetAddress(emailAddress);
+                } catch (MessagingException e) {
+                    throw new EmailMessagingException(e);
+                }
+            }).toArray(InternetAddress[]::new));
+            this.bccRecipients = null;
+        } catch (MessagingException e) {
+            throw new EmailMessagingException(e);
+        }
     }
 
     @Override
     public EmailMessage bccRecipients(String... recipientsSequence) {
-        throw new UnsupportedOperationException("The field 'bccRecipients' cannot be changed for retrieved from mailbox message.");
+        try {
+            mimeMessage.setRecipients(Message.RecipientType.BCC, Arrays.stream(recipientsSequence).map(address -> {
+                try {
+                    return parseInternetAddress(address);
+                } catch (MessagingException e) {
+                    throw new EmailMessagingException(e);
+                }
+            }).toArray(InternetAddress[]::new));
+            this.bccRecipients = null;
+        } catch (MessagingException e) {
+            throw new EmailMessagingException(e);
+        }
+        return this;
     }
 
     @Override
     public List<EmailAddress> getReplyTo() {
         if (replyTo == null) {
-            replyTo = openFolderAndPerform(Folder.READ_ONLY, () -> {
-                try {
-                    return convertToEmailAddresses(mimeMessage.getReplyTo());
-                } catch (MessagingException e) {
-                    throw new EmailMessagingException(e);
-                }
-            });
+            try {
+                replyTo = convertToEmailAddresses(mimeMessage.getReplyTo());
+            } catch (MessagingException e) {
+                throw new EmailMessagingException(e);
+            }
         }
         return replyTo;
     }
 
     @Override
     public void setReplyTo(List<EmailAddress> recipientsList) {
-        throw new UnsupportedOperationException("The field 'replyTo' cannot be changed for retrieved from mailbox message.");
+        try {
+            mimeMessage.setReplyTo(recipientsList.stream().map(emailAddress -> {
+                try {
+                    return convertToInternetAddress(emailAddress);
+                } catch (MessagingException e) {
+                    throw new EmailMessagingException(e);
+                }
+            }).toArray(InternetAddress[]::new));
+            this.replyTo = null;
+        } catch (MessagingException e) {
+            throw new EmailMessagingException(e);
+        }
     }
 
     @Override
     public EmailMessage replyTo(String... recipientsSequence) {
-        throw new UnsupportedOperationException("The field 'replyTo' cannot be changed for retrieved from mailbox message.");
+        try {
+            mimeMessage.setReplyTo(Arrays.stream(recipientsSequence).map(address -> {
+                try {
+                    return parseInternetAddress(address);
+                } catch (MessagingException e) {
+                    throw new EmailMessagingException(e);
+                }
+            }).toArray(InternetAddress[]::new));
+            this.replyTo = null;
+        } catch (MessagingException e) {
+            throw new EmailMessagingException(e);
+        }
+        return this;
     }
 
     @Override
     public String getSubject() {
         if (subject == null) {
-            subject = openFolderAndPerform(Folder.READ_ONLY, () -> {
-                try {
-                    return mimeMessage.getSubject();
-                } catch (MessagingException e) {
-                    throw new EmailMessagingException(e);
-                }
-            });
+            try {
+                subject = mimeMessage.getSubject();
+            } catch (MessagingException e) {
+                throw new EmailMessagingException(e);
+            }
         }
         return subject;
     }
 
     @Override
     public void setSubject(String subject) {
-        throw new UnsupportedOperationException("Subject cannot be changed for retrieved from mailbox message.");
+        try {
+            mimeMessage.setSubject(subject, getCharset());
+            this.subject = null;
+        } catch (MessagingException e) {
+            throw new EmailMessagingException(e);
+        }
     }
 
     @Override
     public String getCharset() {
         if (charset == null) {
-            charset = openFolderAndPerform(Folder.READ_ONLY, () -> {
-                try {
-                    String charset = extractCharset(mimeMessage);
-                    return charset != null ? charset : StandardCharsets.UTF_8.name();
-                } catch (MessagingException | IOException e) {
-                    throw new EmailMessagingException(e);
+            try {
+                charset = MimeMessageConverter.extractCharset(mimeMessage);
+                if (charset == null) {
+                    charset = StandardCharsets.UTF_8.name();
                 }
-            });
+            } catch (MessagingException | IOException e) {
+                throw new EmailMessagingException(e);
+            }
         }
         return charset;
     }
 
     @Override
-    public void setCharset(String charset) {
-        throw new UnsupportedOperationException("Body charset cannot be changed for retrieved from mailbox message.");
-    }
-
-    @Override
     public List<EmailBodyPart> getBodyParts() {
         if (bodyParts == null) {
-            bodyParts = openFolderAndPerform(Folder.READ_ONLY, () -> {
-                try {
-                    return extractBodyParts(mimeMessage);
-                } catch (MessagingException | IOException e) {
-                    throw new EmailMessagingException(e);
-                }
-            });
+            try {
+                bodyParts = MimeMessageConverter.extractBodyParts(mimeMessage);
+            } catch (MessagingException | IOException e) {
+                throw new EmailMessagingException(e);
+            }
         }
         return bodyParts;
     }
 
     @Override
     public void setBodyParts(List<EmailBodyPart> bodyParts) {
-        throw new UnsupportedOperationException("Body cannot be changed for retrieved from mailbox message.");
+        try {
+            String charset = getCharset();
+            for (EmailBodyPart bodyPart : bodyParts) {
+                MimeMessageConverter.updateBodyPart(mimeMessage, bodyPart, charset);
+            }
+            this.bodyParts = null;
+        } catch (MessagingException | IOException e) {
+            throw new EmailMessagingException(e);
+        }
     }
 
     @Override
     public EmailMessage text(String text) {
-        throw new UnsupportedOperationException("Body cannot be changed for retrieved from mailbox message.");
+        try {
+            EmailBodyPart bodyPart = new EmailBodyPart(text, EmailBodyPart.CONTENT_TYPE_TEXT_PLAIN);
+            MimeMessageConverter.updateBodyPart(mimeMessage, bodyPart, getCharset());
+            this.bodyParts = null;
+        } catch (MessagingException | IOException e) {
+            throw new EmailMessagingException(e);
+        }
+        return this;
     }
 
     @Override
     public EmailMessage html(String html) {
-        throw new UnsupportedOperationException("Body cannot be changed for retrieved from mailbox message.");
+        try {
+            EmailBodyPart bodyPart = new EmailBodyPart(html, EmailBodyPart.CONTENT_TYPE_TEXT_HTML);
+            MimeMessageConverter.updateBodyPart(mimeMessage, bodyPart, getCharset());
+            this.bodyParts = null;
+        } catch (MessagingException | IOException e) {
+            throw new EmailMessagingException(e);
+        }
+        return this;
     }
 
     @Override
     public List<EmailAttachment> getAttachments() {
         if (attachments == null) {
-            attachments = openFolderAndPerform(Folder.READ_ONLY, () -> {
-                try {
-                    return extractAttachments(mimeMessage);
-                } catch (MessagingException | IOException e) {
-                    throw new EmailMessagingException(e);
-                }
-            });
+            try {
+                attachments = MimeMessageConverter.extractAttachments(mimeMessage);
+            } catch (MessagingException | IOException e) {
+                throw new EmailMessagingException(e);
+            }
         }
         return attachments;
     }
 
     @Override
     public void setAttachments(List<EmailAttachment> attachments) {
-        throw new UnsupportedOperationException("New files cannot be attached to retrieved from mailbox message.");
+        try {
+            MimeMessageConverter.removeAttachments(mimeMessage);
+            for (EmailAttachment attachment : attachments) {
+                MimeMessageConverter.addAttachment(mimeMessage, attachment);
+            }
+            this.attachments = null;
+        } catch (MessagingException | IOException e) {
+            throw new EmailMessagingException(e);
+        }
     }
 
     @Override
     public EmailMessage attach(File file) {
-        throw new UnsupportedOperationException("New files cannot be attached to retrieved from mailbox message.");
+        try {
+            MimeMessageConverter.addAttachment(mimeMessage, new EmailAttachment(file.toPath()));
+            attachments = null;
+        } catch (MessagingException | IOException e) {
+            throw new EmailMessagingException(e);
+        }
+        return this;
     }
 
     @Override
     public EmailMessage attach(Path filePath) {
-        throw new UnsupportedOperationException("New files cannot be attached to retrieved from mailbox message.");
+        try {
+            MimeMessageConverter.addAttachment(mimeMessage, new EmailAttachment(filePath));
+            attachments = null;
+        } catch (MessagingException | IOException e) {
+            throw new EmailMessagingException(e);
+        }
+        return this;
     }
 
     @Override
     public EmailMessage attach(String fileName, InputStream fileContent, String mimeType) {
-        throw new UnsupportedOperationException("New files cannot be attached to retrieved from mailbox message.");
+        try {
+            MimeMessageConverter.addAttachment(mimeMessage, new EmailAttachment(fileName, fileContent, mimeType));
+            attachments = null;
+        } catch (MessagingException | IOException e) {
+            throw new EmailMessagingException(e);
+        }
+        return this;
     }
 
     @Override
     public boolean isRead() {
         if (isRead == null) {
-            isRead = openFolderAndPerform(Folder.READ_ONLY, () -> {
-                try {
-                    return mimeMessage.getFlags().contains(Flags.Flag.SEEN);
-                } catch (MessagingException e) {
-                    throw new EmailMessagingException(e);
-                }
-            });
+            try {
+                isRead = mimeMessage.getFlags().contains(Flags.Flag.SEEN);
+            } catch (MessagingException e) {
+                throw new EmailMessagingException(e);
+            }
         }
         return super.isRead();
     }
@@ -392,14 +541,12 @@ public class MimeMessageWrapper extends EmailMessage {
     @Override
     public void setRead(boolean read) {
         if (isRead() != read) {
-            isRead = openFolderAndPerform(Folder.READ_WRITE, () -> {
-                try {
-                    mimeMessage.setFlag(Flags.Flag.SEEN, read);
-                    return read;
-                } catch (MessagingException e) {
-                    throw new EmailMessagingException(e);
-                }
-            });
+            try {
+                mimeMessage.setFlag(Flags.Flag.SEEN, read);
+                isRead = read;
+            } catch (MessagingException e) {
+                throw new EmailMessagingException(e);
+            }
         }
     }
 
@@ -411,6 +558,10 @@ public class MimeMessageWrapper extends EmailMessage {
     @Override
     public void send(EmailSender emailSender) {
         throw new UnsupportedOperationException("Retrieved from mailbox message cannot be resend.");
+    }
+
+    MimeMessage getMimeMessage() {
+        return mimeMessage;
     }
 
     private List<EmailAddress> convertToEmailAddresses(Address[] addresses) {
@@ -430,117 +581,27 @@ public class MimeMessageWrapper extends EmailMessage {
         return address != null ? new EmailAddress(address.toString()) : null;
     }
 
-    private List<EmailBodyPart> extractBodyParts(Part part) throws MessagingException, IOException {
-        List<EmailBodyPart> result = new ArrayList<>();
-        String mimeType = part.getContentType().toLowerCase();
-
-        if (mimeType.contains(MIME_MULTIPART)) {
-            Multipart multipart = (Multipart) part.getContent();
-
-            for (int i = 0; i < multipart.getCount(); ++i) {
-                BodyPart childPart = multipart.getBodyPart(i);
-                result.addAll(extractBodyParts(childPart));
-            }
-        } else if (part.getContent() instanceof Part) {
-            result.addAll(this.extractBodyParts((Part) part.getContent()));
-
-        } else if (mimeType.contains(MIME_TEXT_PLAIN)) {
-            Object content = part.getContent();
-            if (content instanceof String) {
-                result.add(new EmailBodyPart((String) content, EmailBodyPart.CONTENT_TYPE_TEXT_PLAIN));
-            }
-
-        } else if (mimeType.contains(MIME_TEXT_HTML)) {
-            Object content = part.getContent();
-            if (content instanceof String) {
-                result.add(new EmailBodyPart((String) content, EmailBodyPart.CONTENT_TYPE_TEXT_HTML));
-            }
-        }
-
-        return result;
-    }
-
-    private List<EmailAttachment> extractAttachments(Part part) throws MessagingException, IOException {
-        List<EmailAttachment> result = new ArrayList<>();
-        String mimeType = part.getContentType().toLowerCase();
-        String disposition = part.getDisposition();
-
-        if (mimeType.contains(MIME_MULTIPART)) {
-            Multipart multipart = (Multipart) part.getContent();
-
-            for (int i = 0; i < multipart.getCount(); ++i) {
-                BodyPart childPart = multipart.getBodyPart(i);
-                result.addAll(extractAttachments(childPart));
-            }
-
-        } else if (!mimeType.contains(MIME_TEXT_PLAIN)
-                && !mimeType.contains(MIME_TEXT_HTML)
-                && (Part.ATTACHMENT.equalsIgnoreCase(disposition) || Part.INLINE.equalsIgnoreCase(disposition))) {
-
-            if (mimeType.contains(";")) {
-                mimeType = mimeType.substring(0, mimeType.indexOf(";"));
-            }
-            result.add(new EmailAttachment(part.getFileName(), part.getInputStream(), mimeType));
-
-        } else if (part.getContent() instanceof Part) {
-            result.addAll(extractAttachments((Part) part.getContent()));
-        }
-
-        return result;
-    }
-
-    private String extractCharset(Part part) throws MessagingException, IOException {
-        String charset = null;
-        String mimeType = part.getContentType().toLowerCase();
-
-        if (mimeType.contains(CHARSET_KEY)) {
-            int endOfCharsetSubstring = mimeType.indexOf(";", mimeType.indexOf(CHARSET_KEY));
-            if (endOfCharsetSubstring >= 0) {
-                charset = mimeType.substring(mimeType.indexOf(CHARSET_KEY) + CHARSET_KEY.length(), endOfCharsetSubstring).trim().toUpperCase();
-            } else {
-                charset = mimeType.substring(mimeType.indexOf(CHARSET_KEY) + CHARSET_KEY.length()).trim().toUpperCase();
-            }
-
-        } else if (mimeType.contains(MIME_MULTIPART)) {
-            Multipart multipart = (Multipart) part.getContent();
-
-            for (int i = 0; i < multipart.getCount(); ++i) {
-                BodyPart childPart = multipart.getBodyPart(i);
-                charset = extractCharset(childPart);
-                if (charset != null) {
-                    break;
-                }
-            }
-
-        } else if (part.getContent() instanceof Part) {
-            charset = extractCharset((Part) part.getContent());
-        }
-
-        return charset;
-    }
-
-    private <T> T openFolderAndPerform(int mode, Supplier<T> action) {
+    private InternetAddress convertToInternetAddress(EmailAddress address) throws MessagingException {
         try {
-            Folder folder = mimeMessage.getFolder();
-            if (folder.isOpen() && folder.getMode() >= mode) {
-                return action.get();
-            } else {
-                boolean folderWasOpen = false;
-                if (folder.isOpen()) {
-                    folderWasOpen = true;
-                    folder.close(false);
-                }
-                folder.open(mode);
-                try {
-                    return action.get();
-                } finally {
-                    if (!folderWasOpen) {
-                        folder.close(false);
-                    }
-                }
+            if (address != null) {
+                return new InternetAddress(address.getAddress(), address.getPersonal(), getCharset());
             }
-        } catch (MessagingException e) {
-            throw new EmailMessagingException(e);
+            return null;
+        } catch (UnsupportedEncodingException ex) {
+            throw new MessagingException("Failed to parse embedded personal name to correct encoding", ex);
+        }
+    }
+
+    private InternetAddress parseInternetAddress(String address) throws MessagingException {
+        InternetAddress[] parsed = InternetAddress.parse(address);
+        if (parsed.length != 1) {
+            throw new IllegalArgumentException(String.format("Illegal email address '%s'.", address));
+        }
+        InternetAddress raw = parsed[0];
+        try {
+            return new InternetAddress(raw.getAddress(), raw.getPersonal(), getCharset());
+        } catch (UnsupportedEncodingException ex) {
+            throw new MessagingException("Failed to parse embedded personal name to correct encoding", ex);
         }
     }
 }
