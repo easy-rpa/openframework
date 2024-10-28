@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import eu.easyrpa.openframework.email.exception.EmailMessagingException;
-import eu.easyrpa.openframework.email.message.rtf.RtfConverter;
+import eu.easyrpa.openframework.email.message.tnef.RtfConverter;
 import eu.easyrpa.openframework.email.message.templates.FreeMarkerTemplate;
 import org.apache.commons.io.IOUtils;
 

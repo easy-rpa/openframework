@@ -7,8 +7,11 @@ import eu.easyrpa.openframework.email.exception.EmailMessagingException;
 import eu.easyrpa.openframework.email.message.EmailAddress;
 import eu.easyrpa.openframework.email.message.EmailAttachment;
 import eu.easyrpa.openframework.email.message.EmailBodyPart;
+import eu.easyrpa.openframework.email.message.tnef.TNEFMailMessageConverter;
 import net.freeutils.tnef.TNEFInputStream;
 import net.freeutils.tnef.TNEFUtils;
+import net.freeutils.tnef.mime.ContactConverter;
+import net.freeutils.tnef.mime.ReadReceiptConverter;
 import net.freeutils.tnef.mime.TNEFMime;
 
 import javax.mail.Address;
@@ -42,8 +45,6 @@ public class MimeMessageWrapper extends EmailMessage {
 
     @JsonIgnore
     private MimeMessage mimeMessage;
-    @JsonIgnore
-    private MimeMessage tnefMimeMessage;
 
     public MimeMessageWrapper(MimeMessage message) {
         try {
@@ -56,7 +57,7 @@ public class MimeMessageWrapper extends EmailMessage {
 
             List<EmailAttachment> attachments = MimeMessageConverter.extractAttachments(this.mimeMessage);
             if (attachments.size() == 1 && TNEFUtils.isTNEFMimeType(attachments.get(0).getMimeType())) {
-                //TODO implement converter for "IPM.Microsoft Mail.Note"
+                TNEFMime.setConverters(new ContactConverter(), new ReadReceiptConverter(), new TNEFMailMessageConverter());
                 this.mimeMessage = TNEFMime.convert(message.getSession(),
                         new TNEFInputStream(attachments.get(0).getInputStream()));
             }

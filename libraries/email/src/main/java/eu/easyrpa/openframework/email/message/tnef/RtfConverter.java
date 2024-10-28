@@ -1,4 +1,4 @@
-package eu.easyrpa.openframework.email.message.rtf;
+package eu.easyrpa.openframework.email.message.tnef;
 
 import com.rtfparserkit.parser.IRtfParser;
 import com.rtfparserkit.parser.IRtfSource;
