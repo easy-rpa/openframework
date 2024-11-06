@@ -1,7 +1,12 @@
 package eu.easyrpa.openframework.excel.internal.poi;
 
 import eu.easyrpa.openframework.core.utils.TypeUtils;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -13,14 +18,14 @@ public class POIElementsCache {
 
     private static POIElementsCache INSTANCE;
 
-    private static POIElementsCache getInstance() {
+    public static POIElementsCache getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new POIElementsCache();
         }
         return INSTANCE;
     }
 
-    public static void register(int excelDocumentId, Workbook workbook) {
+    public static synchronized void register(int excelDocumentId, Workbook workbook) {
         POIElementsCache cache = getInstance();
         cache.workbooks.put(excelDocumentId, workbook);
         cache.dataFormatters.put(excelDocumentId, new DataFormatter());
@@ -38,7 +43,7 @@ public class POIElementsCache {
         cache.readMergedRegions(excelDocumentId);
     }
 
-    public static void unregister(int excelDocumentId) {
+    public static synchronized void unregister(int excelDocumentId) {
         POIElementsCache cache = getInstance();
         cache.formulaEvaluators.remove(excelDocumentId);
         cache.dataFormatters.remove(excelDocumentId);
@@ -187,7 +192,7 @@ public class POIElementsCache {
     private Map<Integer, FormulaEvaluator> formulaEvaluators = new HashMap<>();
     private Map<Integer, DataFormatter> dataFormatters = new HashMap<>();
 
-    private Map<Integer, Map<Integer, Sheet>> sheetsCache = new HashMap<>();
+    public Map<Integer, Map<Integer, Sheet>> sheetsCache = new HashMap<>();
     private Map<Integer, Map<String, Row>> rowsCache = new HashMap<>();
     private Map<Integer, Map<String, Cell>> cellsCache = new HashMap<>();
 
