@@ -9,11 +9,20 @@ import eu.easyrpa.openframework.excel.constants.MatchMethod;
 import eu.easyrpa.openframework.excel.exceptions.VBScriptExecutionException;
 import eu.easyrpa.openframework.excel.internal.poi.POIElementsCache;
 import eu.easyrpa.openframework.excel.internal.poi.XSSFSheetExt;
-import eu.easyrpa.openframework.excel.vbscript.*;
+import eu.easyrpa.openframework.excel.vbscript.ColumnInsert;
+import eu.easyrpa.openframework.excel.vbscript.ColumnsDelete;
+import eu.easyrpa.openframework.excel.vbscript.ColumnsMove;
+import eu.easyrpa.openframework.excel.vbscript.ExportToPDF;
+import eu.easyrpa.openframework.excel.vbscript.PivotTableScript;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.poifs.filesystem.FileMagic;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.ClientAnchor;
+import org.apache.poi.ss.usermodel.DataValidation;
+import org.apache.poi.ss.usermodel.Drawing;
+import org.apache.poi.ss.usermodel.Picture;
+import org.apache.poi.ss.usermodel.Shape;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
@@ -22,7 +31,12 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFTable;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTMergeCells;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -773,6 +787,73 @@ public class Sheet implements Iterable<eu.easyrpa.openframework.excel.Row> {
             }
         } else {
             shiftRows(rowIndex + 1, -1);
+        }
+    }
+
+    /**
+     * Shift rows of this sheet up or down.
+     *
+     * @param rowRef    reference to cell that belongs to top row that needs to be shifted. E.g. "A23" defines row
+     *                  with index 22.
+     * @param rowsCount amount of rows that needs to be shifted. If this value is positive(+) the shifting is
+     *                  performed down (rows inserting), if negative (-) - up (rows deleting).
+     */
+    public void shiftRows(String rowRef, int rowsCount) {
+        CellRef ref = new CellRef(rowRef);
+        shiftRows(ref.getRow(), rowsCount);
+    }
+
+    /**
+     * Shift rows of this sheet up or down.
+     *
+     * @param startRow  0-based index of top row that needs to be shifted.
+     * @param rowsCount amount of rows that needs to be shifted. If this value is positive(+) the shifting is
+     *                  performed down (rows inserting), if negative (-) - up (rows deleting).
+     */
+    public void shiftRows(int startRow, int rowsCount) {
+        org.apache.poi.ss.usermodel.Sheet poiSheet = getPoiSheet();
+        int endRow = poiSheet.getLastRowNum();
+
+        if (startRow < 0 || startRow > endRow) {
+            return;
+        }
+
+        poiSheet.shiftRows(startRow, endRow, rowsCount);
+
+        //Rows have been shifted and their positions changed. We need to cleanup
+        // caches to get actual poi elements.
+        POIElementsCache.clearRowsAndCellsCache(documentId);
+
+        // Shift data validation ranges separately since by default shifting of rows
+        // doesn't affect position of data validation
+        List<? extends DataValidation> dataValidations = poiSheet.getDataValidations();
+
+        try {
+            //Cleanup all data validations
+            if (poiSheet instanceof XSSFSheet) {
+                ((XSSFSheet) poiSheet).getCTWorksheet().unsetDataValidations();
+            } else if (poiSheet instanceof SXSSFSheet) {
+                XSSFSheet xssfSheet = TypeUtils.getFieldValue(poiSheet, "_sh");
+                xssfSheet.getCTWorksheet().unsetDataValidations();
+            } else if (poiSheet instanceof HSSFSheet) {
+                TypeUtils.setFieldValue(((HSSFSheet) poiSheet).getSheet(), "_dataValidityTable", null);
+            }
+        } catch (Exception e) {
+            // do nothing
+        }
+
+        for (DataValidation dv : dataValidations) {
+            CellRangeAddressList regions = dv.getRegions();
+            for (int i = 0; i < regions.countRanges(); i++) {
+                CellRangeAddress dvRegion = regions.getCellRangeAddress(i);
+                if (dvRegion.getFirstRow() >= startRow) {
+                    dvRegion.setFirstRow(dvRegion.getFirstRow() + rowsCount);
+                }
+                if (dvRegion.getLastRow() >= startRow) {
+                    dvRegion.setLastRow(dvRegion.getLastRow() + rowsCount);
+                }
+            }
+            poiSheet.addValidationData(poiSheet.getDataValidationHelper().createValidation(dv.getValidationConstraint(), dv.getRegions()));
         }
     }
 
@@ -1744,60 +1825,6 @@ public class Sheet implements Iterable<eu.easyrpa.openframework.excel.Row> {
      */
     public org.apache.poi.ss.usermodel.Sheet getPoiSheet() {
         return POIElementsCache.getPoiSheet(documentId, sheetIndex);
-    }
-
-    /**
-     * Shift rows of this sheet up or down.
-     *
-     * @param startRow  0-based index of top row that needs to be shifted.
-     * @param rowsCount amount of rows that needs to be shifted. If this value is positive(+) the shifting is
-     *                  performed down (rows inserting), if negative (-) - up (rows deleting).
-     */
-    private void shiftRows(int startRow, int rowsCount) {
-        org.apache.poi.ss.usermodel.Sheet poiSheet = getPoiSheet();
-        int endRow = poiSheet.getLastRowNum();
-
-        if (startRow < 0 || startRow > endRow) {
-            return;
-        }
-
-        poiSheet.shiftRows(startRow, endRow, rowsCount);
-
-        //Rows have been shifted and their positions changed. We need to cleanup
-        // caches to get actual poi elements.
-        POIElementsCache.clearRowsAndCellsCache(documentId);
-
-        // Shift data validation ranges separately since by default shifting of rows
-        // doesn't affect position of data validation
-        List<? extends DataValidation> dataValidations = poiSheet.getDataValidations();
-
-        try {
-            //Cleanup all data validations
-            if (poiSheet instanceof XSSFSheet) {
-                ((XSSFSheet) poiSheet).getCTWorksheet().unsetDataValidations();
-            } else if (poiSheet instanceof SXSSFSheet) {
-                XSSFSheet xssfSheet = TypeUtils.getFieldValue(poiSheet, "_sh");
-                xssfSheet.getCTWorksheet().unsetDataValidations();
-            } else if (poiSheet instanceof HSSFSheet) {
-                TypeUtils.setFieldValue(((HSSFSheet) poiSheet).getSheet(), "_dataValidityTable", null);
-            }
-        } catch (Exception e) {
-            // do nothing
-        }
-
-        for (DataValidation dv : dataValidations) {
-            CellRangeAddressList regions = dv.getRegions();
-            for (int i = 0; i < regions.countRanges(); i++) {
-                CellRangeAddress dvRegion = regions.getCellRangeAddress(i);
-                if (dvRegion.getFirstRow() >= startRow) {
-                    dvRegion.setFirstRow(dvRegion.getFirstRow() + rowsCount);
-                }
-                if (dvRegion.getLastRow() >= startRow) {
-                    dvRegion.setLastRow(dvRegion.getLastRow() + rowsCount);
-                }
-            }
-            poiSheet.addValidationData(poiSheet.getDataValidationHelper().createValidation(dv.getValidationConstraint(), dv.getRegions()));
-        }
     }
 
     /**
